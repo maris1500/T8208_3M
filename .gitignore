@@ -1,0 +1,13 @@
+/.metadata
+/proj_lib
+/b80_ble_sdk/8208_ble_sample
+/b80_ble_sdk/8208_dual_kb
+/b80_ble_sdk/8208_dual_mouse
+/b80_ble_sdk/8208_ota_bootloader
+/8373_dongle_for_km/project/tlsr_tc32/B80/eaglet_dongle_demo_flash
+/8373_dongle_for_km/project/tlsr_tc32/B80/eaglet_dongle_demo_otp
+/8373_dongle_for_km/project/tlsr_tc32/B80/eaglet_dongle_otp_sram
+
+#ignore all.mk file
+*.mk
+*.o

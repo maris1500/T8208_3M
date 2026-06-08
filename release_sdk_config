@@ -1,0 +1,89 @@
+[copy_lib_S0]
+
+CI_FUNC             V1.1
+
+PACKAGE_NAME        telink_8373_kmd_dual_mode_sdk_S0_V2.1.2 
+TAG_NAME            V2.1.2
+
+------------------------------------------------------------------------------------------------
+(config1)
+TARGET_REPO_ID      815
+TARGET_TAG_NAME     V3.4.1.1_patch_0002 
+TARGET_SDK_NAME     telink_b80_ble_single_connection_sdk_V3.4.1.1_patch_0002_custom_made_S0
+
+#                   sources                                 target
+COPY               ./telink_b80_ble_single_connection_sdk_V3.4.1.1_patch_0002_custom_made_S0/telink_b80_ble_single_connection_sdk_v3.4.1.1_Patch/0002_20221103_Fix_T_IFS_when_use_48M/proj_lib/liblt_8208.a             ./b80_ble_sdk/proj_lib/liblt_8208.a
+
+(config1_end)
+------------------------------------------------------------------------------------------------
+
+[copy_lib_S0_end]
+
+
+
+[copy_lib_S1]
+
+CI_FUNC             V1.1
+
+PACKAGE_NAME        telink_8373_kmd_dual_mode_sdk_S1_V2.1.2
+TAG_NAME            V2.1.2
+
+------------------------------------------------------------------------------------------------
+(config1)
+TARGET_REPO_ID      815
+TARGET_TAG_NAME     V3.4.1.1_patch_0002 
+TARGET_SDK_NAME     telink_b80_ble_single_connection_sdk_V3.4.1.1_patch_0002_custom_made_S1
+
+#                   sources                                 target
+COPY                ./telink_b80_ble_single_connection_sdk_V3.4.1.1_patch_0002_custom_made_S1/telink_b80_ble_single_connection_sdk_v3.4.1.1_Patch/0002_20221103_Fix_T_IFS_when_use_48M/proj_lib/liblt_8208.a            ./b80_ble_sdk/proj_lib/liblt_8208.a
+
+(config1_end)
+------------------------------------------------------------------------------------------------
+
+[copy_lib_S1_end]
+
+
+
+[copy_lib_S2]
+
+CI_FUNC             V1.1
+
+PACKAGE_NAME        telink_8373_kmd_dual_mode_sdk_S2_V2.1.2
+TAG_NAME            V2.1.2
+
+------------------------------------------------------------------------------------------------
+(config1)
+TARGET_REPO_ID      815
+TARGET_TAG_NAME     V3.4.1.1_patch_0002 
+TARGET_SDK_NAME     telink_b80_ble_single_connection_sdk_V3.4.1.1_patch_0002_custom_made_S2
+
+#                   sources                                 target
+COPY                ./telink_b80_ble_single_connection_sdk_V3.4.1.1_patch_0002_custom_made_S2/telink_b80_ble_single_connection_sdk_v3.4.1.1_Patch/0002_20221103_Fix_T_IFS_when_use_48M/proj_lib/liblt_8208.a            ./b80_ble_sdk/proj_lib/liblt_8208.a
+
+(config1_end)
+------------------------------------------------------------------------------------------------
+
+[copy_lib_S2_end]
+
+
+
+[copy_lib_S3]
+
+CI_FUNC             V1.1
+
+PACKAGE_NAME        telink_8373_kmd_dual_mode_sdk_S3_V2.1.2
+TAG_NAME            V2.1.2
+
+------------------------------------------------------------------------------------------------
+(config1)
+TARGET_REPO_ID      815
+TARGET_TAG_NAME     V3.4.1.1_patch_0002 
+TARGET_SDK_NAME     telink_b80_ble_single_connection_sdk_V3.4.1.1_patch_0002_custom_made_S3
+
+#                   sources                                 target
+COPY                ./telink_b80_ble_single_connection_sdk_V3.4.1.1_patch_0002_custom_made_S3/telink_b80_ble_single_connection_sdk_v3.4.1.1_Patch/0002_20221103_Fix_T_IFS_when_use_48M/proj_lib/liblt_8208.a            ./b80_ble_sdk/proj_lib/liblt_8208.a
+
+(config1_end)
+------------------------------------------------------------------------------------------------
+
+[copy_lib_S3_end]
