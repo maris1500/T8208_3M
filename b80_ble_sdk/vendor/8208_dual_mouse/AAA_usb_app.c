@@ -319,12 +319,13 @@ extern u8 connect_ok;
 		reg_usb_ep_ptr(USB_EDP_SPP_IN) = 0;
 
 		//printf("tx=0x");
+		printf("USB send to PC len=%d data:", length);
 		for (u8 i=0; i<length; i++)
 		{
-			//printf("%01x",data[i]);
+			printf(" %1x", data[i]);
 			reg_usb_ep_dat(USB_EDP_SPP_IN) = data[i];
 		}
-		//printf("\r\n");
+		printf("\r\n");
 
 		usbhw_data_ep_ack(USB_EDP_SPP_IN);
 
@@ -802,51 +803,61 @@ u8 kb_data_handle(u8 *buf)
 #if OTA_ENABLE_AAA
 void app_hid_set_report_handle(u8 data_request, u8 report_id, u16 length)
 {
-	static u16 ep0_out_data_len=0;
-	static u8  ep0_out_data_buf[USB_OTA_LENGTH]={0};
-	static u16 ep0_out_index=0;
-	u8 i;
+    static u16 ep0_out_data_len = 0;
+    static u8  ep0_out_data_buf[64] = {0};
+    u8 bytes_to_read;
+    u8 i;
 
-	if (data_request) //PC set report happened
-	{
-		if (ep0_out_data_len < USB_OTA_LENGTH)
-		{ //Data is not received completely, read 8 byte data
-			for (i=0; i<8; i++)
-			{
-				ep0_out_data_buf[ep0_out_index] = usbhw_read_ctrl_ep_data(); //read data
-				ep0_out_index ++; //index plus 1
-			}
+    if (data_request) // PC set report happened
+    {
+        if (ep0_out_data_len < length)
+        {
+            bytes_to_read = length - ep0_out_data_len;
+            if (bytes_to_read > 8) {
+                bytes_to_read = 8;
+            }
 
-			//received data length plus 8
-			ep0_out_data_len += 8;
+            for (i = 0; i < bytes_to_read; i++)
+            {
+                ep0_out_data_buf[ep0_out_data_len++] = usbhw_read_ctrl_ep_data();
+            }
 
-			if(ep0_out_data_len == USB_OTA_LENGTH)
-			{ //Data received completely
+            if (ep0_out_data_len == length)
+            { // Data received completely
+                usb_data_t *p = (usb_data_t *)&ep0_out_data_buf[0];
 
-				/* clear index and date length wait for next time that PC set report data */
-				ep0_out_index = 0;
-				ep0_out_data_len = 0;
+                /* clear index and data length for next Set_Report transfer */
+                ep0_out_data_len = 0;
 
-				//printf("rx=0x");
-				//for(i=0;i<length;i++)
-				//{
-					//printf("%01x",ep0_out_data_buf[i]);
-				//}
-				//printf("\r\n");
-
-				usb_data_t *p = (usb_data_t *)&ep0_out_data_buf[0];
-				usb_data_handle (p, length); //process received data from PC set report data
-			}
-		}
-	}
-	else
-	{
-		/* clear index and date length wait for next time that PC set report data */
-		ep0_out_data_len = 0;
-		ep0_out_index = 0;
-
-		printf("set_report_cmd=0x%01x,length=%d.\r\n",report_id,length);
-	}
+                if (report_id == OTA_REPORT_ID && length == USB_OTA_LENGTH)
+                {
+                    /* OTA feature report ID 0x06: process OTA packet */
+                    usb_data_handle(p, length);
+                }
+                else if (report_id == 0x05)
+                {
+                    /* Custom feature report ID 0x05: driver communication data */
+                    printf("USB Feature Report 0x05 received, len=%d data:", length);
+                    for (i = 0; i < length; i++)
+                    {
+                        printf(" %01x", ep0_out_data_buf[i]);
+                    }
+                    printf("\r\n");
+                }
+                else
+                {
+                    /* Other feature reports: just log and drop for now */
+                    printf("USB Feature Report 0x%02x received, len=%d\r\n", report_id, length);
+                }
+            }
+        }
+    }
+    else
+    {
+        /* status stage of Set_Report: reset buffer state */
+        ep0_out_data_len = 0;
+        printf("set_report_cmd=0x%01x,length=%d.\r\n", report_id, length);
+    }
 }
 #endif
 

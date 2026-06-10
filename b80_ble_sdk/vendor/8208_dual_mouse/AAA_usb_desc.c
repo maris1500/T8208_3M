@@ -159,33 +159,41 @@ static const u8 mouse_report_desc[] =
 #endif
 
 #if 1
-/*******************user define input************************/
+/*******************vendor define feature report ID 5************************/
 	0x06,  0x00,  0xff, 	// Usage Page (Vendor-defined),
 	0x09,  0x00,	// USAGE ()
 	0xa1,  0x01,	// Collection (Application),
 	0x85,  0x05,	// Report ID (5)
 	0x09,  0x00,	// Usage,
 	0x15,  0x00,	// Logical Minimum (0),
-	0x26,  0xff,  0x00,		// Logical Maximum (1),
+	0x26,  0xff,  0x00,		// Logical Maximum (255),
 	0x75,  0x08,	// Report Size (8),
 	0x95,  0x07,	// Report Count (7),
-	0x81,  0x02,	// Input
-	0x09,  0x01,
-	0x91,  0x02,  	// Output (Data, Variable, Absolute)
-	0x09,  0x02,
-	0xB1,  0x02,  	// feature (Data, Variable, Absolute)
+	0xB1,  0x02,   	// Feature (Data, Variable, Absolute)
 	0xc0,	// END_COLLECTION
-/*******************user define output************************/
-	0x06,  0x01,  0xff, 	// Usage Page (Vendor-defined),
+	/*******************vendor define input report ID 4************************/
+	0x06,  0x00,  0xff, 	// Usage Page (Vendor-defined)
 	0x09,  0x00,	// USAGE ()
-	0xa1,  0x01,	// Collection (Application),
+	0xa1,  0x01,	// Collection (Application)
 	0x85,  0x04,	// Report ID (4)
 	0x09,  0x01,	// Usage,
 	0x15,  0x00,	// Logical Minimum (0),
 	0x26,  0xff,  0x00,		// Logical Maximum (255),
 	0x75,  0x08,	// Report Size (8),
 	0x95,  0x07,	// Report Count (7),
-	0xb1,  0x02,	// Output
+	0x81,  0x02,	// Input
+	0xc0,    // END_COLLECTION
+	/*******************vendor define feature report ID 6************************/
+	0x06,  0x00,  0xff, 	// Usage Page (Vendor-defined)
+	0x09,  0x00,	// USAGE ()
+	0xa1,  0x01,	// Collection (Application)
+	0x85,  0x06,	// Report ID (6)
+	0x09,  0x01,	// Usage,
+	0x15,  0x00,	// Logical Minimum (0),
+	0x26,  0xff,  0x00,		// Logical Maximum (255),
+	0x75,  0x08,	// Report Size (8),
+	0x95,  0x07,	// Report Count (7),
+	0xB1,  0x02,	// Feature
 	0xc0,	// END_COLLECTION
 #else
 /*******************user define input************************/
@@ -349,7 +357,7 @@ u8 device_desc_km[18] =
     0x73,0x83, 	// ProductID defult value   mouse only:2781  mouse_keyboard_kit:2782
 #else
 	0xF3, 0x04,
-	0x6F, 0x02,
+	0x6E, 0x02,
 #endif
     (u8)FW_VERSION,(u8)(FW_VERSION>>8),	// 0x0100 : ReleaseNumber
     0x01, 		// ManufacturerStrIndex = USB_STRING_VENDOR   @@@ pay attention
@@ -742,6 +750,7 @@ int usb_mouse_hid_report_aaa(u8 report_id,unsigned char * p,u8 len)
 
 	reg_usb_ep_ptr(USB_EDP_MOUSE) = 0;
 
+	// In report protocol, the first byte must be the report ID.
 	if(usb_mouse_report_proto== 0)
 	{
 		//reg_usb_ep_dat(USB_EDP_MOUSE) = x & 0xff;

@@ -2430,7 +2430,7 @@ void id_sleep_enable(int enable)
  */
 void btn_set_wakeup_level_suspend(u8 enable)
 {
-#if (0 == DEBUG_MODE)
+#if 1 //(0 == DEBUG_MODE)
 	if ( 0 == gpio_read(PIN_BTN_LEFT) )
 	{
 		cpu_set_gpio_wakeup(PIN_BTN_LEFT,  1,  enable);
@@ -2653,7 +2653,7 @@ _attribute_ram_code_ u16 btn_scan()
 	u16 now_value = 0;
 	u8 button_status = 0;
 
-#if !DEBUG_MODE
+#if 1 // !DEBUG_MODE
 	button_status = button_get_status(PIN_BTN_LEFT); //check pin left
 	if (button_status == 1)
 	{

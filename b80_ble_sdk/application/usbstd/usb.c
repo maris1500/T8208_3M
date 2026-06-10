@@ -394,7 +394,7 @@ void usb_handle_out_class_intf_req(int data_request) {
 					host_keyboard_status = usbhw_read_ctrl_ep_data();
 				}
 			#if OTA_ENABLE_AAA
-				else if(control_request.Value==(0x0200|OTA_REPORT_ID))
+				else if((control_request.Value & 0xff00) == 0x0200)
 				{
 					u8 report_id=control_request.Value&0xff;
 					u16 length=control_request.Length;
@@ -431,9 +431,15 @@ void usb_handle_out_class_intf_req(int data_request) {
 					ota_cmd_flag=0;
 				}
 				#endif
-				for(i=0;i<8;i++) 
+				for(i=0;i<8;i++)
 				{
 					host_cmd[i] = usbhw_read_ctrl_ep_data();
+				}
+					printf("USB HID OUT custom data:");
+				for (int k = 0; k < 8; k++) {
+					printf(" %1x", host_cmd[k]);
+				}
+				printf("\r\n");
 				}
 #if 0//(USB_CUSTOM_HID_REPORT_REG_ACCESS)
 				custom_reg_cmd = (host_cmd[1] & 0xf0) == 0xc0;
@@ -480,7 +486,6 @@ void usb_handle_out_class_intf_req(int data_request) {
 #endif
 			}
 			break;
-		}
 #endif
 		default:
 			g_stall = 1;
@@ -574,8 +579,22 @@ void usb_handle_in_class_intf_req() {
 			}
 			else
 #elif (USB_CUSTOM_HID_REPORT)
-			if( control_request.Value==0x0305 ) {
+			if (control_request.Value == 0x0304) {
+				/* Input report ID 0x04: state-change upload packet.
+				   Return placeholder status bytes for host GetReport. */
+				printf("Input_ID_04 \n");
+				usbhw_write_ctrl_ep_data (0x04);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
+			}
+			else if (control_request.Value == 0x0305) {
 				if (USB_CUSTOM_HID_REPORT_REG_ACCESS && custom_reg_cmd) {
+					printf("Input_ID_05A \n");
 					usbhw_write_ctrl_ep_data (custom_read_dat);
 					usbhw_write_ctrl_ep_data (custom_read_dat>>8);
 					usbhw_write_ctrl_ep_data (custom_read_dat>>16);
@@ -586,6 +605,8 @@ void usb_handle_in_class_intf_req() {
 					//usbhw_write_ctrl_ep_data (0x80);
 				}
 				else {
+
+					printf("Input_ID_05B \n");
 					usbhw_write_ctrl_ep_data (0x04);
 					usbhw_write_ctrl_ep_data (0x55);
 					usbhw_write_ctrl_ep_data (0x91);
@@ -599,6 +620,18 @@ void usb_handle_in_class_intf_req() {
 				usbhw_write_ctrl_ep_data (bin_crc[1]);
 				usbhw_write_ctrl_ep_data (bin_crc[2]);
 				usbhw_write_ctrl_ep_data (bin_crc[3]);
+			}
+			else if (control_request.Value == 0x0306) {
+				/* Feature report ID 0x06: OTA/drvier query response. */
+				printf("Input_ID_06 \n");
+				usbhw_write_ctrl_ep_data (0x06);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
+				usbhw_write_ctrl_ep_data (0x00);
 			}
 			else
 #endif
@@ -963,7 +996,7 @@ void usb_handle_irq(void) {
 	//usb_hid_report_fifo_proc();
 
 	if (reg_irq_src & FLD_IRQ_USB_RST_EN)
-	{	//printf("\r\n reset1");
+	{	printf("\r\n reset1");
 		//USB reset
 			usb_mouse_report_proto = 1;                   //1: report protocol; 0: start protocol
 			reg_irq_src |= FLD_IRQ_USB_RST_EN;					//Clear USB reset flag
@@ -1073,6 +1106,11 @@ void usb_cdc_irq_data_process(void)
 		g_stall = 0;
 		//receive data from usb host
 		usb_cdc_rx_data_from_host(usb_cdc_data);
+		printf("USB RX CDC data:");
+		for (int i = 0; i < 8; i++) {
+			printf(" %1x", usb_cdc_data[i]);
+		}
+		printf("\r\n");
 		if(g_stall)
 		{
 			usbhw_data_ep_stall(USB_EDP_CDC_OUT);
