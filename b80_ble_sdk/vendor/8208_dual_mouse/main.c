@@ -77,7 +77,8 @@ mcu_status_flag_t mcu_flag;
 #if (PROJECT_ID == PID_535)
 	extern void vbat_lower_loop_proc(void);
 #endif
-#if (PROJECT_ID == PID_M0018)
+
+#if (PROJECT_ID == PID_M0018)
 	extern void led_connect_none_status_clear(void);
 #endif
 
@@ -706,8 +707,8 @@ int main(void) //run in ramcode
 		}
 	#endif
 
-	printf("--- fun mode: %s\n", fun_mode ? "RF_2M_2P4G_MODE" : "RF_1M_BLE_MODE");
-	printf("--- mast_id: %d\n", flash_dev_info.mast_id);
+//	printf("--- fun mode: %s\n", fun_mode ? "RF_2M_2P4G_MODE" : "RF_1M_BLE_MODE");
+//	printf("--- mast_id: %d\n", flash_dev_info.mast_id);
 
 #if (BATT_CHECK_ENABLE)
 	 user_batt_check_init();
@@ -725,10 +726,16 @@ int main(void) //run in ramcode
 	}
 	else
 	{
+	#if (G24_MODE_ENABLE || BLE_MODE_ENABLE)
 		if ( USB_MODE_OUT == usb_has_judge || USB_MODE_IN_SUCC == usb_has_judge )
 		{
 			fun_mode = RF_USB_MODE;
+			printf("USB MODE :RF_USB_MODE \n ");
 		}
+	#else
+		fun_mode = RF_USB_MODE;
+		printf("USB MODE :RF_USB_MODE \n ");
+	#endif
 	}
 	printf("USB:%d \n ", gpio_read(USB_IN_CHECK_PIN));
 #endif

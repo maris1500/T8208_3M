@@ -415,6 +415,7 @@ int save_data_to_flash(unsigned long addr, unsigned long len, unsigned char *buf
  */
 void save_dev_info_flash()
 {
+#if 1
 	if (save_data_to_flash(CFG_DEVICE_MODE_ADDR, sizeof(FLASH_DEV_INFO_AAA), (u8 *)&flash_dev_info.dongle_id, &dev_info_idx) == SAVE_SUCCESS)
 	{
 		printf("---save success.\r\n");
@@ -423,6 +424,7 @@ void save_dev_info_flash()
 	{
 		printf("---save failed\r\n");
 	}
+#endif
 }
 
 void ble_start_pair()

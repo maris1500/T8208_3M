@@ -57,6 +57,7 @@ static u8 normal_last_data[8]={0,0,0,0,0,0,0,0};
 //_attribute_data_retention_user u32  usb_configuretimes =0x0;
 u8 usb_configure_ok =0;
 u8 usb_has_judge =0;
+u32 usb_mode_start_tick;
 
 extern u8 connect_ok;
 
@@ -613,6 +614,12 @@ extern u8 connect_ok;
 
 #endif
 
+void usb_fifo_reset_aaa(void)
+{
+	usb_fifo_aaa.rptr = 0;
+	usb_fifo_aaa.wptr = 0;
+}
+
 u8 push_usb_fifo_aaa(u8 type,u8 *buf,u8 len)
 {
 #if 1
@@ -800,64 +807,226 @@ u8 kb_data_handle(u8 *buf)
  * @param	length
  * @return	none
  */
-#if OTA_ENABLE_AAA
+#if USB_DESCRIPTOR_MY_SELF
+static u8 web_feature_rx[2][HID_WEB_DATA_MAX_LEN];
+static u8 web_feature_rx_len[2];
+
+static u16 web_ep0_out_pos;
+static u16 web_ep0_out_len;
+static u8  web_ep0_xfer_active;
+static u8  web_ep0_out_buf[HID_WEB_REPORT_WIRE_LEN];
+
+void usb_hid_web_rx_reset(void)
+{
+    web_ep0_out_pos = 0;
+    web_ep0_out_len = 0;
+    web_ep0_xfer_active = 0;
+    memset(web_ep0_out_buf, 0, sizeof(web_ep0_out_buf));
+}
+
+void usb_hid_store_feature_report(u8 report_id, u8 *data, u8 len)
+{
+    u8 idx = (report_id == REPORT_ID_DRV_FEATURE_AAA) ? 1 : 0;
+
+    if (len > HID_WEB_DATA_MAX_LEN) {
+        len = HID_WEB_DATA_MAX_LEN;
+    }
+    web_feature_rx_len[idx] = len;
+    if (len) {
+        memcpy(web_feature_rx[idx], data, len);
+    }
+}
+
+u16 usb_hid_fill_get_report(u16 wValue, u8 *buf, u16 buf_size)
+{
+    u8 report_id;
+    u8 idx;
+    u16 i;
+
+    if ((wValue & 0xff) == REPORT_ID_STATUS_INPUT_AAA ||
+        wValue == 0x0304 || wValue == 0x0104) {
+        if (buf_size < (1 + HID_STATUS_DATA_LEN)) {
+            return 0;
+        }
+        buf[0] = REPORT_ID_STATUS_INPUT_AAA;
+        for (i = 1; i <= HID_STATUS_DATA_LEN; i++) {
+            buf[i] = 0;
+        }
+        return 1 + HID_STATUS_DATA_LEN;
+    }
+
+    report_id = wValue & 0xff;
+    if (report_id == 0) {
+        /* Host may use wValue=0x02xx/0x03xx without report id in low byte */
+        u8 type = (wValue >> 8) & 0xff;
+
+        if (type == 2) {
+            report_id = REPORT_ID_USER_FEATURE_AAA;
+        } else if (type == 3) {
+            report_id = REPORT_ID_DRV_FEATURE_AAA;
+        } else {
+            report_id = REPORT_ID_DRV_FEATURE_AAA;
+        }
+    } else if (report_id != REPORT_ID_USER_FEATURE_AAA &&
+               report_id != REPORT_ID_DRV_FEATURE_AAA) {
+        return 0;
+    }
+
+    idx = (report_id == REPORT_ID_DRV_FEATURE_AAA) ? 1 : 0;
+    if (web_feature_rx_len[idx] > 0) {
+        u8 n = web_feature_rx_len[idx];
+        if (buf_size < HID_WEB_REPORT_WIRE_LEN) {
+            return 0;
+        }
+        buf[0] = report_id;
+        memcpy(&buf[1], web_feature_rx[idx], n);
+        for (i = 1 + n; i < HID_WEB_REPORT_WIRE_LEN; i++) {
+            buf[i] = 0;
+        }
+        return HID_WEB_REPORT_WIRE_LEN;
+    }
+
+    if (buf_size < HID_WEB_REPORT_WIRE_LEN) {
+        if (buf_size < 8) {
+            return 0;
+        }
+    }
+
+    if (report_id == REPORT_ID_USER_FEATURE_AAA) {
+        buf[0] = 0x04;
+        buf[1] = 0x55;
+        buf[2] = 0x91;
+        buf[3] = 0x01;
+        buf[4] = bin_crc[0];
+        buf[5] = bin_crc[1];
+        buf[6] = bin_crc[2];
+        buf[7] = bin_crc[3];
+    } else {
+        buf[0] = report_id;
+    }
+
+    if (buf_size >= HID_WEB_REPORT_WIRE_LEN) {
+        for (i = (report_id == REPORT_ID_USER_FEATURE_AAA) ? 8 : 1;
+             i < HID_WEB_REPORT_WIRE_LEN; i++) {
+            buf[i] = 0;
+        }
+        return HID_WEB_REPORT_WIRE_LEN;
+    }
+
+    for (i = (report_id == REPORT_ID_USER_FEATURE_AAA) ? 8 : 1; i < 8; i++) {
+        buf[i] = 0;
+    }
+    return 8;
+}
+
 void app_hid_set_report_handle(u8 data_request, u8 report_id, u16 length)
 {
-    static u16 ep0_out_data_len = 0;
-    static u8  ep0_out_data_buf[64] = {0};
     u8 bytes_to_read;
     u8 i;
 
-    if (data_request) // PC set report happened
+    if (length > HID_WEB_REPORT_WIRE_LEN) {
+        length = HID_WEB_REPORT_WIRE_LEN;
+    }
+
+    if (data_request == USB_IRQ_SETUP_REQ) {
+        web_ep0_out_pos = 0;
+        web_ep0_out_len = length;
+        web_ep0_xfer_active = (length > 0) ? 1 : 0;
+        return;
+    }
+
+    if (data_request != USB_IRQ_DATA_REQ) {
+        return;
+    }
+
+    if (!web_ep0_xfer_active || length == 0) {
+        return;
+    }
+
+    if (web_ep0_out_len != length) {
+        web_ep0_out_len = length;
+    }
+
+    bytes_to_read = length - web_ep0_out_pos;
+    if (bytes_to_read > 8) {
+        bytes_to_read = 8;
+    }
+    if (bytes_to_read == 0) {
+        web_ep0_xfer_active = 0;
+        return;
+    }
+
+    usbhw_reset_ctrl_ep_ptr();
+    for (i = 0; i < bytes_to_read; i++) {
+        web_ep0_out_buf[web_ep0_out_pos++] = usbhw_read_ctrl_ep_data();
+    }
+
+    usb_ep0_out_update((web_ep0_out_pos >= length) ? 0 : (length - web_ep0_out_pos));
+
+    if (web_ep0_out_pos < length) {
+        return;
+    }
+
+    web_ep0_xfer_active = 0;
+    web_ep0_out_pos = 0;
+    web_ep0_out_len = 0;
+
+#if OTA_ENABLE_AAA
+    if (report_id == OTA_REPORT_ID && length == USB_OTA_LENGTH)
     {
-        if (ep0_out_data_len < length)
-        {
-            bytes_to_read = length - ep0_out_data_len;
-            if (bytes_to_read > 8) {
-                bytes_to_read = 8;
-            }
-
-            for (i = 0; i < bytes_to_read; i++)
-            {
-                ep0_out_data_buf[ep0_out_data_len++] = usbhw_read_ctrl_ep_data();
-            }
-
-            if (ep0_out_data_len == length)
-            { // Data received completely
-                usb_data_t *p = (usb_data_t *)&ep0_out_data_buf[0];
-
-                /* clear index and data length for next Set_Report transfer */
-                ep0_out_data_len = 0;
-
-                if (report_id == OTA_REPORT_ID && length == USB_OTA_LENGTH)
-                {
-                    /* OTA feature report ID 0x06: process OTA packet */
-                    usb_data_handle(p, length);
-                }
-                else if (report_id == 0x05)
-                {
-                    /* Custom feature report ID 0x05: driver communication data */
-                    printf("USB Feature Report 0x05 received, len=%d data:", length);
-                    for (i = 0; i < length; i++)
-                    {
-                        printf(" %01x", ep0_out_data_buf[i]);
-                    }
-                    printf("\r\n");
-                }
-                else
-                {
-                    /* Other feature reports: just log and drop for now */
-                    printf("USB Feature Report 0x%02x received, len=%d\r\n", report_id, length);
-                }
-            }
-        }
+        usb_data_t *p = (usb_data_t *)&web_ep0_out_buf[0];
+        usb_data_handle(p, length);
     }
     else
+#endif
     {
-        /* status stage of Set_Report: reset buffer state */
-        ep0_out_data_len = 0;
-        printf("set_report_cmd=0x%01x,length=%d.\r\n", report_id, length);
+        u8 rid = report_id;
+
+        if ((rid != REPORT_ID_USER_FEATURE_AAA) &&
+            (rid != REPORT_ID_DRV_FEATURE_AAA) &&
+            length > 0) {
+            rid = web_ep0_out_buf[0];
+        }
+        if ((rid == REPORT_ID_USER_FEATURE_AAA) ||
+            (rid == REPORT_ID_DRV_FEATURE_AAA)) {
+            u8 data_len = (length > 1) ? (length - 1) : 0;
+            if (data_len > HID_WEB_DATA_MAX_LEN) {
+                data_len = HID_WEB_DATA_MAX_LEN;
+            }
+            usb_hid_store_feature_report(rid, &web_ep0_out_buf[1], data_len);
+            printf("USB HID OUT custom data:");
+            for (i = 0; i < length; i++)
+            {
+                printf(" %02x", web_ep0_out_buf[i]);
+            }
+            printf("\r\n");
+        }
     }
+}
+
+static void usb_send_status_input_report(u8 status)
+{
+    /* Status report 4: Web reads via GET_REPORT; avoid IN interrupt on intf1
+       during mouse activity which can trigger host USB reset on composite device */
+    (void)status;
+}
+#endif
+
+#if USB_DESCRIPTOR_MY_SELF
+void usb_mouse_eps_reack(void)
+{
+	write_reg8(0x10e, (1 << USB_EDP_MOUSE) | (1 << USB_EDP_KEYBOARD_IN));
+	reg_usb_ep_ctrl(USB_EDP_MOUSE) = 0;
+	reg_usb_ep_ctrl(USB_EDP_KEYBOARD_IN) = 0;
+	usbhw_data_ep_ack(USB_EDP_MOUSE);
+	usbhw_data_ep_ack(USB_EDP_KEYBOARD_IN);
+}
+
+void usb_data_eps_ready_on_config(void)
+{
+	usb_fifo_reset_aaa();
+	usb_mouse_eps_reack();
+	usb_hid_web_rx_reset();
 }
 #endif
 
@@ -875,9 +1044,8 @@ void usb_user_init(void)
 	usb_init_interrupt();
 
 	#if USB_DESCRIPTOR_MY_SELF
-		#if OTA_ENABLE_AAA
 			usb_register_set_report(app_hid_set_report_handle); //register set report
-
+		#if OTA_ENABLE_AAA
 			write_reg8(0x10e,(1<<USB_EDP_MOUSE)|(1<<USB_EDP_KEYBOARD_IN)|(1<<USB_EDP_SPP_IN));
 
 			notify_rsp_buf_init(); //initial notify FIFO
@@ -890,6 +1058,7 @@ void usb_user_init(void)
 
 	/* enable USB DP pull up 1.5k */
 	usb_set_pin_en();
+	usb_mode_start_tick = clock_time() | 1;
 #endif
 }
 
@@ -932,6 +1101,15 @@ void usb_host_status_check(void)
 	static u8 last_status = 0xff;
 	static u32 status_change_tick;
 
+	if (connect_ok) {
+		usb_device_status = USB_DEVICE_CONNECT_PC;
+		need_enter_suspend_flag = 0;
+		need_enter_suspend_tick = 0;
+		last_status = USB_DEVICE_CONNECT_PC;
+		status_change_tick = 0;
+		return;
+	}
+
 	if (reg_usb_host_conn & BIT(7))
 	{
 	#if 0
@@ -956,15 +1134,25 @@ void usb_host_status_check(void)
 			}
 		}
 		else
-		{
-
-			current_status = USB_DEVICE_CONNECT_PC;
-		}
+	{
+		current_status = USB_DEVICE_CONNECT_PC;
+	}
 	#endif
 	}
 	else
 	{
 		current_status = USB_DEVICE_DISCONECT_PC;
+	}
+
+	/* After enumeration, ignore transient suspend/unplug signals from composite USB */
+	if (connect_ok && (current_status == USB_DEVICE_CHECK_PC_SLEEP ||
+	                   current_status == USB_DEVICE_UNPLUG)) {
+		current_status = USB_DEVICE_CONNECT_PC;
+		need_enter_suspend_flag = 0;
+		need_enter_suspend_tick = 0;
+		usb_device_status = USB_DEVICE_CONNECT_PC;
+		last_status = USB_DEVICE_CONNECT_PC;
+		status_change_tick = 0;
 	}
 
 	if (last_status != current_status)
@@ -989,6 +1177,11 @@ void usb_host_status_check(void)
 			printf("---2 usb_device_status=%d.\r\n", current_status);
 
 			usb_device_status = current_status; //save current status
+
+			/* Upload device status change via Input report ID 0x04 */
+#if USB_DESCRIPTOR_MY_SELF
+			usb_send_status_input_report((u8)usb_device_status);
+#endif
 
 			/* current status is connect, last status is disconnect, maybe PC has reboot, if has normal key, notify to PC*/
 	        if (usb_device_status == USB_DEVICE_CONNECT_PC)
@@ -1026,9 +1219,16 @@ void usb_host_status_check(void)
 		}
 	}
 
-	if ((usb_device_status == USB_DEVICE_CHECK_PC_SLEEP) && need_enter_suspend_flag)
-	{ //enter suspend
+	if ((usb_device_status == USB_DEVICE_CHECK_PC_SLEEP) &&
+	    need_enter_suspend_flag && !connect_ok &&
+	    clock_time_exceed(usb_mode_start_tick, 10*1000*1000))
+	{ //enter suspend (skip during early enumeration)
 		mcu_enter_suspend();
+	}
+
+	if (connect_ok && (usb_device_status != USB_DEVICE_CONNECT_PC)) {
+		usb_device_status = USB_DEVICE_CONNECT_PC;
+		need_enter_suspend_flag = 0;
 	}
 }
 #endif
@@ -1044,9 +1244,9 @@ void pull_usb_data()
         //mouse_data_t *now_ms=(mouse_data_t *)&p->buf[0];
 		if(p->type==MOUSE_DATA_TYPE)
 		{
-			//if(memcmp_aaa(&mouse_last_data.btn, p->buf,sizeof(mouse_data_t))||(now_ms->x!=0)||(now_ms->y!=0)||(now_ms->wheel!=0))
 			{
-				//memcpy(&mouse_last_data.btn, p->buf,sizeof(mouse_data_t));
+				ms_tick = clock_time() | 1;
+				memcpy(&mouse_last_data.btn, p->buf, sizeof(mouse_data_t));
 				success=usb_mouse_hid_report_aaa(1, p->buf, sizeof(mouse_data_t));
 			}
 
@@ -1124,8 +1324,6 @@ void pull_usb_data()
 #endif
 }
 
-u32 usb_mode_start_tick;
-
 extern void user_reboot(u8 reason);
 extern u8 get_data_report_aaa();
 
@@ -1141,31 +1339,40 @@ void usb_main_loop(void)
 
 	usb_handle_irq();//must first
 
-	usb_host_status_check();
-
-	if ( usb_configure_ok == 1 )
 	{
-		if ( 0 == connect_ok )
-		{
+		static u8 last_connect_ok;
+
+		if (connect_ok && !last_connect_ok) {
 			printf("usb ok \n");
+			usb_device_status = USB_DEVICE_CONNECT_PC;
+			need_enter_suspend_flag = 0;
+			need_enter_suspend_tick = 0;
+			usb_mode_start_tick = clock_time() | 1;
 		}
-		connect_ok = 1;
-	#if MOUSE_REPORT_250HZ_ENABLE
-		temp = 4000;
-	#else
-		temp = 8000; //unit 1us
-	#endif
+		last_connect_ok = connect_ok;
+
+		if (connect_ok) {
+		#if MOUSE_REPORT_250HZ_ENABLE
+			temp = 4000;
+		#else
+			temp = 8000; //unit 1us
+		#endif
+		}
 	}
+
+	usb_host_status_check();
 
 	if ( clock_time_exceed(usb_mode_start_tick, 6*1000*1000) )
 	{
-		usb_mode_start_tick = clock_time();
+		usb_mode_start_tick = clock_time() | 1;
 
 		if ( connect_ok == 0 )
 		{
+		#if (G24_MODE_ENABLE || BLE_MODE_ENABLE)
 			usb_has_judge = USB_MODE_IN_FAILED;
 			analog_write(DEEP_ANA_REG7, usb_has_judge);
 			user_reboot(MODE_CHANGE_REBOOT_ANA_AAA);
+		#endif
 		}
 		else
 		{

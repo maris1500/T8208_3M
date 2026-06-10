@@ -12,7 +12,7 @@
 #define DEVICE_MOUSE        1
 #define DEVICE_TYPE_INDEX   DEVICE_MOUSE //1:mouse, 2:keyboard
 
-#define G24_MODE_ENABLE     1
+#define G24_MODE_ENABLE     0
 #define BLE_MODE_ENABLE     0
 #define USB_MODE_ENABLE     1
 
@@ -255,7 +255,7 @@
 		#define KEY_FEATURE_BOSSKEY_VALUE 0x100
 	#endif
 
-	#define KEY_RIGHT_MIDDLE_COMBINE_ENABLE 1
+	#define KEY_RIGHT_MIDDLE_COMBINE_ENABLE 0
 
 	#define KEY_LEFT_RIGHT_MIDDLE_COMBINE  (KEY_BTN_LEFT | KEY_BTN_RIGHT | KEY_BTN_MIDDLE)
 	#define KEY_RIGHT_MIDDLE_COMBINE    (KEY_BTN_RIGHT | KEY_BTN_MIDDLE)
@@ -313,7 +313,7 @@
 #define DEBUG_MODE  1
 
 #if DEBUG_MODE
-	#define PRINT_BAUD_RATE       10000   // 1M baud rate,should Not bigger than 1Mb/s
+	#define PRINT_BAUD_RATE       100000   // 1M baud rate,should Not bigger than 1Mb/s
 	#define DEBUG_INFO_TX_PIN     GPIO_PA3 // Software uart printing gpio
 #endif
 

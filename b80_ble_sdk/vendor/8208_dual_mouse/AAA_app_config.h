@@ -119,12 +119,17 @@ typedef enum
 #define REPORT_ID_KEYBOARD_INPUT_AAA        1   //!< Keyboard input report ID
 #define REPORT_ID_CONSUME_CONTROL_INPUT_AAA	2   //!< Consumer Control input report ID
 #define REPORT_ID_MOUSE_INPUT_AAA           3   //!< Mouse input report ID
-#define REPORT_ID_GAMEPAD_INPUT_AAA			4   //!< Gamepad  input report ID
+#define REPORT_ID_STATUS_INPUT_AAA			4   //!< Device status change input report ID
+#define REPORT_ID_GAMEPAD_INPUT_AAA			REPORT_ID_STATUS_INPUT_AAA
 #define REPORT_ID_LED_OUT_AAA               0   //!< LED output report ID
 #define REPORT_ID_FEATURE_AAA               0   //!< Feature report ID
-#define REPORT_ID_USER_FEATURE_AAA			5
-#define REPORT_ID_SYSTEM_INPUT_AAA			6   //!< Gamepad  input report ID
+#define REPORT_ID_USER_FEATURE_AAA			5   //!< Web/driver feature report ID
+#define REPORT_ID_DRV_FEATURE_AAA			6   //!< Driver feature report ID
+#define REPORT_ID_SYSTEM_INPUT_AAA			REPORT_ID_DRV_FEATURE_AAA
 #define REPORT_ID_SPP_INPUT_AAA				7   //!< Gamepad  input report ID
+#define HID_WEB_DATA_MAX_LEN                31  //!< Payload bytes after Report ID (wire total=32)
+#define HID_WEB_REPORT_WIRE_LEN             32  //!< SET/GET transfer size incl. Report ID (match competitor)
+#define HID_STATUS_DATA_LEN                 7   //!< Status input report data length
 
 typedef enum
 {

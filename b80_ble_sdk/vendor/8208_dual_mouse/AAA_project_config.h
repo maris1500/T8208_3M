@@ -55,7 +55,11 @@ extern "C" {
 	#define CFG_MAC_ADDR				0X1F000
 	#define	PARING_MAX_NUM				(4096/ID_LEN)
 //    #define EMI_TEST_FUN_ENABLE_AAA		1	//EMI Enable
-//    #define OTA_ENABLE_AAA				0 	//USB OTA enable
+    #define OTA_ENABLE_AAA				0 	//USB OTA enable
+#endif
+
+#ifndef OTA_ENABLE_AAA
+    #define OTA_ENABLE_AAA              0
 #endif
 
 #define CHECK_DEVICE_ID_ENABLE			1 //Check whether the ID of the packet is the same as that bound locally
@@ -287,6 +291,7 @@ extern u8 deep_flag;
 extern u32 rx_tick;
 
 extern  u8 usb_mouse_report_proto;
+extern unsigned char usb_g_config;
 
 extern  u8 host_keyboard_status;
 extern  u32 resume_host_tick;
@@ -309,6 +314,17 @@ extern  void rf_tx_irq_handle();
 extern void custom_init();
 int usb_keyboard_hid_report_aaa(unsigned char *data);
 int usb_mouse_hid_report_aaa(u8 report_id,unsigned char * p,u8 len);
+#if USB_DESCRIPTOR_MY_SELF
+void app_hid_set_report_handle(u8 data_request, u8 report_id, u16 length);
+u16 usb_hid_fill_get_report(u16 wValue, u8 *buf, u16 buf_size);
+void usb_hid_store_feature_report(u8 report_id, u8 *data, u8 len);
+void usb_ep0_out_setup(u16 length);
+void usb_ep0_out_update(u16 remaining);
+void usb_hid_web_rx_reset(void);
+void usb_fifo_reset_aaa(void);
+void usb_mouse_eps_reack(void);
+void usb_data_eps_ready_on_config(void);
+#endif
 void usb_power_down_handle();
 void usb_check_allow_send_to_usb();
 void  usb_resume_host(void);
