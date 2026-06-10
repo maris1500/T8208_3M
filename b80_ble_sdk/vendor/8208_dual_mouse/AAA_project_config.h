@@ -321,9 +321,15 @@ void usb_hid_store_feature_report(u8 report_id, u8 *data, u8 len);
 void usb_ep0_out_setup(u16 length);
 void usb_ep0_out_update(u16 remaining);
 void usb_hid_web_rx_reset(void);
+void usb_hid_web_ep0_reset(void);
 void usb_fifo_reset_aaa(void);
 void usb_mouse_eps_reack(void);
 void usb_data_eps_ready_on_config(void);
+void usb_web_intf_eps_ready(void);
+void usb_web_log_reply(u16 wValue, const u8 *buf, u16 len, const char *tag);
+void usb_web_handshake_reset(void);
+void usb_web_handshake_done(void);
+void usb_web_grace_restart(void);
 #endif
 void usb_power_down_handle();
 void usb_check_allow_send_to_usb();

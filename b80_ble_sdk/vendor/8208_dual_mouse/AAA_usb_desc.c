@@ -26,6 +26,7 @@
 #if USB_MODE_ENABLE
 
 extern u8 connect_ok;
+extern u8 usb_data_eps_ready;
 
 #if USB_DESCRIPTOR_MY_SELF
 
@@ -747,6 +748,10 @@ int usb_mouse_hid_report_aaa(u8 report_id,unsigned char * p,u8 len)
 	if (!connect_ok) {
         return 0;
     }
+
+	if (!usb_data_eps_ready) {
+		return 0;
+	}
 
 	if(usb_device_status==USB_DEVICE_CHECK_PC_SLEEP)
     {

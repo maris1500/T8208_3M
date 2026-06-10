@@ -78,6 +78,7 @@ extern u8 keyboard_interface_number, mouse_interface_number;
 extern u8 usb_configure_ok;
 extern u8 connect_ok;
 extern u32 usb_mode_start_tick;
+extern u8 usb_data_eps_ready;
 u8		host_keyboard_status;
 u8		host_cmd[8];
 u8		host_cmd_paring_ok = 0;
@@ -126,6 +127,10 @@ void usb_send_response(void) {
 }
 
 #if USB_DESCRIPTOR_MY_SELF
+extern u32 usb_web_grace_tick;
+extern u8 usb_data_eps_ready;
+
+/* Mouse-first: enable mouse IN immediately on config; never delay for Web. */
 static void usb_mark_configured(void)
 {
 	if (connect_ok) {
@@ -323,7 +328,7 @@ void usb_handle_std_intf_req() {
 		} else {
 			printf("GET_RPT intf=%d len=%d\n", index_l, g_response_len);
 			if (index_l == 1) {
-				usb_mark_configured();
+				usb_web_intf_eps_ready();
 			}
 		}
 	} else {
@@ -403,7 +408,7 @@ static void usb_hid_web_set_report(u8 data_request)
 	u8 intf = control_request.Index & 0xff;
 
 	if (data_request == USB_IRQ_SETUP_REQ) {
-		usb_hid_web_rx_reset();
+		usb_hid_web_ep0_reset();
 		usb_ep0_out_setup(control_request.Length);
 		printf("SET_REPORT setup id=0x%02x len=%d intf=%d wVal=0x%04x\r\n",
 			report_id, control_request.Length, intf,
@@ -423,11 +428,16 @@ static void usb_hid_prepare_get_report(void)
 
 	g_response = hid_get_report_buf;
 	filled = usb_hid_fill_get_report(control_request.Value, hid_get_report_buf, sizeof(hid_get_report_buf));
-	if ((control_request.Value & 0xff) >= REPORT_ID_STATUS_INPUT_AAA) {
-		printf("GET_REPORT wVal=0x%04x len=%d fill=%d\r\n",
-			control_request.Value, control_request.Length, filled);
+	{
+		u8 rpt_type = (control_request.Value >> 8) & 0xff;
+		if (rpt_type >= 2 || (control_request.Value & 0xff) >= REPORT_ID_STATUS_INPUT_AAA) {
+			printf("GET_REPORT wVal=0x%02x len=%d fill=%d\r\n",
+				control_request.Value, control_request.Length, filled);
+		}
 	}
 	if (filled == 0) {
+		printf("WEB REPLY FAIL wVal=0x%02x fill=0 stall\r\n",
+			control_request.Value);
 		g_stall = 1;
 		g_response = 0;
 		g_response_len = 0;
@@ -624,7 +634,6 @@ void usb_handle_out_class_intf_req(int data_request) {
 				usb_mouse_report_proto = value_l;
 			}
 #if USB_DESCRIPTOR_MY_SELF
-			/* Do not ACK IN EP before SET_CONFIGURATION (host bus reset) */
 			if (usb_g_config) {
 				reg_usb_ep_ctrl(USB_EDP_MOUSE) = 0;
 				usbhw_data_ep_ack(USB_EDP_MOUSE);
@@ -1100,6 +1109,11 @@ void usb_handle_irq(void) {
 		usb_configure_ok = 0;
 		usb_mode_start_tick = clock_time() | 1;
 #if USB_DESCRIPTOR_MY_SELF
+			extern u8 usb_data_eps_ready;
+			extern u8 web_intf_eps_ready;
+			usb_data_eps_ready = 0;
+			web_intf_eps_ready = 0;
+			usb_web_handshake_reset();
 			usb_mouse_report_proto = 1;
 			usb_hid_web_rx_reset();
 			usb_fifo_reset_aaa();

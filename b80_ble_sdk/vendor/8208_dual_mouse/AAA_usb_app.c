@@ -58,6 +58,10 @@ static u8 normal_last_data[8]={0,0,0,0,0,0,0,0};
 u8 usb_configure_ok =0;
 u8 usb_has_judge =0;
 u32 usb_mode_start_tick;
+u32 usb_web_grace_tick;
+u8  web_handshake_ok;
+u8  usb_data_eps_ready;
+u8  web_intf_eps_ready;
 
 extern u8 connect_ok;
 
@@ -816,12 +820,39 @@ static u16 web_ep0_out_len;
 static u8  web_ep0_xfer_active;
 static u8  web_ep0_out_buf[HID_WEB_REPORT_WIRE_LEN];
 
-void usb_hid_web_rx_reset(void)
+void usb_hid_web_ep0_reset(void)
 {
     web_ep0_out_pos = 0;
     web_ep0_out_len = 0;
     web_ep0_xfer_active = 0;
     memset(web_ep0_out_buf, 0, sizeof(web_ep0_out_buf));
+}
+
+void usb_hid_web_rx_reset(void)
+{
+    usb_hid_web_ep0_reset();
+    web_handshake_ok = 0;
+    memset(web_feature_rx_len, 0, sizeof(web_feature_rx_len));
+}
+
+void usb_web_handshake_reset(void)
+{
+    web_handshake_ok = 0;
+}
+
+void usb_web_handshake_done(void)
+{
+    if (!web_handshake_ok) {
+        web_handshake_ok = 1;
+        printf("WEB handshake ok, mouse IN enabled\r\n");
+    }
+}
+
+void usb_web_grace_restart(void)
+{
+    usb_web_grace_tick = clock_time() | 1;
+    web_handshake_ok = 0;
+    printf("WEB grace restart intf1\r\n");
 }
 
 void usb_hid_store_feature_report(u8 report_id, u8 *data, u8 len)
@@ -835,6 +866,17 @@ void usb_hid_store_feature_report(u8 report_id, u8 *data, u8 len)
     if (len) {
         memcpy(web_feature_rx[idx], data, len);
     }
+}
+
+void usb_web_log_reply(u16 wValue, const u8 *buf, u16 len, const char *tag)
+{
+    u16 i;
+
+    printf("WEB REPLY [%s] wVal=0x%02x len=%d data:", tag, wValue, len);
+    for (i = 0; i < len; i++) {
+        printf(" %01x", buf[i]);
+    }
+    printf("\r\n\r\n");
 }
 
 u16 usb_hid_fill_get_report(u16 wValue, u8 *buf, u16 buf_size)
@@ -852,6 +894,7 @@ u16 usb_hid_fill_get_report(u16 wValue, u8 *buf, u16 buf_size)
         for (i = 1; i <= HID_STATUS_DATA_LEN; i++) {
             buf[i] = 0;
         }
+        usb_web_log_reply(wValue, buf, 1 + HID_STATUS_DATA_LEN, "status_rpt4");
         return 1 + HID_STATUS_DATA_LEN;
     }
 
@@ -883,6 +926,10 @@ u16 usb_hid_fill_get_report(u16 wValue, u8 *buf, u16 buf_size)
         for (i = 1 + n; i < HID_WEB_REPORT_WIRE_LEN; i++) {
             buf[i] = 0;
         }
+        usb_web_log_reply(wValue, buf, HID_WEB_REPORT_WIRE_LEN, "stored_echo");
+        if (report_id == REPORT_ID_USER_FEATURE_AAA) {
+            usb_web_handshake_done();
+        }
         return HID_WEB_REPORT_WIRE_LEN;
     }
 
@@ -910,12 +957,18 @@ u16 usb_hid_fill_get_report(u16 wValue, u8 *buf, u16 buf_size)
              i < HID_WEB_REPORT_WIRE_LEN; i++) {
             buf[i] = 0;
         }
+        usb_web_log_reply(wValue, buf, HID_WEB_REPORT_WIRE_LEN,
+            (report_id == REPORT_ID_USER_FEATURE_AAA) ? "default_rpt5" : "default_rpt6");
+        if (report_id == REPORT_ID_USER_FEATURE_AAA) {
+            usb_web_handshake_done();
+        }
         return HID_WEB_REPORT_WIRE_LEN;
     }
 
     for (i = (report_id == REPORT_ID_USER_FEATURE_AAA) ? 8 : 1; i < 8; i++) {
         buf[i] = 0;
     }
+    usb_web_log_reply(wValue, buf, 8, "short_rpt");
     return 8;
 }
 
@@ -994,12 +1047,12 @@ void app_hid_set_report_handle(u8 data_request, u8 report_id, u16 length)
                 data_len = HID_WEB_DATA_MAX_LEN;
             }
             usb_hid_store_feature_report(rid, &web_ep0_out_buf[1], data_len);
-            printf("USB HID OUT custom data:");
-            for (i = 0; i < length; i++)
-            {
-                printf(" %02x", web_ep0_out_buf[i]);
+            printf("WEB RX rid=0x%1x len=%d data:", rid, length);
+            for (i = 0; i < length; i++) {
+                printf(" %1x", web_ep0_out_buf[i]);
             }
-            printf("\r\n");
+            printf("\r\n\n");
+            printf("WEB RX done, wait host GET_REPORT for reply\r\n");
         }
     }
 }
@@ -1013,20 +1066,36 @@ static void usb_send_status_input_report(u8 status)
 #endif
 
 #if USB_DESCRIPTOR_MY_SELF
+/* Mouse-first: mouse IN on config; Web intf1 IN deferred to usb_web_intf_eps_ready(). */
 void usb_mouse_eps_reack(void)
 {
 	write_reg8(0x10e, (1 << USB_EDP_MOUSE) | (1 << USB_EDP_KEYBOARD_IN));
 	reg_usb_ep_ctrl(USB_EDP_MOUSE) = 0;
 	reg_usb_ep_ctrl(USB_EDP_KEYBOARD_IN) = 0;
 	usbhw_data_ep_ack(USB_EDP_MOUSE);
+}
+
+void usb_web_intf_eps_ready(void)
+{
+	if (web_intf_eps_ready) {
+		return;
+	}
+	web_intf_eps_ready = 1;
+	reg_usb_ep_ctrl(USB_EDP_KEYBOARD_IN) = 0;
 	usbhw_data_ep_ack(USB_EDP_KEYBOARD_IN);
+	printf("web intf eps ready\r\n");
 }
 
 void usb_data_eps_ready_on_config(void)
 {
+	if (usb_data_eps_ready) {
+		return;
+	}
+	usb_data_eps_ready = 1;
+	printf("usb eps ready\r\n");
 	usb_fifo_reset_aaa();
 	usb_mouse_eps_reack();
-	usb_hid_web_rx_reset();
+	usb_hid_web_ep0_reset();
 }
 #endif
 
@@ -1338,6 +1407,25 @@ void usb_main_loop(void)
 	u32 temp = 8000;
 
 	usb_handle_irq();//must first
+
+	{
+		static u32 web_eps_wait_tick;
+
+		if (connect_ok && usb_data_eps_ready) {
+			if (!web_intf_eps_ready) {
+				if (!web_eps_wait_tick) {
+					web_eps_wait_tick = clock_time() | 1;
+				} else if (clock_time_exceed(web_eps_wait_tick, 1500 * 1000)) {
+					usb_web_intf_eps_ready();
+					web_eps_wait_tick = 0;
+				}
+			} else {
+				web_eps_wait_tick = 0;
+			}
+		} else {
+			web_eps_wait_tick = 0;
+		}
+	}
 
 	{
 		static u8 last_connect_ok;

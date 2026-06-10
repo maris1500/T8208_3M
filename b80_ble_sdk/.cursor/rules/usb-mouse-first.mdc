@@ -1,0 +1,39 @@
+---
+description: USB 固件修改时鼠标功能优先，Web 修复不得破坏鼠标
+globs: application/usbstd/**/*.c,vendor/8208_dual_mouse/**/*.c,vendor/8208_dual_mouse/**/*.h
+alwaysApply: false
+---
+
+# USB 修改原则：鼠标优先
+
+## 第一优先级
+
+任何 USB 相关改动必须先保证鼠标完整功能不被破坏，再处理 Web 数据接收问题。
+
+鼠标必须始终可用：移动、按键、滚轮、枚举后尽快上报 HID。
+
+## 禁止做法
+
+- 不得用单一全局标志（如 `usb_data_eps_ready`）同时 gate 鼠标与 Web，导致鼠标等 Web 握手
+- 不得推迟 `GET_CFG` / `SET_CONFIGURATION` 后鼠标 IN 端点的 ACK
+- 不得为 Web 稳定性加入会阻塞或丢弃鼠标 HID 上报的超时/重启逻辑
+- 不得修改 config 描述符除非用户明确要求
+
+## 当前架构（保持分离）
+
+| 组件 | 时机 | 作用 |
+|------|------|------|
+| `usb_data_eps_ready_on_config()` | `GET_CFG` / `SET_CONFIGURATION` | 立即 ACK 鼠标 IN，`connect_ok` 后允许 `usb_mouse_hid_report_aaa()` |
+| `usb_web_intf_eps_ready()` | `GET_RPT intf=1` 或 1.5s 超时 | 仅 ACK Interface 1（Web）IN，不影响鼠标 |
+| `usb_mouse_eps_reack()` | 配置完成 | 只 ACK 鼠标 EP，不 ACK Web IN |
+
+## Web 修复时的允许范围
+
+- EP0 上 Web GET/SET_REPORT 状态机、日志、缓冲
+- Interface 1 IN 端点启用时机
+- Web 握手超时与 grace 逻辑（不得影响 Interface 0）
+
+## 改完必测
+
+1. 插拔后鼠标立即可用（串口见 `usb eps ready`）
+2. 再测 Web：`GET_REPORT 0x0305` → `SET_REPORT 0x0306` → `WEB RX`
