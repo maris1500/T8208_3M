@@ -25,8 +25,6 @@
 
 #if USB_MODE_ENABLE
 
-extern u8 connect_ok;
-extern u8 usb_data_eps_ready;
 
 #if USB_DESCRIPTOR_MY_SELF
 
@@ -128,6 +126,76 @@ static const u8 mouse_report_desc[] =
 	0xc0,		 //end of collection
 	
 #if 0//HID_KB_ALL_KEY_ATT_ENABLE
+/*******************user define 26key************************/
+  //keyboard report in
+   0x05, 0x01,  // Usage Pg (Generic Desktop)
+   0x09, 0x06,  // Usage (Keyboard)
+   0xA1, 0x01,  // Collection: (Application)
+   0x85, SPP_REORT_ID,//REPORT_ID_ALL_KEY_INPUT_AAA,  // Report Id (keyboard)
+
+   0x05, 0x07,  // Usage Pg (Key Codes)
+   0x19, 0xE0,  // Usage Min (224)  VK_CTRL:0xe0
+   0x29, 0xE7,  // Usage Max (231)  VK_RWIN:0xe7
+   0x15, 0x00,  // Log Min (0)
+   0x25, 0x01,  // Log Max (1)
+   //
+   // Modifier byte
+   0x75, 0x01,  // Report Size (1) 1 bit * 8
+   0x95, 0x08,  // Report Count (8)
+   0x81, 0x02,  // Input: (Data, Variable, Absolute)
+
+   // Key arrays (6 bytes)
+   0x15, 0x00,  // Log Min (0)
+   0x25, 0x01,  // Log Max (241)
+   0x05, 0x07,  // Usage Pg (Key Codes)
+   0x19, 0x00,  // Usage Min (0)
+   0x2A, 0xFF,0x00, // Usage Max (241)
+
+   0x75, 0x01,  // Report Size (8)
+   0x95, 152,  // Report Count (6)
+   0x81, 0x02,  // Input: (Data, Array)
+
+   0xC0,    // End Collection
+#endif
+
+#if 1
+/*******************vendor define feature report ID 5************************/
+	0x06,  0x00,  0xff, 	// Usage Page (Vendor-defined),
+	0x09,  0x00,	// USAGE ()
+	0xa1,  0x01,	// Collection (Application),
+	0x85,  0x05,	// Report ID (5)
+	0x09,  0x00,	// Usage,
+	0x15,  0x00,	// Logical Minimum (0),
+	0x26,  0xff,  0x00,		// Logical Maximum (255),
+	0x75,  0x08,	// Report Size (8),
+	0x95,  0x1F,	// Report Count (7),
+	0xB1,  0x02,   	// Feature (Data, Variable, Absolute)
+	0xc0,	// END_COLLECTION
+	/*******************vendor define input report ID 4************************/
+	0x06,  0x00,  0xff, 	// Usage Page (Vendor-defined)
+	0x09,  0x00,	// USAGE ()
+	0xa1,  0x01,	// Collection (Application)
+	0x85,  0x04,	// Report ID (4)
+	0x09,  0x01,	// Usage,
+	0x15,  0x00,	// Logical Minimum (0),
+	0x26,  0xff,  0x00,		// Logical Maximum (255),
+	0x75,  0x08,	// Report Size (8),
+	0x95,  0x1F,	// Report Count (7),
+	0x81,  0x02,	// Input
+	0xc0,    // END_COLLECTION
+	/*******************vendor define feature report ID 6************************/
+	0x06,  0x00,  0xff, 	// Usage Page (Vendor-defined)
+	0x09,  0x00,	// USAGE ()
+	0xa1,  0x01,	// Collection (Application)
+	0x85,  0x06,	// Report ID (6)
+	0x09,  0x01,	// Usage,
+	0x15,  0x00,	// Logical Minimum (0),
+	0x26,  0xff,  0x00,		// Logical Maximum (255),
+	0x75,  0x08,	// Report Size (8),
+	0x95,  0x1F,	// Report Count (7),
+	0xB1,  0x02,	// Feature
+	0xc0,	// END_COLLECTION
+#else
 /*******************user define input************************/
 	0x05,0x01,	   //global,  USAGE_PAGE 1 (Generic Desktop)
 	0x09,0x00,	   //usage undefined
@@ -191,48 +259,7 @@ static const u8 mouse_report_desc[] =
 
 };
 
-/* Interface 1: Web/vendor HID (Report 4/5/6) - match competitor layout */
-static const u8 vendor_web_report_desc[] =
-{
-	/*******************vendor define feature report ID 5************************/
-	0x06,  0x00,  0xff, 	// Usage Page (Vendor-defined)
-	0x09,  0x00,	// Usage
-	0xa1,  0x01,	// Collection (Application)
-	0x85,  REPORT_ID_USER_FEATURE_AAA,	// Report ID (5)
-	0x09,  0x00,	// Usage
-	0x15,  0x00,	// Logical Minimum (0)
-	0x26,  0xff,  0x00,	// Logical Maximum (255)
-	0x75,  0x08,	// Report Size (8)
-	0x95,  HID_WEB_DATA_MAX_LEN,	// Report Count (31) -> 32 bytes on wire incl. ID
-	0xB1,  0x02,   	// Feature
-	0xc0,	// END_COLLECTION
-	/*******************vendor define input report ID 4************************/
-	0x06,  0x00,  0xff, 	// Usage Page (Vendor-defined)
-	0x09,  0x00,	// Usage
-	0xa1,  0x01,	// Collection (Application)
-	0x85,  REPORT_ID_STATUS_INPUT_AAA,	// Report ID (4)
-	0x09,  0x01,	// Usage
-	0x15,  0x00,	// Logical Minimum (0)
-	0x26,  0xff,  0x00,	// Logical Maximum (255)
-	0x75,  0x08,	// Report Size (8)
-	0x95,  HID_STATUS_DATA_LEN,	// Report Count (7)
-	0x81,  0x02,	// Input
-	0xc0,    // END_COLLECTION
-	/*******************vendor define feature report ID 6************************/
-	0x06,  0x00,  0xff, 	// Usage Page (Vendor-defined)
-	0x09,  0x00,	// Usage
-	0xa1,  0x01,	// Collection (Application)
-	0x85,  REPORT_ID_DRV_FEATURE_AAA,	// Report ID (6)
-	0x09,  0x01,	// Usage
-	0x15,  0x00,	// Logical Minimum (0)
-	0x26,  0xff,  0x00,	// Logical Maximum (255)
-	0x75,  0x08,	// Report Size (8)
-	0x95,  HID_WEB_DATA_MAX_LEN,	// Report Count (31)
-	0xB1,  0x02,	// Feature
-	0xc0,	// END_COLLECTION
-};
-
-static const u8 kb_report_desc[] =
+static const u8 kb_report_desc[] = 
 {
 #if 1
 //keyboard report in
@@ -315,7 +342,7 @@ u8 device_desc_km[18] =
     0x00,       // Class : USB_CSCP_NoDeviceClass
     0x00, 		// SubClass : USB_CSCP_NoDeviceSubclass
     0x00, 		// Protocol : USB_CSCP_NoDeviceProtocol
-    0x08,       // Endpoint0Size (8/16/32/64); keep 8 for host compatibility
+    0x08,       // Endpoint0Size, Maximum Packet Size for Zero Endpoint. Valid Sizes are 8, 16, 32, 64
 #if 0//_CHIP_IS_OTP_
     0x8A,0x24, 	// VendorID 0x248a   8  9
     0x08,0x82, 	// ProductID defult value   mouse only:2781  mouse_keyboard_kit:2782
@@ -329,8 +356,8 @@ u8 device_desc_km[18] =
     0x8A,0x24, 	// VendorID 0x248a   8  9
     0x73,0x83, 	// ProductID defult value   mouse only:2781  mouse_keyboard_kit:2782
 #else
-	0xF3, 0x04,  // VendorID 0x04F3
-	0x6E, 0x02,  // ProductID 0x026E
+	0xF3, 0x04,
+	0x6E, 0x02,
 #endif
     (u8)FW_VERSION,(u8)(FW_VERSION>>8),	// 0x0100 : ReleaseNumber
     0x01, 		// ManufacturerStrIndex = USB_STRING_VENDOR   @@@ pay attention
@@ -342,18 +369,17 @@ u8 device_desc_km[18] =
 #if OTA_ENABLE_AAA
 u8 km_cfg_desc[9+9+9+7+9+9+7+9+9+7]=		//have spp
 #else
-u8 km_cfg_desc[9+9+9+7+9+9+7]=		//mouse(34)+vendor intf(25)=59
+u8 km_cfg_desc[9+9+9+7+9+9+7]=
 #endif
 {
 //USB_Descriptor_Configuration_Header_t
 	0x09,			//sizeof(USB_Descriptor_Configuration_Header_t)
 	0x02,  			//type= DTYPE_Configuration
+	sizeof(km_cfg_desc),0x00,     //TotalConfigurationSize,  @@@@ will change @@@@
 #if OTA_ENABLE_AAA
-	sizeof(km_cfg_desc),0x00,
-	0x03,			//TotalInterfaces
+	0x03,			//TotalInterfaces		   @@@@ will change @@@@
 #else
-	0x3B,0x00,		//TotalConfigurationSize = 59
-	0x02,			//TotalInterfaces = 2 (mouse + vendor Web)
+	0x02,
 #endif
 	0x01,      		//Configuration index
 	0x00,      		//ConfigurationStrIndex = NO_DESCRIPTOR
@@ -363,21 +389,21 @@ u8 km_cfg_desc[9+9+9+7+9+9+7]=		//mouse(34)+vendor intf(25)=59
 //--------------0 Interface_t Descriptor--------------------------------------
 	0x09, 			 //size = sizeof(USB_Descriptor_Interface_t)
 	0x04, 	  		 //type = DTYPE_Interface
-	0x00,  	//InterfaceNumber
+	0x00,  	//InterfaceNumber          @@@@ will change @@@@
 	0x00,  //AlternateSetting = 0
-	0x01,  //TotalEndpoints = 1
+	0x01,  //TotalEndpoints = 1@@@
 	0x03, 		//Class = HID_CSCP_HIDClass
-	0x01, 		//SubClass = HID_CSCP_BootSubclass (required for standard USB mouse)
-	0x02,		//Protocol = HID_CSCP_MouseBootProtocol
+	0x01, 		//SubClass = HID_CSCP_BootSubclass,
+	0x02,			 //Protocol = HID_CSCP_MouseBootProtocol
 	0,            	 //InterfaceStrIndex = NO_DESCRIPTOR
 //----------------HID_Descriptor---------------------------------------------
 	0x09,			 //size = sizeof(USB_HID_Descriptor_HID_t)
 	0x21,			 //type = HID_DTYPE_HID
 	0x11,0x01,		 //HIDSpec = 0x0111
-	0x00,			 //CountryCode
+	0x21,			 //CountryCode = USB_HID_COUNTRY_US
 	0x01,				 //TotalReportDescriptors
 	0x22,			 //HIDReportType = HID_DTYPE_Report
-	sizeof(mouse_report_desc), (u8)(sizeof(mouse_report_desc)>>8),	  //HIDReportLength[2]
+	sizeof(mouse_report_desc), (u8)(sizeof(mouse_report_desc)>>8),	  //HIDReportLength[2] = {sizeof(mouse_report_desc), 0x00}
 
 //------------------Endpoint Description-----------------
 	0x07,			//size = sizeof(USB_Descriptor_Endpoint_t)
@@ -387,39 +413,11 @@ u8 km_cfg_desc[9+9+9+7+9+9+7]=		//mouse(34)+vendor intf(25)=59
 	0x08,0x00,		//EndpointSize = 0x0008
 	0x01,				//PollingIntervalMS = USB_MOUSE_POLL_INTERVAL
 
-#if !OTA_ENABLE_AAA
-//--------------1 Interface: vendor Web HID (competitor uses wIndex=1)-------------
-	0x09,			 //sizeof(USB_Descriptor_Interface_t)
-	0x04,			 //type = DTYPE_Interface
-	0x01,			 //InterfaceNumber = 1
-	0x00,			 //AlternateSetting = 0
-	0x01,			 //TotalEndpoints = 1
-	0x03,			 //Class = HID_CSCP_HIDClass
-	0x00,			 //SubClass = Non-Boot
-	0x00,			 //Protocol = None
-	0x00,			 //InterfaceStrIndex = NO_DESCRIPTOR
-//----------------HID_Descriptor (vendor reports 4/5/6)---------------------------
-	0x09,			 //size = sizeof(USB_HID_Descriptor_HID_t)
-	0x21,			 //type = HID_DTYPE_HID
-	0x11, 0x01, 	 //HIDSpec = 0x0111
-	0x00,			 //CountryCode
-	0x01,			 //TotalReportDescriptors
-	0x22,			 //HIDReportType = HID_DTYPE_Report
-	sizeof(vendor_web_report_desc), (u8)(sizeof(vendor_web_report_desc) >> 8),
-//------------------Endpoint IN (status report 4)---------------------------------
-	0x07,			 //size = sizeof(USB_Descriptor_Endpoint_t)
-	0x05,			 //type = DTYPE_Endpoint
-	0x80 | USB_EDP_KEYBOARD_IN,
-	0x03,			 //Attributes = EP_TYPE_INTERRUPT
-	0x08, 0x00,		 //EndpointSize = 8
-	0x0a,			 //PollingIntervalMS
-#endif
-
 #if OTA_ENABLE_AAA
 //--------------1 Interface_t Descriptor--------------------------------------
 	0x09,			 //size = sizeof(USB_Descriptor_Interface_t)
 	0x04,			 //type = DTYPE_Interface
-	0x02,			 //InterfaceNumber
+	0x02,			 //InterfaceNumber			@@@@ will change @@@@
 	0,				 //AlternateSetting = 0
 	1,				 //TotalEndpoints = 1
 	0x03,			 //Class = HID_CSCP_HIDClass
@@ -430,7 +428,7 @@ u8 km_cfg_desc[9+9+9+7+9+9+7]=		//mouse(34)+vendor intf(25)=59
 	0x09,			 //size = sizeof(USB_HID_Descriptor_HID_t)
 	0x21,			 //type = HID_DTYPE_HID
 	0x11, 0x01, 	 // HIDSpec = 0x0111
-	0x00,			 //CountryCode
+	0x21,			 //CountryCode = USB_HID_COUNTRY_US
 	1,				 //TotalReportDescriptors
 	0x22,			 //HIDReportType = HID_DTYPE_Report
 	sizeof(spp_report_desc), 0x00,		//Report size
@@ -441,11 +439,12 @@ u8 km_cfg_desc[9+9+9+7+9+9+7]=		//mouse(34)+vendor intf(25)=59
 	0x03,			 //Attributes = EP_TYPE_INTERRUPT
 	0x40,0x00,		 //EndpointSize = 0x0008
 	0x0a,			 //PollingIntervalMS = USB_KEYBOARD_POLL_INTERVAL = 10
+#endif
 
 //USB_Descriptor_Interface_t keyboardInterface
 	0x09, 			 //size = sizeof(USB_Descriptor_Interface_t)
 	0x04, 	 		 //type = DTYPE_Interface
-	1,				//InterfaceNumber
+	1,				//InterfaceNumber		    @@@@ will change @@@@
 	0,     			 //AlternateSetting = 0
 	1,  			 //TotalEndpoints = 1
 	0x03,			 //Class = HID_CSCP_HIDClass
@@ -456,18 +455,17 @@ u8 km_cfg_desc[9+9+9+7+9+9+7]=		//mouse(34)+vendor intf(25)=59
 	0x09,     		 //size = sizeof(USB_HID_Descriptor_HID_t)
 	0x21,            //type = HID_DTYPE_HID
 	0x11, 0x01, 	 // HIDSpec = 0x0111
-	0x00, 			 //CountryCode
+	0x21, 			 //CountryCode = USB_HID_COUNTRY_US
 	1, 		  		 //TotalReportDescriptors
 	0x22, 			 //HIDReportType = HID_DTYPE_Report
-	sizeof(kb_report_desc), (u8)(sizeof(kb_report_desc)>>8),
+	sizeof(kb_report_desc), (u8)(sizeof(kb_report_desc)>>8),      //HIDReportLength[2] = {sizeof(keyboard_report_desc), 0x00}
 //USB_Descriptor_Endpoint_t  keyboard_in_endpoint
 	0x07, 			 //size = sizeof(USB_Descriptor_Endpoint_t)
 	0x05, 	    	 //type = DTYPE_Endpoint
-	ENDPOINT_DIR_IN | USB_EDP_KEYBOARD_IN, //EndpointAddress
+	ENDPOINT_DIR_IN | USB_EDP_KEYBOARD_IN, //EndpointAddress = ENDPOINT_DIR_IN | USB_EDP_KEYBOARD_IN,
 	0x03,    		 //Attributes = EP_TYPE_INTERRUPT
 	0x08,0x00,		 //EndpointSize = 0x0008
-	0x04,   		     //PollingIntervalMS
-#endif
+	0x04,   		     //PollingIntervalMS = USB_KEYBOARD_POLL_INTERVAL = 10
 };
 
 KM_USB_Descriptor_String_t  km_vendor_desc = {
@@ -562,9 +560,12 @@ void custom_set_usb_cfg_params()
 //	}
 //	else
 	{
-#if OTA_ENABLE_AAA
+		//device_desc_km[10] -=1;//set pid
 		km_cfg_desc[2]=km_cfg_desc[2]-25;
+#if OTA_ENABLE_AAA
 		km_cfg_desc[4]=2;//interface  num
+#else
+		km_cfg_desc[4]=1;//interface  num
 #endif
 	}
 
@@ -597,27 +598,23 @@ u8 * usb_get_HID_DTYPE_Report(u8 index,u16 *g_response_len)
 		g_response_len[0]=sizeof(mouse_report_desc);
 		return (u8*)&mouse_report_desc[0];
 	}
-#if OTA_ENABLE_AAA
 	else if(index==1)
 	{
 		g_response_len[0]=sizeof(kb_report_desc);
 		return (u8*)&kb_report_desc[0];
+
 	}
-	else
+#if OTA_ENABLE_AAA
+	else //if(index==2)
 	{
 		g_response_len[0]=sizeof(spp_report_desc);
 		return (u8*)&spp_report_desc[0];
 	}
-#else
-	else if (index == 1)
+#else 
+	else //if(index==2)
 	{
-		g_response_len[0] = sizeof(vendor_web_report_desc);
-		return (u8 *)&vendor_web_report_desc[0];
-	}
-	else
-	{
-		g_response_len[0] = 0;
-		return 0;
+		g_response_len[0]=sizeof(kb_report_desc);
+		return (u8*)&kb_report_desc[0];
 	}
 #endif
 }
@@ -629,27 +626,22 @@ u8 * usb_get_HID_DTYPE_HID(u8 index,u16 *g_response_len)
 		g_response_len[0]=9+7;
 		return (unsigned char*) (&km_cfg_desc[9+9]);
 	}
-#if OTA_ENABLE_AAA
 	else if(index==1)
 	{
 		g_response_len[0]=9+7;
 		return (unsigned char*) (&km_cfg_desc[9+9+9+7+9]);
 	}
-	else
+#if OTA_ENABLE_AAA
+	else //if(index==2)
 	{
 		g_response_len[0]=9+7;
 		return (unsigned char*) (&km_cfg_desc[9+9+9+7+9+9+7+9]);
 	}
-#else
-	else if (index == 1)
+#else 
+	else //if(index==2)
 	{
-		g_response_len[0] = 9 + 7;
-		return (unsigned char *)(&km_cfg_desc[9 + 9 + 9 + 7 + 9]);
-	}
-	else
-	{
-		g_response_len[0] = 0;
-		return 0;
+		g_response_len[0]=9+7;
+		return (unsigned char*) (&km_cfg_desc[9+9+9+7+9]);
 	}
 #endif
 }
@@ -702,16 +694,14 @@ unsigned short usb_desc_get_serial_size(void) {
 int usb_keyboard_hid_report_aaa(unsigned char *data)
 {
 
-    if (!connect_ok) {
-        return 0;
-    }
-
     if(usb_device_status==USB_DEVICE_CHECK_PC_SLEEP)
     {
 		usb_resume_host();
+		
+		//usb_io_printf("resume usb host\r\n");
+		return 0;
     }
-	else if((usb_device_status==USB_DEVICE_DISCONECT_PC) ||
-	        (usb_device_status==USB_DEVICE_UNPLUG))
+	else if((usb_device_status!=USB_DEVICE_CONNECT_PC))
     {
     	return 1;
     }
@@ -741,13 +731,16 @@ int usb_keyboard_hid_report_aaa(unsigned char *data)
 	return 1;
 }
 
+extern unsigned char connect_ok;
+extern u8 usb_data_eps_ready;
+
 int usb_mouse_hid_report_aaa(u8 report_id,unsigned char * p,u8 len)
 {
 	static u32 mouse_ep_busy_tick;
 
 	if (!connect_ok) {
-        return 0;
-    }
+		return 0;
+	}
 
 	if (!usb_data_eps_ready) {
 		return 0;
@@ -756,13 +749,14 @@ int usb_mouse_hid_report_aaa(u8 report_id,unsigned char * p,u8 len)
 	if(usb_device_status==USB_DEVICE_CHECK_PC_SLEEP)
     {
         usb_resume_host();
+        return 0;
     }
 	else if((usb_device_status==USB_DEVICE_DISCONECT_PC) ||
 	        (usb_device_status==USB_DEVICE_UNPLUG))
     {
         return 1;
     }
-   
+
 	if(usbhw_is_ep_busy(USB_EDP_MOUSE)){
 		if (!mouse_ep_busy_tick) {
 			mouse_ep_busy_tick = clock_time() | 1;
@@ -776,7 +770,6 @@ int usb_mouse_hid_report_aaa(u8 report_id,unsigned char * p,u8 len)
 		mouse_ep_busy_tick = 0;
 	}
 
-	/* Composite HID: Windows uses report protocol (Report ID on wire) */
 	if ((usb_mouse_report_proto == 0) && (report_id != 1)) {
         return 1;
     }
@@ -784,7 +777,6 @@ int usb_mouse_hid_report_aaa(u8 report_id,unsigned char * p,u8 len)
 	reg_usb_ep_ptr(USB_EDP_MOUSE) = 0;
 
 	if ((usb_mouse_report_proto == 0) && (report_id == 1)) {
-		/* Boot protocol fallback: btn + x8 + y8 */
 		reg_usb_ep_dat(USB_EDP_MOUSE) = p[0];
 		reg_usb_ep_dat(USB_EDP_MOUSE) = p[1];
 #if (MOUSE_DATA_LEN_AAA==6) || (MOUSE_DATA_LEN_AAA==7)
