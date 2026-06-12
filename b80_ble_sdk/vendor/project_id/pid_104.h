@@ -1,6 +1,9 @@
 #ifndef _PID_104_H_
 #define _PID_104_H_
 
+#define WEB_HID_ENABLE  1
+#define WEB_HID_LENGTH  32
+
 #define MCU_QFN40_ENABLE        1
 #define UL1001_DPI_2_ENABLE     0
 
