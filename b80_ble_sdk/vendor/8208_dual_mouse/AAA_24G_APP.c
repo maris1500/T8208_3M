@@ -40,8 +40,8 @@ extern void mouse_task_when_rf();
 #endif
 
 u8  device_status = 0;
-u8  dongle_id_valid_f = 0;
-u8  mouse_send_need_f = 0;
+// u8  dongle_id_valid_f = 0;
+// u8  mouse_send_need_f = 0;
 u32 dongle_id;
 
 volatile u32 no_ack = 0; //host ack count
@@ -81,8 +81,8 @@ km_3_c_1_data_t *p_km_data = (km_3_c_1_data_t*)&rf_km_buf.dat[0]; //2.4G communi
 #endif
 
 u32 wakeup_next_tick = 0;
-u8  pair_success_flag = 0; //0:pair or reconnect fail, 1:pair or reconnect success
-u8  dongle_id_need_save_flag = 0; //0:no need save, 1:need save to flash
+//u8  pair_success_flag = 0; //0:pair or reconnect fail, 1:pair or reconnect success
+//u8  dongle_id_need_save_flag = 0; //0:no need save, 1:need save to flash
 
 
 #if DATA_3_CHOOSE_1_ENABLE
@@ -137,15 +137,15 @@ _attribute_ram_code_sec_ u8 rf_rx_process(rf_packet_t *p_rf_data)
 			memcpy(ack_key, pair_ack_dat_ptr->key, 12);
 		#endif
 
-        	pair_success_flag = 1; //set pair_success_flag
+        	gc_mouse_sta.pair_success_flag = 1; //set pair_success_flag
 
 			if (pair_ack_dat_ptr->cmd == PAIR_ACK_CMD)
 			{ //Dongle ACK the pairing command
-				dongle_id_need_save_flag = 1; //save dongle_id
+				gc_mouse_sta.dongle_id_need_save_flag = 1; //save dongle_id
 			}
 			else
 			{ //Dongle ACK the reconnect command
-				dongle_id_need_save_flag = 0; //not save dongle_id
+				gc_mouse_sta.dongle_id_need_save_flag = 0; //not save dongle_id
 			}
 
 			printf("---pairing success:0x%04x\n", pair_ack_dat_ptr->gid);
@@ -157,7 +157,7 @@ _attribute_ram_code_sec_ u8 rf_rx_process(rf_packet_t *p_rf_data)
 	{
 		km_ack_data_t *km_ack_dat_ptr = (km_ack_data_t*)&p_rf_data->dat[0];
 
-		if (mouse_send_need_f == 2) //km ack
+		if (gc_mouse_sta.mouse_send_need_f == 2) //km ack
 		{
 		#if 0
 			rf_packet_ack_mouse_t *tmp = (rf_packet_ack_mouse_t *)p_pkt;
@@ -264,16 +264,16 @@ void d24_user_init()
 
 	if ( (dongle_id == U32_MAX) || (dongle_id == 0) || (0x993c366c == dongle_id) )
 	{
-		dongle_id_valid_f = 0; //dongle_id is invalid
+		gc_mouse_sta.dongle_id_valid_f = 0; //dongle_id is invalid
 	}
 	else
 	{
-		dongle_id_valid_f = 1; //dongle_id is valid
+		gc_mouse_sta.dongle_id_valid_f = 1; //dongle_id is valid
 	}
 	
 #if  ENTER_PAIR_WHEN_NEVER_PAIRED_ENABLE
 	/* If the dongle id is invalid, the device enters pairing mode */
-	if (dongle_id_valid_f == 0)
+	if (gc_mouse_sta.dongle_id_valid_f == 0)
 	{
 		set_pair_flag();
 	}
@@ -298,7 +298,7 @@ void d24_user_init()
 		aes_encrypt(pub_key, private_key, (u8*)&p_pair_dat->did);
 	#endif
 	} 
-	else if ((deep_flag == POWER_ON_ANA_AAA) || (dongle_id_valid_f == 0))
+	else if ((deep_flag == POWER_ON_ANA_AAA) || (gc_mouse_sta.dongle_id_valid_f == 0))
 	{
 		printf("---The device enters the sysnc mode.\r\n");
 
@@ -333,9 +333,9 @@ void d24_user_init()
 }
 
 ////////////////////////////////////////////////////////////////////
-u8 need_suspend_flag = 0;
-u8 rptr = 0;
-u8 rx_fifo_count = 0;
+// u8 need_suspend_flag = 0;
+// u8 rptr = 0;
+// u8 rx_fifo_count = 0;
 
 /**
  * @brief	Detect the RF state and jump to the next state as needed
@@ -355,7 +355,7 @@ void check_rf_complet_status()
 
 		if (device_status <= STATE_PAIRING) //Pairing and reconnecting mode
 		{
-			if (pair_success_flag)
+			if (gc_mouse_sta.pair_success_flag)
 			{
                 device_status = STATE_NORMAL;
 				rf_rx_timeout_us = D24G_COMMUNICATION_TIMER_OUT;
@@ -379,7 +379,7 @@ void check_rf_complet_status()
 					memcpy((u8*)&flash_dev_info.key[0], (u8*)&private_key[4], 12);
 				#endif
 
-					if (dongle_id_need_save_flag) //need to save dongle_id to flash
+					if (gc_mouse_sta.dongle_id_need_save_flag) //need to save dongle_id to flash
 					{
 						save_dev_info_flash();
 						
@@ -399,7 +399,7 @@ void check_rf_complet_status()
 		}
 		else //normal mode
 		{
-			if (mouse_send_need_f) // skip to next packet
+			if (gc_mouse_sta.mouse_send_need_f) // skip to next packet
 			{
 				my_fifo_pop(&fifo_km);
 			}
@@ -415,7 +415,7 @@ void check_rf_complet_status()
 			connect_ok = 1;
 		}
 
-		mouse_send_need_f = 0; //Send complete, clear send flag
+		gc_mouse_sta.mouse_send_need_f = 0; //Send complete, clear send flag
 	}
 	else //RF receives data is invalid
 	{
@@ -455,7 +455,7 @@ void d24g_rf_loop()
 			else
 				set_pair_access_code(0x39517695); //set default access code
 
-			pair_success_flag = 0; //clear pair_success_flag
+			gc_mouse_sta.pair_success_flag = 0; //clear pair_success_flag
 
 			if (device_status == STATE_PAIRING)
 			{ //Pairing mode
@@ -470,7 +470,7 @@ void d24g_rf_loop()
 
 			ptr = (u8 *)&rf_pair_buf; //send rf_pair_buf packet
 
-			mouse_send_need_f = 1; //Set send pairing packet flag
+			gc_mouse_sta.mouse_send_need_f = 1; //Set send pairing packet flag
 		}
 		else //normal mode
 		{
@@ -485,13 +485,13 @@ void d24g_rf_loop()
 
 			rf_set_power_level_index(user_cfg.tx_power);
 
-			if (mouse_send_need_f == 0) //Send idle
+			if (gc_mouse_sta.mouse_send_need_f == 0) //Send idle
 			{ 
 				u8 *p =  my_fifo_get (&fifo_km);
 				
 				if (p) //There's data in the FIFO
 				{
-				    mouse_send_need_f = 2; //Set send communication packet flag
+				    gc_mouse_sta.mouse_send_need_f = 2; //Set send communication packet flag
 				    
 					u8 *tmp = (u8 *)&p[0];
 					km_3_c_1_data_t  *km_dat1;
@@ -524,7 +524,7 @@ void d24g_rf_loop()
 			}
 		}
 
-		if (mouse_send_need_f) //send
+		if (gc_mouse_sta.mouse_send_need_f) //send
 		{
 			rf_state = RF_TX_START_STATUS; //state = start send
 			rf_set_tx_rx_off(); //must add
@@ -669,7 +669,7 @@ void pm_poll()
 	u32 wake_src = 0; //wakeup source, PM_WAKEUP_TIMER or PM_WAKEUP_PAD
 	u32 interval = 0; //wakeup interval, unit 1ms
 
-	need_suspend_flag = 0; //clear enter suspend flag
+	gc_mouse_sta.need_suspend_flag = 0; //clear enter suspend flag
 	
 	if (rf_state == RF_IDLE_STATUS)
 	{
@@ -687,7 +687,7 @@ void pm_poll()
 			/* Pairing or reconnecting under way, enter suspend */
 		 	wake_src = PM_WAKEUP_TIMER; //wake up source = PM_WAKEUP_TIMER
 		 	interval = 8; //wake up interval = 8ms
-		    need_suspend_flag = 1; //set enter suspend flag
+		    gc_mouse_sta.need_suspend_flag = 1; //set enter suspend flag
 		}
 		else //normal mode
 		{
@@ -697,7 +697,7 @@ void pm_poll()
 				{
 					if ((report_rate == 4) || (report_rate == 8))
 					{
-						need_suspend_flag = 1; //set enter suspend flag
+						gc_mouse_sta.need_suspend_flag = 1; //set enter suspend flag
 				 		wake_src = PM_WAKEUP_TIMER; //wake up source = PM_WAKEUP_TIMER
 		 				interval = report_rate; //wake up interval = report_rate*1ms
 
@@ -749,7 +749,7 @@ void pm_poll()
 
 				        suspend_wake_up_enable = 1;
 
-						need_suspend_flag = 1; //set enter suspend flag
+						gc_mouse_sta.need_suspend_flag = 1; //set enter suspend flag
 						wake_src = PM_WAKEUP_TIMER|PM_WAKEUP_PAD; //wake up source = PM_WAKEUP_TIMER|PM_WAKEUP_PAD
 					#if SENSOR_MOTION_ENABLE
 						interval = 1000; //wake up interval = 1000ms
@@ -813,14 +813,14 @@ void pm_poll()
 		#if (G24_DELAY_ENTER_SLEEP_ENABLE)
 			if ( 0 == mouse_not_action_timeout() )
 			{
-				need_suspend_flag = 0;
+				gc_mouse_sta.need_suspend_flag = 0;
 			}
 		#endif
 
 		#if PM_SYS_LOW_POWER_ENABLE
 			if ( 0 == mcu_sleep_status.enter_lower )
 			{
-				need_suspend_flag = 0;
+				gc_mouse_sta.need_suspend_flag = 0;
 			}
 		#endif
 
@@ -829,13 +829,13 @@ void pm_poll()
 			{
 				if ( idle_count <= 13 )
 				{
-					need_suspend_flag = 0;
+					gc_mouse_sta.need_suspend_flag = 0;
 				}
 			}
 		#endif
 
 		/* If the need_suspend_flag is set, enter suspend */
-		if (need_suspend_flag)
+		if (gc_mouse_sta.need_suspend_flag)
 		{
 			cpu_sleep_wakeup(SUSPEND_MODE, wake_src, (wakeup_next_tick + interval*CLOCK_16M_SYS_TIMER_CLK_1MS));
 			wakeup_next_tick = clock_time();
@@ -863,7 +863,7 @@ void d24_main_loop()
 	#endif
 	}
 
-	if (need_suspend_flag)
+	if (gc_mouse_sta.need_suspend_flag)
 	{
 		/* The device allow to enter suspend mode, the interval is determined by the suspend wake-up interval time*/
 		ui_loop_24g(); //2.4G Task scheduling

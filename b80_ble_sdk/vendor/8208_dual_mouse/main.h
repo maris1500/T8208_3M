@@ -1,16 +1,6 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
-typedef struct {
-	unsigned char conn:1;
-	unsigned char pair:1;
-	unsigned char conn_finished:1;
-	unsigned char conn_delay:1;
-	
-	unsigned char main_reserve:4;
-}mcu_status_flag_t;
-
-
 #if USB_MODE_ENABLE
 
 	typedef enum {
@@ -79,7 +69,7 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 		web_dpi_t  dpi;
 		web_sta_t  sta;
 
-		unsigned char temp5[11];
+		unsigned char temp[11];
 	}web_data_cfg_t;
 
 	extern web_data_cfg_t gc_web_data;
@@ -89,6 +79,18 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 #endif
 
 
-extern mcu_status_flag_t mcu_flag;
+typedef struct {
+	unsigned short dongle_id_valid_f:1;
+	unsigned short pair_success_flag:1;
+	unsigned short dongle_id_need_save_flag:1;
+	unsigned short need_suspend_flag:1;
+	unsigned short pair_success:1;
+	unsigned short ui_ota_is_working:1;
+
+	unsigned short mouse_send_need_f:2;
+	
+}mouse_sta_t;
+
+extern mouse_sta_t gc_mouse_sta;
 
 #endif /* MAIN_H_*/

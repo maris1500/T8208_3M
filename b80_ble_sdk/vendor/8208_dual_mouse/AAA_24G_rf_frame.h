@@ -105,7 +105,9 @@ typedef struct
 	u8  cmd; //data type
 	u16 fw_version; //frimware version
 	u32 did;
+#if (AES_METHOD == 1)
 	u8  key[12];
+#endif
 } pair_data_t;
 
 typedef struct
@@ -121,7 +123,9 @@ typedef struct
 	
 	u32 gid;
 	u32 did;
+#if (AES_METHOD == 1)
 	u8 key[12];
+#endif
 } pair_ack_data_t;
 
 

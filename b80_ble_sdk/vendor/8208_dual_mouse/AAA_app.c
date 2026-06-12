@@ -92,7 +92,7 @@ extern void led_ble_conned_succ_dis_next(void);
 extern void ble_status_changed(void);
 
 _attribute_data_retention_ u32 power_on_tick;
-_attribute_data_retention_ u8  pair_success = 0;
+//_attribute_data_retention_ u8  pair_success = 0;
 _attribute_data_retention_ u32 start_tick;
 
 _attribute_data_retention_ u8  Switch_Adv_Type = 0;
@@ -100,7 +100,8 @@ _attribute_data_retention_ u8  Switch_Adv_Type = 0;
 _attribute_data_retention_ u32 loop_cnt;
 _attribute_data_retention_ u32 connect_begin_tick;
 
-_attribute_data_retention_ u8  ui_ota_is_working = 0;
+
+//_attribute_data_retention_ u8  ui_ota_is_working = 0;
 //_attribute_data_retention_ u8  conn_params_cout = 0;
 _attribute_data_retention_ u32 conn_params_tick;
 
@@ -506,13 +507,13 @@ void task_connect(u8 e, u8 *p, int n)
 	idle_count = 0;
     loop_cnt = 0;
     connect_ok = 1;
-    ui_ota_is_working = 0;
+    gc_mouse_sta.ui_ota_is_working = 0;
 //    conn_params_cout = 0;
     conn_params_tick = 0;
     conn_step = BEGIN_CONNECT_AAA;
     bls_ll_setAdvDuration(0, 0);
     ble_status_aaa = BEGIN_CONNECTED_STATUS_AAA;
-	pair_success = 0;
+	gc_mouse_sta.pair_success = 0;
 
 	printf("task_connect\n");
 
@@ -629,7 +630,7 @@ void task_terminate(u8 e, u8 *p, int n) //*p is terminate reason
     /* Clear connection-related status and flags */
     active_disconnect_reason = 0;
     conn_step = 0;
-    ui_ota_is_working = 0;
+    gc_mouse_sta.ui_ota_is_working = 0;
     connect_ok = 0;
 	
 #if AUTO_CHECK_OS_TYPE
@@ -686,9 +687,9 @@ void save_smp_inf()
 {
 	u32 CurStartAddr;
 
-    if (pair_success)
+    if (gc_mouse_sta.pair_success)
     {
-		pair_success = 0;
+		gc_mouse_sta.pair_success = 0;
 
 		smp_param_save_t smp_param_new;
 
@@ -856,7 +857,7 @@ void app_enter_ota_mode(void)
 {
 	//printf("---app_enter_ota_mode.\n");
 
-    ui_ota_is_working = 1;
+    gc_mouse_sta.ui_ota_is_working = 1;
 	
 	#if (BLT_APP_LED_ENABLE && BLE_OTA_LED_DEBUG)
 	    gpio_write(PIN_BLE_LED, 1);
@@ -998,7 +999,7 @@ int app_host_event_callback(u32 h, u8 *para, int n)
 
 				 if (p->bonding_result)
 				 {
-				 	pair_success=1;
+				 	gc_mouse_sta.pair_success=1;
 					bls_l2cap_requestConnParamUpdate(DEFAULT_INTERVAL, DEFAULT_INTERVAL, DEFAULT_LATENCY, DEFAULT_TIMEOUT);
 			   #if DEBUG_MODE
 	                printf("pair success\r\n");
@@ -1419,7 +1420,7 @@ void ble_status_proc_aaa(u8 is_new_key_event)
         }
 		else if (conn_step == SMP_FIRST_CONNECT_DONE_AAA)
 		{ //first connect
-			if (pair_success)
+			if (gc_mouse_sta.pair_success)
 			{
 				ble_status_aaa = OK_CONNECTED_STATUS_AAA;
 				/* The SMP encryption is complete, save the pairing information to the flash */
@@ -1469,7 +1470,7 @@ void ble_status_proc_aaa(u8 is_new_key_event)
 	}
     else if (ble_status_aaa == DEEP_SLEEPE_STATUS_AAA)
     { //ready to enter deep sleep
-        if ((ui_ota_is_working == 0) && (!blc_ll_isControllerEventPending()))
+        if ((gc_mouse_sta.ui_ota_is_working == 0) && (!blc_ll_isControllerEventPending()))
         {
             printf("!blc_ll_isControllerEventPending()\n");
             enter_deep_aaa(DEEP_SLEEP_ANA_AAA);
@@ -1961,7 +1962,7 @@ void ble_pm_aaa()
 #endif
 
 #if BLE_APP_PM_ENABLE
-	if ( led_batt_dpi_working_on() || DEVICE_LED_BUSY || ui_ota_is_working || (loop_cnt < LONG_SUSPEND_TIMER_AAA) || btn_value||(idle_count<3))
+	if ( led_batt_dpi_working_on() || DEVICE_LED_BUSY || gc_mouse_sta.ui_ota_is_working || (loop_cnt < LONG_SUSPEND_TIMER_AAA) || btn_value||(idle_count<3))
     { //Data need notify to master, set latency = 0 and disable wake up source
         bls_pm_setManualLatency(0);
 		bls_pm_setWakeupSource(0);

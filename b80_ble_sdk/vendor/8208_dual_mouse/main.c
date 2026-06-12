@@ -63,7 +63,7 @@
 	 web_data_cfg_t gc_web_data;
 #endif
 
-mcu_status_flag_t mcu_flag;
+mouse_sta_t gc_mouse_sta;
 
 #if (PM_SYS_LOW_POWER_ENABLE)
 	mcu_pm_flag_t  mcu_sleep_status;
@@ -908,7 +908,7 @@ int main(void) //run in ramcode
  	 	 #if LED_CODE_PWIR_DRIVE_ENABLE
 			 ws2812_code_loop_pro();
 		 #else
-			// rgb_code_loop_pro();
+			 rgb_code_loop_pro();
 		#endif
 	#endif
 

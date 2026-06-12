@@ -86,7 +86,7 @@ extern u8 connect_ok;
 	int notify_rsp_buf2hci(u8 *data, u16 length);
 	void notify_rsp_update(void);
 
-	extern u8 ui_ota_is_working;
+	//extern u8 ui_ota_is_working;
 #endif
 
 #if OTA_ENABLE_AAA
@@ -351,7 +351,7 @@ extern u8 connect_ok;
 		flash_lock_handle(FLASH_LOCK_NONE_BLOCK); //unlock flash
 	#endif
 
-		ui_ota_is_working = 1; //set OTA working flag
+		gc_mouse_sta.ui_ota_is_working = 1; //set OTA working flag
 
 	#if (BLT_APP_LED_ENABLE && BLE_OTA_LED_DEBUG)
 		gpio_write(PIN_BLE_LED, 1);

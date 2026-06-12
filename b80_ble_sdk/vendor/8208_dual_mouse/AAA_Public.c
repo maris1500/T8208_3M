@@ -84,8 +84,8 @@ _attribute_data_retention_user u32 adv_count = 0;
 
 MYFIFO_INIT (fifo_km, 12, 8); //The size must be a multiple of 4 bytes
 
-extern u8  mouse_send_need_f;
-extern u8  dongle_id_valid_f;
+//extern u8  mouse_send_need_f;
+//extern u8  dongle_id_valid_f;
 
 #if (PROJECT_ID == PID_G929) || (PROJECT_ID == PID_BG523)
 	unsigned char gc_dpi_func2_flag = 0;
@@ -1473,7 +1473,7 @@ void user_button_check_proc(void)
 #if G24_MODE_ENABLE
 
 	/* when dongle_id is valid, if reconnect overtime(200ms), then switch to normal mode */
-	if ((device_status == STATE_SYSNC) && (dongle_id_valid_f == 1))
+	if ((device_status == STATE_SYSNC) && (gc_mouse_sta.dongle_id_valid_f == 1))
 	//if ((device_status == STATE_SYSNC) && (g24_flags.dongle_id_valid == 1))
 	{
 		if (clock_time_exceed(adv_begin_tick, 200*1000)) //reconnect over time
@@ -1492,7 +1492,7 @@ void user_button_check_proc(void)
 
 				//my_fifo_reset(&fifo_km); //Clear fifo
 
-				mouse_send_need_f = 0; //clear send flag
+				gc_mouse_sta.mouse_send_need_f = 0; //clear send flag
 				//g24_flags.mouse_send_need = 0;
 				
 				extern volatile u32 no_ack;
