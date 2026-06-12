@@ -100,6 +100,9 @@ u8 g_rate = 0; //default 0 for all report
 #if WEB_HID_ENABLE
 	unsigned char gc_web_data[32] = {0};
 	unsigned char gc_web_len = 0;
+
+	extern void usb_aut_report_time_reset(void);
+
 #endif
 
 void usb_register_set_report(usb_set_hid_report_t src)
@@ -557,7 +560,7 @@ void usb_handle_out_class_intf_req(int data_request)
 					}
 
 				#if WEB_HID_ENABLE
-					if ( gc_web_len < 32 )
+					if ( gc_web_len < WEB_HID_LENGTH )
 					{
 						for (i = 0; i < 8; i++) 
 						{
@@ -565,7 +568,7 @@ void usb_handle_out_class_intf_req(int data_request)
 						}
 					}
 
-					if ( gc_web_len >= 32 )
+					if ( gc_web_len >= WEB_HID_LENGTH )
 					{
 						printf("USB_HID_OUT_Custom_data:");
 						for (i = 0; i < gc_web_len; i++) 
@@ -574,6 +577,8 @@ void usb_handle_out_class_intf_req(int data_request)
 						}
 						printf("\r\n");
 					}
+
+					usb_aut_report_time_reset();
 
 				#else
 	
@@ -832,7 +837,8 @@ void usb_handle_in_class_intf_req()
 			usbhw_write_ctrl_ep_data(usb_mouse_report_proto);
 			break;
 
-		default:g_stall = 1; break;
+		default:g_stall = 1;
+ break;
 	}
 
 #if (USB_MIC_ENABLE || USB_SPEAKER_ENABLE)

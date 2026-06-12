@@ -126,6 +126,13 @@ typedef enum
 #define REPORT_ID_SYSTEM_INPUT_AAA			6   //!< Gamepad  input report ID
 #define REPORT_ID_SPP_INPUT_AAA				7   //!< Gamepad  input report ID
 
+#if WEB_HID_ENABLE
+#define HID_WEB_DATA_MAX_LEN                31
+#define HID_WEB_REPORT_WIRE_LEN             32
+#define USB_EDP_WEB_IN                      USB_EDP_CDC_IN  /* EP4 IN 0x84, 64B FIFO */
+#define USB_STATUS_IN_INTERVAL_US           (3 * 1000 * 1000)
+#endif
+
 typedef enum
 {
     ATT_H_START = 0,

@@ -866,9 +866,83 @@ void app_hid_set_report_handle(u8 data_request, u8 report_id, u16 length)
 #if USB_DESCRIPTOR_MY_SELF
 u8 usb_data_eps_ready;
 
+#if WEB_HID_ENABLE
+
+static u32 gc_auto_report_tick = 0;
+
+void usb_aut_report_time_reset(void)
+{
+	gc_auto_report_tick = clock_time() | 1;
+}
+
+int usb_status_input_in_send(void)
+{
+
+	static u8 seq;
+	static u8 sc_first_rp_flag = 0;
+
+	u8 buf[HID_WEB_REPORT_WIRE_LEN];
+	u8 i;
+
+	if (!connect_ok || !usb_data_eps_ready) {
+		return 0;
+	}
+
+	if (gc_auto_report_tick == 0) {
+		gc_auto_report_tick = clock_time() | 1;
+		return 0;
+	}
+
+	if ( !sc_first_rp_flag )
+	{
+		gc_auto_report_tick = clock_time() + USB_STATUS_IN_INTERVAL_US;
+	}
+	
+	if (!clock_time_exceed(gc_auto_report_tick, USB_STATUS_IN_INTERVAL_US)) {
+		return 0;
+	}
+
+	if (usbhw_is_ep_busy(USB_EDP_WEB_IN)) {
+		return 0;
+	}
+
+	gc_auto_report_tick = clock_time() | 1;
+
+	buf[0] = REPORT_ID_GAMEPAD_INPUT_AAA;
+	buf[1] = seq++;
+	buf[2] = 0x00;
+	buf[3] = 0x01;
+	buf[4] = 0x15;
+	buf[5] = 0x02;
+	buf[6] = 0x03;
+	buf[7] = 0x00;
+	buf[8] = 0x02;
+	buf[9] = 0x11;
+	for (i = 10; i < HID_WEB_REPORT_WIRE_LEN; i++) {
+		buf[i] = 0;
+	}
+
+	usbhw_write_ep(USB_EDP_WEB_IN, buf, HID_WEB_REPORT_WIRE_LEN);
+
+	printf("EP4_IN_32Bytes:");
+	for (i = 0; i < HID_WEB_REPORT_WIRE_LEN; i++) {
+		printf(" %1x", buf[i]);
+	}
+	printf("\r\n");
+
+	sc_first_rp_flag = 1;
+
+	return 1;
+}
+#endif
+
 void usb_mouse_eps_reack(void)
 {
-	write_reg8(0x10e, (1 << USB_EDP_MOUSE) | (1 << USB_EDP_KEYBOARD_IN));
+#if WEB_HID_ENABLE
+	write_reg8(0x10e, FLD_USB_EDP1_EN | FLD_USB_EDP2_EN | FLD_USB_EDP4_EN);
+#else
+	write_reg8(0x10e, FLD_USB_EDP1_EN | FLD_USB_EDP2_EN);
+#endif
 	reg_usb_ep_ctrl(USB_EDP_MOUSE) = 0;
 	reg_usb_ep_ctrl(USB_EDP_KEYBOARD_IN) = 0;
 	usbhw_data_ep_ack(USB_EDP_MOUSE);
@@ -903,8 +977,10 @@ void usb_user_init(void)
 		#if OTA_ENABLE_AAA
 			write_reg8(0x10e,(1<<USB_EDP_MOUSE)|(1<<USB_EDP_KEYBOARD_IN)|(1<<USB_EDP_SPP_IN));
 			notify_rsp_buf_init();
+		#elif WEB_HID_ENABLE
+			write_reg8(0x10e, FLD_USB_EDP1_EN | FLD_USB_EDP2_EN | FLD_USB_EDP4_EN);
 		#else
-			write_reg8(0x10e,(1<<USB_EDP_MOUSE)|(1<<USB_EDP_KEYBOARD_IN));
+			write_reg8(0x10e, FLD_USB_EDP1_EN | FLD_USB_EDP2_EN);
 		#endif
 	#endif
 
@@ -1212,6 +1288,10 @@ void usb_main_loop(void)
 //	idle_status_poll();//poll idle params
 
 	pull_usb_data();
+
+#if WEB_HID_ENABLE
+	usb_status_input_in_send();
+#endif
 
 	if (need_enter_suspend_tick && clock_time_exceed(need_enter_suspend_tick, 3200000))
 	{

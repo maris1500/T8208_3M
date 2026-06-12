@@ -314,6 +314,9 @@ int usb_mouse_hid_report_aaa(u8 report_id,unsigned char * p,u8 len);
 void usb_data_eps_ready_on_config(void);
 void usb_mouse_eps_reack(void);
 extern u8 usb_data_eps_ready;
+#if WEB_HID_ENABLE
+int usb_status_input_in_send(void);
+#endif
 #endif
 void usb_power_down_handle();
 void usb_check_allow_send_to_usb();
