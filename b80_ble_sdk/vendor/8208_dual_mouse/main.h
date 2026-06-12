@@ -52,6 +52,43 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 	
 #endif
 
+#if WEB_HID_ENABLE
+
+	typedef struct {
+		unsigned char level_max:4;
+		unsigned char level_cur:4;
+	}web_dpi_t;
+
+	typedef struct {
+		unsigned int charge_mode:2;
+		unsigned int battery:8;
+
+		unsigned int rate_max_support:2;
+		unsigned int rate_cur:4;
+
+		unsigned int light_mode:4;
+		unsigned int sensor_type:3;
+
+		unsigned int active_time:4;
+
+		unsigned int reserve:5;
+	}web_sta_t;
+
+	typedef struct
+	{
+		web_dpi_t  dpi;
+		web_sta_t  sta;
+
+		unsigned char temp5[11];
+	}web_data_cfg_t;
+
+	extern web_data_cfg_t gc_web_data;
+
+	#define  WEB_DATA_LENGTH_MAX  sizeof(web_data_cfg_t)
+
+#endif
+
+
 extern mcu_status_flag_t mcu_flag;
 
 #endif /* MAIN_H_*/

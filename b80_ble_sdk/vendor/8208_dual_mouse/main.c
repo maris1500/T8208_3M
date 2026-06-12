@@ -59,6 +59,10 @@
 	extern void batt_dpi_two_loop(void);
 #endif
 
+#if WEB_HID_ENABLE
+	 web_data_cfg_t gc_web_data;
+#endif
+
 mcu_status_flag_t mcu_flag;
 
 #if (PM_SYS_LOW_POWER_ENABLE)
@@ -105,6 +109,10 @@ mcu_status_flag_t mcu_flag;
 #endif
 
 _attribute_data_retention_user int dev_info_idx;	//The offset value of the location where the data is stored
+
+#if WEB_HID_ENABLE
+	int dev_web_info_idex = 0;
+#endif
 
 #if (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_M45) || (PROJECT_ID == PID_104) || (PROJECT_ID == PID_S600)
 	#if LED_CODE_PWIR_DRIVE_ENABLE
@@ -638,6 +646,16 @@ int main(void) //run in ramcode
 	#endif
 	}
 
+#if WEB_HID_ENABLE
+	dev_web_info_idex = flash_info_load_aaa(CFG_WEB_DATA_ADDR, (u8 *)&gc_web_data, WEB_DATA_LENGTH_MAX);
+	if (dev_web_info_idex < 0)
+	{
+
+	}
+
+	printf("webtemp: %d\n", WEB_DATA_LENGTH_MAX);
+#endif
+
 	user_config();
 
 #if (BLE_SNIFF_DEBUG)
@@ -737,7 +755,7 @@ int main(void) //run in ramcode
 		printf("USB MODE :RF_USB_MODE \n ");
 	#endif
 	}
-	printf("USB:%d \n ", gpio_read(USB_IN_CHECK_PIN));
+	printf("USB:%d %d \n ", gpio_read(USB_IN_CHECK_PIN), SAVE_MAX_IN_FLASH);
 #endif
 
 #if (BLE_MODE_ENABLE)

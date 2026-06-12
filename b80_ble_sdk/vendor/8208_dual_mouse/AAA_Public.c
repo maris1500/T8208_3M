@@ -27,6 +27,8 @@
 #include "AAA_oled.h"
 #include "AAA_24G_APP.h"
 
+#include "main.h"
+
 #if MODULE_OLED_ENABLE
 	extern void OLED_Init(void);
 #endif
@@ -169,6 +171,10 @@ extern void id_sleep_enable(int);
 #if	LED_CODE_PWIR_DRIVE_ENABLE
 	extern void ws2812_sleep_close(void);
 	extern void ws2812_mode_change_para_clear(void);
+#endif
+
+#if WEB_HID_ENABLE
+	extern int dev_web_info_idex;
 #endif
 
 BLE_DEVICE_ID_EN ble_mode_device_id_get(void)
@@ -424,6 +430,21 @@ void save_dev_info_flash()
 		printf("---save failed\r\n");
 	}
 }
+
+#if WEB_HID_ENABLE
+
+	void save_web_info_flash(void)
+	{
+		if (save_data_to_flash(CFG_WEB_DATA_ADDR, WEB_DATA_LENGTH_MAX,(u8*)&gc_web_data,&dev_web_info_idex) == SAVE_SUCCESS)
+		{
+			printf("web info save success.\r\n");
+		}
+		else
+		{
+			printf("web info save failed\r\n");
+		}
+	}
+#endif
 
 void ble_start_pair()
 {

@@ -1,6 +1,8 @@
 #ifndef _PID_104_H_
 #define _PID_104_H_
 
+#define WEB_FLASH_TEST_EN  1
+
 #define WEB_HID_ENABLE  1
 #define WEB_HID_LENGTH  32
 

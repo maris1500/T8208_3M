@@ -404,11 +404,15 @@ typedef enum
 typedef struct
 {
     u32 dongle_id;	//4
+
+#if (AES_METHOD == 1)
     u8 key[12];		//16
-	
+#endif
+
     u8 slave_mac_addr[4];
     u8 mode;
     u8 mast_id;
+
 #if BATTERT_STORAGE_ENABLE
 	u8 battery_value;
 	u8 temp1;
