@@ -104,6 +104,8 @@ mouse_sta_t gc_mouse_sta;
 
 #if (PROJECT_ID == PID_MS13) || (PROJECT_ID == PID_8693) || (PROJECT_ID == PID_HM660) || (PROJECT_ID == PID_DMS06) || MOUSE_REPORT_250HZ_ENABLE
 	_attribute_data_retention_user u8 report_rate = 4;	//2.4G reporting rate 8--250hz
+#elif MOUSE_REPORT_500HZ_ENABLE
+	_attribute_data_retention_user u8 report_rate = 2;
 #else
 	_attribute_data_retention_user u8 report_rate = 8;	//2.4G reporting rate 8--125hz
 #endif
@@ -277,19 +279,31 @@ int flash_info_load_aaa(u32 s_addr, u8 *d_addr,  int len)
 
 unsigned char usb_status_changed_need_reboot(void)
 {
+#if USB_SWITCH_ENABLE
+	if ( ( RF_USB_MODE == fun_mode ) && ( USB_OUT() || USB_SWITCH_OFF() ) )
+#else
 	if ( RF_USB_MODE == fun_mode && USB_OUT() )
+#endif
 	{
 		usb_has_judge = USB_MODE_OUT;
 		analog_write(DEEP_ANA_REG7, usb_has_judge);
 		return (1);
 	}
 
+#if USB_SWITCH_ENABLE
+	if ( RF_USB_MODE != fun_mode && USB_IN() && USB_SWITCH_ON() && (USB_MODE_IN_FAILED != usb_has_judge) )
+#else
 	if ( RF_USB_MODE != fun_mode && USB_IN() && (USB_MODE_IN_FAILED != usb_has_judge) )
+#endif
 	{
 		return (1);
 	}
 
-	if ( RF_USB_MODE != fun_mode && USB_OUT())
+#if USB_SWITCH_ENABLE
+	if ( ( RF_USB_MODE != fun_mode ) && ( USB_OUT() || USB_SWITCH_OFF() ) )
+#else
+	if ( RF_USB_MODE != fun_mode && USB_OUT() )
+#endif
 	{
 		usb_has_judge = USB_MODE_OUT;
 		analog_write(DEEP_ANA_REG7, usb_has_judge);
@@ -747,8 +761,16 @@ int main(void) //run in ramcode
 	#if (G24_MODE_ENABLE || BLE_MODE_ENABLE)
 		if ( USB_MODE_OUT == usb_has_judge || USB_MODE_IN_SUCC == usb_has_judge )
 		{
+		#if USB_SWITCH_ENABLE
+			if ( USB_SWITCH_ON() )
+			{
+				fun_mode = RF_USB_MODE;
+				printf("USB MODE :RF_USB_MODE \n ");
+			}
+		#else
 			fun_mode = RF_USB_MODE;
 			printf("USB MODE :RF_USB_MODE \n ");
+		#endif
 		}
 	#else
 		fun_mode = RF_USB_MODE;

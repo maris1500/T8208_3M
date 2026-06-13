@@ -3146,6 +3146,13 @@ static void sensor_postion_init(void)
 	}
 #endif
 
+#if (PROJECT_ID == PID_Q15)
+	if ( SENSOR_3311 == sensor_type )
+	{
+		dpi_max_level = 6;
+	}
+#endif
+
 #if DPI_SAVE_FLASH
 	get_current_cpi_value_handle(); //get current sensor dpi_value from flash
 #endif
@@ -3189,6 +3196,10 @@ void protect_led_ram_on(void)
  */
 void hw_init()
 {
+#if USB_SWITCH_ENABLE
+	gpio_input_config_status(USB_SWITCH_PIN, PM_PIN_UP_DOWN_FLOAT );
+#endif
+
 #if (PROJECT_ID == PID_104)
 	gpio_input_config_status(GPIO_PC0, PM_PIN_PULLUP_1M );
 #endif

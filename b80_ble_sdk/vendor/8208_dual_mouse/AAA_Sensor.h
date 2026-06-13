@@ -49,6 +49,9 @@
 #define SENSOR_SG8925           0x13
 #define SENSOR_S101UL           0x14
 
+#define SENSOR_3311     0x15
+#define SENSOR_SG8960   0x16
+
 unsigned int OPTSensor_motion_report(u32 no_overflow);
 void sensor_dpi_set(u8 dpi);
 void sensor_dpi_default(void);

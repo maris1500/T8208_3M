@@ -143,7 +143,10 @@ void sensor_set_wakeup_level_deepsleep(u8 enable)
  */
 void sif_init(void)
 {
-	
+#if (PROJECT_ID == PID_Q15)
+	sleep_ms(50);
+#endif
+
 #if SENSOR_CS_ENABLE
 	gpio_set_func(PIN_SENSOR_CS,AS_GPIO);
 	gpio_set_input_en(PIN_SENSOR_CS,0);
@@ -154,6 +157,11 @@ void sif_init(void)
 
 #if (PROJECT_ID == PID_QXX9)
 	gpio_input_config_status(PIN_SIF_MOTION, PM_PIN_PULLUP_1M);
+#endif
+
+#if (PROJECT_ID == PID_Q15)
+	gpio_write(PIN_SENSOR_CS, 0);
+	sleep_ms(1);
 #endif
 
 }
@@ -595,6 +603,119 @@ const unsigned char config_s101ul_tab[] =
 	0x09, 0x00,
 };
 
+const unsigned char config_3311_part_A[] =
+{
+	0x7F, 0x00,
+	0x55, 0x00,
+	0x4D, 0x50,
+	0x4E, 0x46,
+	0x4F, 0x46,
+
+	0x77, 0x24,
+	0x7F, 0x05,
+	0x44, 0xA8,
+	0x4A, 0x14,
+	0x53, 0x0C,
+
+	0x5B, 0xEA,
+	0x61, 0x13,
+	0x62, 0x07,
+	0x64, 0xD8,
+	0x6D, 0x86,
+
+	0x7D, 0x84,
+	0x7E, 0x00,
+	0x7F, 0x06,
+	0x60, 0x70,
+	0x61, 0x00,
+
+	0x7E, 0x40,
+	0x7F, 0x07,
+	0x42, 0x16,
+	0x7F, 0x09,
+	0x40, 0x03,
+
+	0x7F, 0x0A,
+	0x49, 0x00,
+	0x4A, 0x23,
+	0x4C, 0x28,
+	0x4F, 0x02,
+
+	0x7F, 0x0C,
+	0x40, 0xA0,
+	0x41, 0x70,
+	0x42, 0x20,
+	0x43, 0xC5,
+
+	0x44, 0x44,
+	0x45, 0x04,
+	0x4C, 0x60,
+	0x54, 0x00,
+	0x55, 0x40,
+
+	0x59, 0x93,
+	0x7F, 0x0D,
+	0x4F, 0x02,
+	0x4E, 0x6B,
+	0x7F, 0x14,
+
+	0x4A, 0x67,
+	0x62, 0x1C,
+	0x63, 0x1C,
+	0x6D, 0x82,
+	0x6F, 0xD8,
+
+	0x73, 0x83,
+	0x74, 0x00,
+	0x7A, 0x16,
+	0x7F, 0x10,
+	0x48, 0x0F,
+
+	0x49, 0x88,
+	0x4C, 0x1D,
+	0x4F, 0x08,
+	0x51, 0x6F,
+	0x52, 0x90,
+
+	0x54, 0x64,
+	0x55, 0xF0,
+	0x5C, 0x40,
+	0x61, 0xEE,
+	0x62, 0xE5,
+
+	0x7F, 0x00,
+	0x5B, 0x40,
+	0x61, 0xAD,
+	0x51, 0xEA,
+	0x19, 0x9F,
+};
+
+void config_3311_part_B(void)
+{
+	unsigned int i = 0;
+	unsigned char reg = 0x00;
+
+	for ( i = 0; i < 1000; i++ )
+	{
+		reg = I2C_PAN3204LL_ReadRegister(0x20);
+		if ( 0x0F == reg)
+		{
+			i = 65535;
+		}
+
+		sleep_ms(1);
+	}
+	printf("->reg:%1x %d \n", reg, i);
+}
+
+const unsigned char config_3311_part_C[] =
+{
+	0x19, 0x10,
+	0x40, 0x00,
+	0x61, 0xD5,
+	0x7F, 0x00
+};
+
 const u8 s101ul_dpi_tbl[] =
 {
 #if (PROJECT_ID == PID_660)
@@ -644,6 +765,43 @@ void s101ul_CPI_set(u8 dpi_val)
 		if ( reg_1 == dpi_val && reg_2 == dpi_val )
 		{
 			printf(" s101ul dpi set sucess \n");
+			return;
+		}
+	}
+}
+
+
+const u8 paw3311_dpi_tbl[] =
+{
+	0x12,  // 800
+	0x1C,  // 1200
+	0x25,  // 1600
+	0x38,  // 2400
+	0x4B,  // 3200
+	0x8D   // 240000 = 1200 * 2
+};
+
+void paw3311_CPI_set(u8 dpi_val)
+{
+	u8	i = 0, reg_1 = 0;
+	for (i = 0; i < 16; i++)
+	{
+		if ( dpi_val < 10000 )
+		{
+			I2C_PAN3204LL_WriteRegister(0x4D,0x50);
+		}
+		else
+		{
+			I2C_PAN3204LL_WriteRegister(0x4D,0xD0);
+		}
+
+		I2C_PAN3204LL_WriteRegister(0x4E, dpi_val);
+
+		reg_1 = I2C_PAN3204LL_ReadRegister(0x4E);
+
+		if ( reg_1 == dpi_val )
+		{
+			printf(" paw3311 dpi set sucess \n");
 			return;
 		}
 	}
@@ -768,12 +926,12 @@ u8 sensor_check_id()
 	u8 reg0 = 0;
 	reg0 = I2C_PAN3204LL_ReadRegister(REG_PAN3204LL_PRODUCT_ID1);
 
-	if ( reg0 == 0x43 || reg0 == 0x4E )
+	if ( reg0 == 0x43 || reg0 == 0x4E || reg0 == 0x50)
 	{
 		return 1; 
 	}
 	
-	if ( (reg0 != 0x30) && (reg0 != 0x31) && (reg0 != 0x58) && (reg0 != 0x18) )
+	if ( (reg0 != 0x30) && (reg0 != 0x31) && (reg0 != 0x58) && (reg0 != 0x18) && (reg0 != 0x50) )
 	{
 		//unknown sensor, resync
 		sensor_resync();
@@ -920,6 +1078,17 @@ static int sensor_type_identify()
 	{
 		printf("-->product_id1==0x43 \n");
 	}
+	else if ( product_id1 == 0x50 )
+	{
+		unsigned char reg_5f = 0x00;
+
+		reg_5f = I2C_PAN3204LL_ReadRegister(0x5f);
+
+		if ( 0xAF == reg_5f )
+		{
+			return ( SENSOR_3311 );
+		}
+	}
 	
 	return  sensor_type; //return default type
 }
@@ -994,19 +1163,48 @@ unsigned int OPTSensor_Init(unsigned int poweron)
 	sif_init(); //initial sensor pin
 	if (OPTSensor_resync(33) == 0)	{printf("------>OPTSensor_Init failed \n");return 0;} //check sensor id
 	Sensor3204_Wakeup(sensor_type);
-	reg6 = I2C_PAN3204LL_ReadRegister(REG_PAN3204LL_CONFIGURATION)|0x80;//read sensor status
 
-	I2C_PAN3204LL_WriteRegister(REG_PAN3204LL_CONFIGURATION, reg6); //reset sensor
-	WaitUs(25000); //wait reset finish
+#if (PROJECT_ID == PID_Q15)
+	if ( 0x50 == product_id1 && 0xAF == product_id2 )
+	{
+		unsigned char reg_r1 = 0x00, reg_r2 = 0x00;
 
-	//get sensor id
-	product_id1 = I2C_PAN3204LL_ReadRegister(REG_PAN3204LL_PRODUCT_ID1);    //power-on must re-read product_id1, or it would make mistake
-	product_id2 = I2C_PAN3204LL_ReadRegister(REG_PAN3204LL_PRODUCT_ID2);    
-	// product_id3 = I2C_PAN3204LL_ReadRegister(0x60);				//
-	product_id3 = I2C_PAN3204LL_ReadRegister(0x7A);
-	sensor_type = sensor_type_identify(); //get sensor type
+		I2C_PAN3204LL_WriteRegister(0x3A, 0x5A);
+		sleep_ms(60);
 
-	printf("---sensor_type=%d, id1 = 0x%1x, id2 = 0x%1x\n",sensor_type, product_id1, product_id2);
+		I2C_PAN3204LL_WriteRegister(0x40, 0x80);
+		I2C_PAN3204LL_WriteRegister(0x55, 0x01);
+		sleep_ms(10);
+
+		I2C_PAN3204LL_WriteRegister(0x7F, 0x0E);
+		I2C_PAN3204LL_WriteRegister(0x43, 0x1D);
+
+		reg_r1 = I2C_PAN3204LL_ReadRegister(0x46);
+		I2C_PAN3204LL_WriteRegister(0x43, 0x1E);
+		reg_r2 = I2C_PAN3204LL_ReadRegister(0x46);
+
+		I2C_PAN3204LL_WriteRegister(0x7F, 0x14);
+		I2C_PAN3204LL_WriteRegister(0x6A, reg_r1);
+		I2C_PAN3204LL_WriteRegister(0x6C, reg_r2);
+
+	}
+	else
+#endif
+	{
+		reg6 = I2C_PAN3204LL_ReadRegister(REG_PAN3204LL_CONFIGURATION)|0x80;//read sensor status
+		I2C_PAN3204LL_WriteRegister(REG_PAN3204LL_CONFIGURATION, reg6); //reset sensor
+		WaitUs(25000); //wait reset finish
+
+		//get sensor id
+		product_id1 = I2C_PAN3204LL_ReadRegister(REG_PAN3204LL_PRODUCT_ID1);    //power-on must re-read product_id1, or it would make mistake
+		product_id2 = I2C_PAN3204LL_ReadRegister(REG_PAN3204LL_PRODUCT_ID2);
+		// product_id3 = I2C_PAN3204LL_ReadRegister(0x60);				//
+		product_id3 = I2C_PAN3204LL_ReadRegister(0x7A);
+
+		sensor_type = sensor_type_identify(); //get sensor type
+		printf("---sensor_type=%d, id1 = 0x%1x, id2 = 0x%1x\n",sensor_type, product_id1, product_id2);
+	}
+
 
 	// if (poweron)
 	{
@@ -1099,6 +1297,12 @@ unsigned int OPTSensor_Init(unsigned int poweron)
 		{
 			DownloadConfigTable(config_s101ul_tab, sizeof(config_s101ul_tab));
 		}
+		else if ( sensor_type == SENSOR_3311 )
+		{
+			DownloadConfigTable(config_3311_part_A, sizeof(config_3311_part_A));
+			config_3311_part_B();
+			DownloadConfigTable(config_3311_part_C, sizeof(config_3311_part_C));
+		}
 	}
 	
 	return sensor_type;
@@ -1125,7 +1329,7 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
 		no_overflow = 1;
 	}
 
-	if ( sensor_type == SENSOR_S205 || sensor_type == SENSOR_SG8925 || sensor_type == SENSOR_S101UL )
+	if ( sensor_type == SENSOR_S205 || sensor_type == SENSOR_SG8925 || sensor_type == SENSOR_S101UL || sensor_type == SENSOR_3311)
 	{
 		no_overflow = 1;
 	}
@@ -1143,13 +1347,15 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
 #if SENSOR_MOTION_ENABLE
     if (gpio_read(PIN_SIF_MOTION))
     { //if motion PIN is high level, means sensor have no data, return directly
-        return 0;
+      //  return 0;
     }
 #endif
 
 	optical_status = I2C_PAN3204LL_ReadRegister(REG_PAN3204LL_MOTION_STATUS); //get sensor status
 
-	if ( (optical_status & MOTION_STATUS_MOT)  || (no_overflow && ((optical_status & MOTION_STATUS_DXOVF) || (optical_status & MOTION_STATUS_DYOVF))))
+//	printf("optical_status=%1x \n", optical_status);
+
+	if ( 1 || (optical_status & MOTION_STATUS_MOT)  || (no_overflow && ((optical_status & MOTION_STATUS_DXOVF) || (optical_status & MOTION_STATUS_DYOVF))))
 	{ //sensor data valid
 	#if SENSOR_DATA_LENGTH_12_BIT_ENABLE
 		if( sensor_type == SENSOR_PAW3805EK_CJV1 )
@@ -1218,6 +1424,19 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
 
             ms_data.x = reg_x;
             ms_data.y = reg_y;
+		}
+		else if ( sensor_type == SENSOR_3311 )
+		{
+			reg_x = I2C_PAN3204LL_ReadRegister(0x03); // DIRECTION_CLOCK_12 X
+			reg_y = I2C_PAN3204LL_ReadRegister(0x05);  // DIRECTION_CLOCK_12 Y
+
+			reg_x |= I2C_PAN3204LL_ReadRegister(0x04) << 8;
+			reg_y |= I2C_PAN3204LL_ReadRegister(0x06) << 8;
+
+            ms_data.x = reg_x;
+            ms_data.y = reg_y;
+
+            printf("xy=%2x, %2x \n", reg_x, reg_y);
 		}
 		else
 	#endif
@@ -2065,6 +2284,10 @@ void sensor_dpi_set(u8 cpi_ctrl)
 	{
 		s101ul_CPI_set( s101ul_dpi_tbl[cpi_ctrl] );
 	}
+	else if (sensor_type == SENSOR_3311)
+	{
+		paw3311_CPI_set( paw3311_dpi_tbl[cpi_ctrl] );
+	}
 }
 
 void sensor_dpi_default(void)
@@ -2179,6 +2402,22 @@ void btn_dpi_set()
  */
 int Sensor3204_Wakeup(u32 sensor)
 {
+#if (PROJECT_ID == PID_Q15)
+	gpio_write(PIN_SENSOR_CS, 0);
+	sleep_ms(1);
+
+	product_id1 = I2C_PAN3204LL_ReadRegister(0x00);
+	product_id2 = I2C_PAN3204LL_ReadRegister(0x5F);
+
+	printf("sensor_id =  %1x %1x \n", product_id1, product_id2);
+
+	if ( 0x50 == product_id1 && 0xAF == product_id2 )
+	{
+		sensor_type = SENSOR_3311;
+		printf("sensor = PAW3311 \n");
+	}
+#endif
+
     return 1;
 }
 
