@@ -1347,7 +1347,7 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
 #if SENSOR_MOTION_ENABLE
     if (gpio_read(PIN_SIF_MOTION))
     { //if motion PIN is high level, means sensor have no data, return directly
-      //  return 0;
+        return 0;
     }
 #endif
 
@@ -1355,7 +1355,7 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
 
 //	printf("optical_status=%1x \n", optical_status);
 
-	if ( 1 || (optical_status & MOTION_STATUS_MOT)  || (no_overflow && ((optical_status & MOTION_STATUS_DXOVF) || (optical_status & MOTION_STATUS_DYOVF))))
+	if ( (optical_status & MOTION_STATUS_MOT)  || (no_overflow && ((optical_status & MOTION_STATUS_DXOVF) || (optical_status & MOTION_STATUS_DYOVF))))
 	{ //sensor data valid
 	#if SENSOR_DATA_LENGTH_12_BIT_ENABLE
 		if( sensor_type == SENSOR_PAW3805EK_CJV1 )
