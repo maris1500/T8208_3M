@@ -1,7 +1,7 @@
 #ifndef _PID_Q15_H_
 #define _PID_Q15_H_
 
-
+#define KEY_PAIR_USED_POWERUP_ENABLE  1
 #define WEB_HID_ENABLE  1
 #define WEB_HID_LENGTH  32
 
@@ -369,7 +369,7 @@
 #endif
 
 #if (KEY_MODE_INDEPENDENT_ENABLE) || KEY_MODE_COMBINE_ENABLE
-	#define PIN_BTN_MODE            GPIO_PC1
+	#define PIN_BTN_MODE            GPIO_PC3
 #endif
 
 
