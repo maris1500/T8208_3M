@@ -80,8 +80,8 @@
     #define CS_DELAY
 #endif
 
-#define		DLY_200NS    sleep_us(4)// CLOCK_DLY_6_CYC//sleep_us(5)//asm("tnop");asm("tnop")
-#define		DLY_100NS    sleep_us(2)// CLOCK_DLY_5_CYC//sleep_us(5)//asm("tnop")
+#define		DLY_200NS    CLOCK_DLY_20_CYC  //sleep_us(5)//asm("tnop");asm("tnop")
+#define		DLY_100NS    CLOCK_DLY_10_CYC  //sleep_us(5)//asm("tnop")
 
 #define		SENSOR_RECOVER_FAIL		1
 
@@ -144,7 +144,7 @@ void sensor_set_wakeup_level_deepsleep(u8 enable)
 void sif_init(void)
 {
 #if (PROJECT_ID == PID_Q15)
-	sleep_ms(50);
+	sleep_ms(100);
 #endif
 
 #if SENSOR_CS_ENABLE
@@ -161,7 +161,8 @@ void sif_init(void)
 
 #if (PROJECT_ID == PID_Q15)
 	gpio_write(PIN_SENSOR_CS, 0);
-	sleep_ms(1);
+	sleep_ms(5);
+	gpio_write(PIN_SENSOR_CS, 1);
 #endif
 
 }
@@ -1165,16 +1166,17 @@ unsigned int OPTSensor_Init(unsigned int poweron)
 	Sensor3204_Wakeup(sensor_type);
 
 #if (PROJECT_ID == PID_Q15)
-	if ( 0x50 == product_id1 && 0xAF == product_id2 )
+	if ( sensor_type == SENSOR_3311 )
 	{
 		unsigned char reg_r1 = 0x00, reg_r2 = 0x00;
 
+		I2C_PAN3204LL_WriteRegister(0x7F, 0x00);
 		I2C_PAN3204LL_WriteRegister(0x3A, 0x5A);
 		sleep_ms(60);
 
 		I2C_PAN3204LL_WriteRegister(0x40, 0x80);
 		I2C_PAN3204LL_WriteRegister(0x55, 0x01);
-		sleep_ms(10);
+		sleep_ms(2);
 
 		I2C_PAN3204LL_WriteRegister(0x7F, 0x0E);
 		I2C_PAN3204LL_WriteRegister(0x43, 0x1D);
@@ -1301,7 +1303,28 @@ unsigned int OPTSensor_Init(unsigned int poweron)
 		{
 			DownloadConfigTable(config_3311_part_A, sizeof(config_3311_part_A));
 			config_3311_part_B();
+
+		//	I2C_PAN3204LL_WriteRegister(REG_PAN3204LL_CONFIGURATION, 0x00); //reset sensor
+		//	sleep_ms(10);
+		//	I2C_PAN3204LL_WriteRegister(0x19, 0x10);
+		I2C_PAN3204LL_WriteRegister(0x7F, 0x00);
+		I2C_PAN3204LL_WriteRegister(0x3A, 0x5A);  // load configuration
+		sleep_ms(50);							  // ����ȣ�
+
+			I2C_PAN3204LL_ReadRegister(0x02);
+			I2C_PAN3204LL_ReadRegister(0x03);
+			I2C_PAN3204LL_ReadRegister(0x04);
+			I2C_PAN3204LL_ReadRegister(0x05);
+			I2C_PAN3204LL_ReadRegister(0x06);
+
 			DownloadConfigTable(config_3311_part_C, sizeof(config_3311_part_C));
+
+
+			I2C_PAN3204LL_ReadRegister(0x02);
+			I2C_PAN3204LL_ReadRegister(0x03);
+			I2C_PAN3204LL_ReadRegister(0x04);
+			I2C_PAN3204LL_ReadRegister(0x05);
+			I2C_PAN3204LL_ReadRegister(0x06);
 		}
 	}
 	
@@ -1347,13 +1370,11 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
 #if SENSOR_MOTION_ENABLE
     if (gpio_read(PIN_SIF_MOTION))
     { //if motion PIN is high level, means sensor have no data, return directly
-        return 0;
+     //   return 0;
     }
 #endif
 
 	optical_status = I2C_PAN3204LL_ReadRegister(REG_PAN3204LL_MOTION_STATUS); //get sensor status
-
-//	printf("optical_status=%1x \n", optical_status);
 
 	if ( (optical_status & MOTION_STATUS_MOT)  || (no_overflow && ((optical_status & MOTION_STATUS_DXOVF) || (optical_status & MOTION_STATUS_DYOVF))))
 	{ //sensor data valid
@@ -1428,15 +1449,15 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
 		else if ( sensor_type == SENSOR_3311 )
 		{
 			reg_x = I2C_PAN3204LL_ReadRegister(0x03); // DIRECTION_CLOCK_12 X
-			reg_y = I2C_PAN3204LL_ReadRegister(0x05);  // DIRECTION_CLOCK_12 Y
-
 			reg_x |= I2C_PAN3204LL_ReadRegister(0x04) << 8;
+			reg_y = I2C_PAN3204LL_ReadRegister(0x05);  // DIRECTION_CLOCK_12 Y
 			reg_y |= I2C_PAN3204LL_ReadRegister(0x06) << 8;
 
             ms_data.x = reg_x;
             ms_data.y = reg_y;
 
-            printf("xy=%2x, %2x \n", reg_x, reg_y);
+            if (reg_x || reg_y )
+             printf("xy=%2x, %2x \n", reg_x, reg_y);
 		}
 		else
 	#endif

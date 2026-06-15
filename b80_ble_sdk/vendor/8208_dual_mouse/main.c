@@ -937,7 +937,7 @@ int main(void) //run in ramcode
 
 #if (DEBUG_MODE)
     static u32 main_tick = 0;
-    if ( clock_time_exceed(main_tick, 2000*1000) )
+    if ( clock_time_exceed(main_tick, 1000*1000) )
     {
        main_tick = clock_time();
 
@@ -946,6 +946,8 @@ int main(void) //run in ramcode
 		  // suspend_wake_up_enable && (blc_ll_getCurrentState() == BLS_LINK_STATE_CONN
     	  // printf("m=%d,%d,%d,%d,%d \n", suspend_wake_up_enable, blc_ll_getCurrentState(), bls_ll_getConnectionInterval(), bls_ll_getConnectionLatency(), bls_ll_getConnectionTimeout());
        }
+
+     //  printf("REG02=%1x 07=%1x\n\n", I2C_PAN3204LL_ReadRegister(0x02), I2C_PAN3204LL_ReadRegister(0x07));
     }
 #endif
 
