@@ -106,6 +106,8 @@ mouse_sta_t gc_mouse_sta;
 	_attribute_data_retention_user u8 report_rate = 4;	//2.4G reporting rate 8--250hz
 #elif MOUSE_REPORT_500HZ_ENABLE
 	_attribute_data_retention_user u8 report_rate = 2;
+#elif MOUSE_REPORT_20HZ_ENABLE
+	_attribute_data_retention_user u8 report_rate = 50;
 #else
 	_attribute_data_retention_user u8 report_rate = 8;	//2.4G reporting rate 8--125hz
 #endif

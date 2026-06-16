@@ -58,6 +58,9 @@ rf_packet_t rf_km_buf =
 #if DATA_3_CHOOSE_1_ENABLE
 	55,	// dma_len
     54,	// rf_len
+#elif WEB_HID_ENABLE
+    18,	// dma_len
+    17,	// rf_len
 #else
     14,	// dma_len
     13,	// rf_len
