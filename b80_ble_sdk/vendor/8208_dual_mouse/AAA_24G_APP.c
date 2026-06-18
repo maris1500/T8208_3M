@@ -494,6 +494,8 @@ void d24g_rf_loop()
 				
 				if (p) //There's data in the FIFO
 				{
+					// printf("flashdongle_id = %4x \n", flash_dev_info.dongle_id);
+
 				    gc_mouse_sta.mouse_send_need_f = 2; //Set send communication packet flag
 				    
 					u8 *tmp = (u8 *)&p[0];
@@ -755,7 +757,7 @@ void pm_poll()
 						gc_mouse_sta.need_suspend_flag = 1; //set enter suspend flag
 						wake_src = PM_WAKEUP_TIMER|PM_WAKEUP_PAD; //wake up source = PM_WAKEUP_TIMER|PM_WAKEUP_PAD
 					#if SENSOR_MOTION_ENABLE
-						interval = 1000; //wake up interval = 1000ms
+						interval = 100; //wake up interval = 1000ms
 					#else
 						interval = 100; //wake up interval = 100ms
 					#endif

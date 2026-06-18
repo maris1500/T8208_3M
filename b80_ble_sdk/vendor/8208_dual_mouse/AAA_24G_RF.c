@@ -330,8 +330,10 @@ void rf_irq_src_allclr()
  * @return      
  * @note        
  */
-u8  Read_Payload(u8 *payload)
+
+u8  Read_Payload(void) // u8  Read_Payload(u8 *payload)
 {
+#if 0
     u8 *rx_pkt;
     u8 ret, i;
 
@@ -345,6 +347,20 @@ u8  Read_Payload(u8 *payload)
     {
         payload[i] = rx_pkt[i];
     }
+#else
+
+    u8 ret = 0, i = 0;
+
+    ret = rx_packet[4] & 0x3f; //get length of rx paylaod
+    printf("rx_dax=");
+    for (i = 0; i < (ret + 5); i++)
+    {
+    	printf("%1x ", rx_packet[i]);
+    }
+    printf("\n");
+
+#endif
+
     return 1;
 }
 
@@ -537,7 +553,8 @@ _attribute_ram_code_sec_ void rf_stx_to_rx(u8 *p,u32 rx_timeout_us)
 extern u8  rf_rx_process(rf_packet_t *p_pkt);
 _attribute_ram_code_sec_ void irq_device_rx(void)
 {
-	//Read_Payload();
+	 Read_Payload();
+
 	if(RF_TPLL_PACKET_CRC_OK(rx_packet)&&RF_TPLL_PACKET_LENGTH_OK(rx_packet))
 	{
 		PIN_DEBUG_RF_RX_CRC_OK_LEVEL(0);
