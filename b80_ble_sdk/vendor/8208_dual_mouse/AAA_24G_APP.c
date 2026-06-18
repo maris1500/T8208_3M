@@ -22,10 +22,8 @@
  *******************************************************************************************************/
 
 #include "AAA_public_config.h"
+#include "main.h"
 
-#if PM_SYS_LOW_POWER_ENABLE
-	#include "main.h"
-#endif
 
 #if G24_MODE_ENABLE
 
@@ -559,6 +557,10 @@ void ui_loop_24g()
 	static u32 tick_loop_24g;
     u32 wheel_prepare_tick = 0;
 
+#if (PROJECT_ID == PID_Q15)
+    static unsigned char gc_check_dongle_data_counter = 0;
+#endif
+
 #if (PROJECT_ID == PID_601)
     unsigned int ui_g24_key_time = report_rate*1000 - 75;
 #else
@@ -610,14 +612,28 @@ void ui_loop_24g()
 
 	if (device_status >= STATE_NORMAL)
 	{
+
+	#if (PROJECT_ID == PID_Q15)
+		gc_check_dongle_data_counter++;
+	#endif
+
 		if (has_new_key_event) //has new mouse action
 		{
 			has_new_key_event = 0;//reset has new mouse action flag 0
 			reset_idle_status();//reset idle parameters
 			my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push btn data to fifo
 		} 
+	#if (PROJECT_ID == PID_Q15)
+		else if ( (gc_check_dongle_data_counter > 20) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
+	#else
 		else if ((idle_count < 3) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
+	#endif
 		{
+
+		#if (PROJECT_ID == PID_Q15)
+			gc_check_dongle_data_counter = 0;
+		#endif
+
 			u8 *p = my_fifo_get(&fifo_km);//get data
 			
 			if (p == 0)

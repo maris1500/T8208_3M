@@ -8,7 +8,7 @@
 #define MCU_QFN40_ENABLE        1
 #define UL1001_DPI_2_ENABLE     0
 
-#define FRE_RC_48MHZ_ENABLE  1
+#define FRE_RC_48MHZ_ENABLE  0
 
 #define TUBE_BAT_LOWER_ENABLE 0
 
@@ -93,7 +93,7 @@
 #define KEY_FEATURE_MIKE_AI_ENABLE     0
 #define KEY_LEFT_MIDDLE_RIGHT_ENABLE   0
 
-#define PM_SYS_LOW_POWER_ENABLE        1
+#define PM_SYS_LOW_POWER_ENABLE        0
 
 
 #define LED_RGB_RUN_TIME          60
