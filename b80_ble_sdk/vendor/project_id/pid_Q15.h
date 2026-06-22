@@ -1,6 +1,7 @@
 #ifndef _PID_Q15_H_
 #define _PID_Q15_H_
 
+#define IDLE_REPOER_CYCLE    1500
 #define KEY_PAIR_USED_POWERUP_ENABLE  1
 #define WEB_HID_ENABLE  1
 #define WEB_HID_LENGTH  32
@@ -69,8 +70,8 @@
 #define DEVICE_NAME_2  "BOW5.0 BT2"
 
 #define MOUSE_REPORT_250HZ_ENABLE     0
-#define MOUSE_REPORT_500HZ_ENABLE     0
-#define MOUSE_REPORT_20HZ_ENABLE      1
+#define MOUSE_REPORT_500HZ_ENABLE     1
+#define MOUSE_REPORT_20HZ_ENABLE      0
 
 #define SWITCH_MODE_ENABLE              0
 #define SWITCH_MODE_IO_TOGGLE_ENABLE    0

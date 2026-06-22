@@ -558,7 +558,7 @@ void ui_loop_24g()
     u32 wheel_prepare_tick = 0;
 
 #if (PROJECT_ID == PID_Q15)
-    static unsigned char gc_check_dongle_data_counter = 0;
+    static unsigned short gc_check_dongle_data_counter = 0;
 #endif
 
 #if (PROJECT_ID == PID_601)
@@ -624,7 +624,7 @@ void ui_loop_24g()
 			my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push btn data to fifo
 		} 
 	#if (PROJECT_ID == PID_Q15)
-		else if ( (gc_check_dongle_data_counter > 20) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
+		else if ( (gc_check_dongle_data_counter > IDLE_REPOER_CYCLE) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
 	#else
 		else if ((idle_count < 3) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
 	#endif
