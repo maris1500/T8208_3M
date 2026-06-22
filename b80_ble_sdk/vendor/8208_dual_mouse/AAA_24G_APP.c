@@ -44,6 +44,11 @@ u32 dongle_id;
 
 volatile u32 no_ack = 0; //host ack count
 
+#if (PROJECT_ID == PID_Q15)
+    static unsigned short gc_check_dongle_data_counter = 0;
+    static unsigned char gc_check_dongle_sleep_counter = 0;
+#endif
+
 rf_packet_t	rf_pair_buf =
 {
     20,	// dma_len
@@ -557,10 +562,6 @@ void ui_loop_24g()
 	static u32 tick_loop_24g;
     u32 wheel_prepare_tick = 0;
 
-#if (PROJECT_ID == PID_Q15)
-    static unsigned short gc_check_dongle_data_counter = 0;
-#endif
-
 #if (PROJECT_ID == PID_601)
     unsigned int ui_g24_key_time = report_rate*1000 - 75;
 #else
@@ -624,7 +625,7 @@ void ui_loop_24g()
 			my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push btn data to fifo
 		} 
 	#if (PROJECT_ID == PID_Q15)
-		else if ( (gc_check_dongle_data_counter > IDLE_REPOER_CYCLE) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
+		else if ( (gc_check_dongle_data_counter > IDLE_REPOER_CYCLE) || (gc_check_dongle_sleep_counter > IDLE_REPOER_CYCLE/100) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
 	#else
 		else if ((idle_count < 3) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
 	#endif
@@ -632,12 +633,14 @@ void ui_loop_24g()
 
 		#if (PROJECT_ID == PID_Q15)
 			gc_check_dongle_data_counter = 0;
+			gc_check_dongle_sleep_counter = 0;
 		#endif
 
 			u8 *p = my_fifo_get(&fifo_km);//get data
 			
 			if (p == 0)
 			{
+				printf("mouse_idle_data\n");
 				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push mouse data to fifo
 			}
 		}
@@ -858,6 +861,11 @@ void pm_poll()
 		/* If the need_suspend_flag is set, enter suspend */
 		if (gc_mouse_sta.need_suspend_flag)
 		{
+
+		#if (PROJECT_ID == PID_Q15)
+			gc_check_dongle_sleep_counter++;
+		#endif
+
 			cpu_sleep_wakeup(SUSPEND_MODE, wake_src, (wakeup_next_tick + interval*CLOCK_16M_SYS_TIMER_CLK_1MS));
 			wakeup_next_tick = clock_time();
 			rf_drv_private_2m_init();

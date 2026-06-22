@@ -1,7 +1,7 @@
 #ifndef _PID_Q15_H_
 #define _PID_Q15_H_
 
-#define IDLE_REPOER_CYCLE    1500
+#define IDLE_REPOER_CYCLE    1000
 #define KEY_PAIR_USED_POWERUP_ENABLE  1
 #define WEB_HID_ENABLE  1
 #define WEB_HID_LENGTH  32
@@ -320,7 +320,7 @@
 #define DEBUG_MODE  1
 
 #if DEBUG_MODE
-	#define PRINT_BAUD_RATE       100000   // 1M baud rate,should Not bigger than 1Mb/s
+	#define PRINT_BAUD_RATE       10000    // 1M baud rate,should Not bigger than 1Mb/s
 	#define DEBUG_INFO_TX_PIN     GPIO_PA3 // Software uart printing gpio
 #endif
 
