@@ -175,6 +175,46 @@ typedef enum {
 
 extern void coled_led_mode_change_para_clear(void);
 
+#if WEB_KEY_FEATURE_ENABLE
+
+
+
+	typedef enum {
+
+		KEY_START_INDEX  = 0,
+
+		KEY_LEFT_INDEX   = 1,
+		KEY_RIGHT_INDEX  = 2,
+		KEY_MIDDLE_INDEX = 3,
+
+		KEY_K5_INDEX  = 4,
+		KEY_K4_INDEX  = 5,
+		KEY_DPI_INDEX = 6,
+
+		KEY_MAX_INDEX,
+
+	}web_key_index_en;
+
+	typedef enum {
+
+		WEB_KEY_NOMAL = 0x10,
+		WEB_KEY_FIRE  = 0x30,
+		WEB_KEY_DPI   = 0x40,
+
+		WEB_KEY_DPI_LOCK = 0x50,
+		WEB_KEY_SPECIAL  = 0x60,
+		WEB_KEY_KEYBOARD = 0x70,
+		WEB_KEY_MEDIA    = 0x80,
+		WEB_KEY_MACRO    = 0x90,
+	}web_key_type_en;
+
+	extern unsigned char web_key_special_tab[6];
+
+	extern char web_key_nomal(unsigned char index);
+	extern char web_key_dpi(unsigned char index);
+#endif
+
+
 #if (PROJECT_ID == PID_104)
 
 	typedef enum {

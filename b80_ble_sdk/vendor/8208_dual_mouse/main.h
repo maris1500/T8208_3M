@@ -50,6 +50,12 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 	}web_dpi_t;
 
 	typedef struct {
+		unsigned char type;
+		unsigned char value;
+		unsigned char func2;
+	}web_key_t;
+
+	typedef struct {
 		unsigned int charge_mode:2;
 		unsigned int battery:8;
 
@@ -68,8 +74,8 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 	{
 		web_dpi_t  dpi;
 		web_sta_t  sta;
+		web_key_t  key[6];
 
-		unsigned char temp[11];
 	}web_data_cfg_t;
 
 	extern web_data_cfg_t gc_web_data;

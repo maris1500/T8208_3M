@@ -98,8 +98,8 @@ u8 g_rate = 0; //default 0 for all report
 #endif
 
 #if WEB_HID_ENABLE
-	unsigned char gc_web_data[32] = {0};
-	unsigned char gc_web_len = 0;
+	unsigned char gc_web_rx_data[35] = {0};
+	unsigned char gc_web_rx_len = 0;
 
 	extern void usb_aut_report_time_reset(void);
 
@@ -560,20 +560,20 @@ void usb_handle_out_class_intf_req(int data_request)
 					}
 
 				#if WEB_HID_ENABLE
-					if ( gc_web_len < WEB_HID_LENGTH )
+					if ( gc_web_rx_len < WEB_HID_LENGTH )
 					{
 						for (i = 0; i < 8; i++) 
 						{
-							gc_web_data[ gc_web_len++ ] = host_cmd[i];
+							gc_web_rx_data[ gc_web_rx_len++ ] = host_cmd[i];
 						}
 					}
 
-					if ( gc_web_len >= WEB_HID_LENGTH )
+					if ( gc_web_rx_len >= WEB_HID_LENGTH )
 					{
-						printf("USB_HID_OUT_Custom_data:");
-						for (i = 0; i < gc_web_len; i++) 
+						printf("web_rx_data:");
+						for (i = 0; i < gc_web_rx_len; i++) 
 						{
-							printf(" %1x", gc_web_data[i]);
+							printf(" %1x", gc_web_rx_data[i]);
 						}
 						printf("\r\n");
 					}
@@ -805,10 +805,11 @@ void usb_handle_in_class_intf_req()
 				{
 					/* Feature report ID 0x06: OTA/drvier query response. */
 
-					if ( gc_web_len >= 32 )
+					if ( gc_web_rx_len >= 32 )
 					{
 						printf("Input_ID_06 \n");
-						gc_web_len = 0;
+						web_data_process( gc_web_rx_data );
+						gc_web_rx_len = 0;
 						usbhw_write_ctrl_ep_data (0x06);
 						usbhw_write_ctrl_ep_data (0x00);
 						usbhw_write_ctrl_ep_data (0x00);

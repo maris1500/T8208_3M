@@ -669,6 +669,13 @@ int main(void) //run in ramcode
 
 	}
 
+	gc_web_data.key[0].type = 0x10; gc_web_data.key[0].value = 0x01;
+	gc_web_data.key[1].type = 0x10; gc_web_data.key[1].value = 0x02;
+	gc_web_data.key[2].type = 0x10; gc_web_data.key[2].value = 0x04;
+	gc_web_data.key[3].type = 0x10; gc_web_data.key[3].value = 0x08;
+	gc_web_data.key[4].type = 0x10; gc_web_data.key[4].value = 0x10;
+	gc_web_data.key[5].type = 0x40; gc_web_data.key[5].value = 0x02;
+
 	printf("webtemp: %d\n", WEB_DATA_LENGTH_MAX);
 #endif
 

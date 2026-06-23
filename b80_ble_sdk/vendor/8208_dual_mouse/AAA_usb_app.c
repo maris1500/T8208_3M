@@ -924,11 +924,14 @@ int usb_status_input_in_send(void)
 
 	usbhw_write_ep(USB_EDP_WEB_IN, buf, HID_WEB_REPORT_WIRE_LEN);
 
+
 	printf("EP4_IN_32Bytes:");
-	for (i = 0; i < HID_WEB_REPORT_WIRE_LEN; i++) {
-		printf(" %1x", buf[i]);
-	}
+	// for (i = 0; i < HID_WEB_REPORT_WIRE_LEN; i++) 
+	//{
+		// printf(" %1x", buf[i]);
+	//}
 	printf("\r\n");
+
 
 	sc_first_rp_flag = 1;
 

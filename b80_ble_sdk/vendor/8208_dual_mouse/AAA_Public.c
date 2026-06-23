@@ -45,6 +45,10 @@
 	 extern void rgb_led_pwm_init(void);
 #endif
 
+#if WEB_KEY_FEATURE_ENABLE
+	 unsigned char web_key_special_tab[6] = {0x00};
+#endif
+
 _attribute_data_retention_ u8 active_disconnect_reason = 0;
 _attribute_data_retention_ u8 device_name_len = 0;
 _attribute_data_retention_ u8 connect_ok = 0;
@@ -1517,6 +1521,8 @@ void button_process(u8 event_new)
 	// do nothing
 #elif (PROJECT_ID == PID_S600)
 	// do nothing
+#elif WEB_KEY_FEATURE_ENABLE
+	// do nothing
 #else
     if ( (last_btn_value & KEY_BTN_CPI) && event_new )
     {
@@ -1524,6 +1530,24 @@ void button_process(u8 event_new)
         {
             btn_dpi_set();
             printf("---->dpi set led dis\n");
+        }
+    }
+#endif
+
+
+
+#if WEB_KEY_FEATURE_ENABLE
+    unsigned char i = 0;
+
+    if ( (last_btn_value & KEY_BTN_CPI) && event_new )
+    {
+        for ( i = KEY_START_INDEX; i < KEY_MAX_INDEX; i++)
+        {
+        	if ( WEB_KEY_DPI == web_key_special_tab[i] )
+    		{
+        		 printf("dpi_test_000 \n");
+        		 web_key_special_tab[i] = WEB_KEY_NOMAL;
+    		}
         }
     }
 #endif
@@ -1902,6 +1926,10 @@ u8 btn_get_value()
                 now_value = 0;
             }
        #endif
+
+		#if	WEB_KEY_FEATURE_ENABLE
+
+		#endif
 
         #if (KEY_FEATURE_DESKTOP_ENABLE)
             ms_data.btn = now_value & 0x1F; 
@@ -2680,6 +2708,23 @@ _attribute_ram_code_ u16 btn_scan()
 	{
 	#if M388_K4_K5_LRKEY_CHANGE_ENABLE
 		now_value |= KEY_LEFT_VALUE_2;
+	#elif WEB_KEY_FEATURE_ENABLE
+
+		web_key_special_tab[KEY_LEFT_INDEX-1] = WEB_KEY_NOMAL;
+	
+		if ( web_key_nomal(KEY_LEFT_INDEX) )
+		{
+			now_value |= gc_web_data.key[KEY_LEFT_INDEX - 1].value ;
+		}
+		else if ( web_key_dpi(KEY_LEFT_INDEX) )
+		{
+			now_value |= KEY_BTN_CPI;
+			web_key_special_tab[KEY_LEFT_INDEX-1] = WEB_KEY_DPI;
+		}
+		else
+		{
+
+		}
 	#else
 		now_value |= KEY_LEFT_VALUE;
 	#endif
@@ -2688,6 +2733,8 @@ _attribute_ram_code_ u16 btn_scan()
 	{
 	#if M388_K4_K5_LRKEY_CHANGE_ENABLE
 		now_value |= KEY_LEFT_VALUE;
+	#elif WEB_KEY_FEATURE_ENABLE
+		// nothing
 	#else
 		now_value |= KEY_LEFT_VALUE_2;
 	#endif
@@ -2698,11 +2745,35 @@ _attribute_ram_code_ u16 btn_scan()
 	button_status = button_get_status(PIN_BTN_RIGHT); //check pin right
 	if (button_status == 1)
 	{
+	#if WEB_KEY_FEATURE_ENABLE
+
+		web_key_special_tab[KEY_RIGHT_INDEX-1] = WEB_KEY_NOMAL;
+
+		if ( web_key_nomal(KEY_RIGHT_INDEX) )
+		{
+			now_value |= gc_web_data.key[KEY_RIGHT_INDEX - 1].value ;
+		}
+		else if ( web_key_dpi(KEY_RIGHT_INDEX) )
+		{
+			now_value |= KEY_BTN_CPI;
+			web_key_special_tab[KEY_RIGHT_INDEX-1] = WEB_KEY_DPI;
+		}
+		else
+		{
+
+		}
+
+	#else
 		now_value |= KEY_RIGHT_VALUE;
+	#endif
 	}
 	else if (button_status == 2)
 	{
+	#if WEB_KEY_FEATURE_ENABLE
+		// do nothing
+	#else
 		now_value |= KEY_RIGHT_VALUE_2;
+	#endif
 	}
 	else
 	{
@@ -2716,6 +2787,24 @@ _attribute_ram_code_ u16 btn_scan()
 	{
 	#if M388_K4_K5_LRKEY_CHANGE_ENABLE
 		now_value |= KEY_MIDDLE_VALUE_2;
+	#elif WEB_KEY_FEATURE_ENABLE
+
+		web_key_special_tab[KEY_MIDDLE_INDEX-1] = WEB_KEY_NOMAL;
+
+		if ( web_key_nomal(KEY_MIDDLE_INDEX) )
+		{
+			now_value |= gc_web_data.key[KEY_MIDDLE_INDEX - 1].value ;
+		}
+		else if ( web_key_dpi(KEY_MIDDLE_INDEX) )
+		{
+			now_value |= KEY_BTN_CPI;
+			web_key_special_tab[KEY_MIDDLE_INDEX-1] = WEB_KEY_DPI;
+		}
+		else
+		{
+
+		}
+
 	#else
 		now_value |= KEY_MIDDLE_VALUE;
 	#endif
@@ -2724,6 +2813,8 @@ _attribute_ram_code_ u16 btn_scan()
 	{
 	#if M388_K4_K5_LRKEY_CHANGE_ENABLE
 		now_value |= KEY_MIDDLE_VALUE;
+	#elif WEB_KEY_FEATURE_ENABLE
+		// do nothing
 	#else
 		now_value |= KEY_MIDDLE_VALUE_2;
 	#endif
@@ -2805,21 +2896,81 @@ _attribute_ram_code_ u16 btn_scan()
 #if (KEY_CPI_INDEPENDENT_ENABLE)
 	if ( 0 == gpio_read(KEY_DPI_PIN) )
 	{
+	#if WEB_KEY_FEATURE_ENABLE
+
+		web_key_special_tab[KEY_DPI_INDEX-1] = WEB_KEY_NOMAL;
+
+		if ( web_key_nomal(KEY_DPI_INDEX) )
+		{
+			now_value |= gc_web_data.key[KEY_DPI_INDEX - 1].value ;
+		}
+		else if ( web_key_dpi(KEY_DPI_INDEX) )
+		{
+			now_value |= KEY_BTN_CPI;
+			web_key_special_tab[KEY_DPI_INDEX-1] = WEB_KEY_DPI;
+		}
+		else
+		{
+
+		}
+
+	#else
 		now_value |= KEY_BTN_CPI;
+	#endif
 	}
 #endif
 
 #if KEY_K4_Independence_CTRL_EN
 	if ( 0 == gpio_read(KEY_K4_PIN) )
 	{
+	#if WEB_KEY_FEATURE_ENABLE
+	
+		web_key_special_tab[KEY_K4_INDEX-1] = WEB_KEY_NOMAL;
+
+		if ( web_key_nomal(KEY_K4_INDEX) )
+		{
+			now_value |= gc_web_data.key[KEY_K4_INDEX - 1].value ;
+		}
+		else if ( web_key_dpi(KEY_K4_INDEX) )
+		{
+			now_value |= KEY_BTN_CPI;
+			web_key_special_tab[KEY_K4_INDEX-1] = WEB_KEY_DPI;
+		}
+		else
+		{
+
+		}
+
+	#else
 		now_value |= KEY_BTN_K4;
+	#endif
 	}
 #endif
 
 #if KEY_K5_Independence_CTRL_EN
 	if ( 0 == gpio_read(KEY_K5_PIN) )
 	{
+	#if WEB_KEY_FEATURE_ENABLE
+
+		web_key_special_tab[KEY_K5_INDEX-1] = WEB_KEY_NOMAL;
+	
+		if ( web_key_nomal(KEY_K5_INDEX) )
+		{
+			now_value |= gc_web_data.key[KEY_K5_INDEX - 1].value ;
+		}
+		else if ( web_key_dpi(KEY_K5_INDEX) )
+		{
+			now_value |= KEY_BTN_CPI;
+			web_key_special_tab[KEY_K5_INDEX-1] = WEB_KEY_DPI;
+		}
+		else
+		{
+
+		}
+
+	#else
 		now_value |= KEY_BTN_K5;
+	#endif
 	}
 #endif
 
