@@ -31,6 +31,33 @@ char web_key_dpi(unsigned char index)
 
 }
 
+char web_key_office(unsigned char index)
+{
+	unsigned char type = gc_web_data.key[index-1].type;
+
+	if ( 0x70 == type )
+	{
+		return (1);
+	}
+
+	return (0);
+
+}
+
+char web_key_media(unsigned char index)
+{
+	unsigned char type = gc_web_data.key[index-1].type;
+
+	if ( 0x80 == type )
+	{
+		return (1);
+	}
+
+	return (0);
+
+}
+
+
 void web_key_handle(web_key_t *key, unsigned char *buf)
 {
 	unsigned char i = 0, k = 0, ret = 0;

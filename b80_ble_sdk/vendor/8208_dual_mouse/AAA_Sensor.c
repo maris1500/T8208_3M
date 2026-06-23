@@ -2416,6 +2416,44 @@ void btn_dpi_set()
 
 }
 
+void dpi_save_led_display(void)
+{
+	set_current_cpi_value_handle(); //save dpi_value to flash
+
+    sensor_dpi_set(dpi_value); //set dpi_value to sensor
+
+    vbat_dpi_struct_clean();
+
+    dpi_led_show( dpi_value + 1 );
+}
+
+void btn_dpi_increase_set(void)
+{
+	if ( dpi_value < dpi_max_level - 1 )
+	{
+		dpi_value ++;
+	}
+
+	dpi_save_led_display();
+}
+
+void btn_dpi_reduce_set(void)
+{
+	if (dpi_value > 0)
+	{
+		dpi_value --;
+	}
+
+	dpi_save_led_display();
+
+}
+
+void btn_dpi_lock_set(unsigned char value)
+{
+
+	dpi_save_led_display();
+
+}
 /**
  * @brief	sensor wake up
  * @param	none

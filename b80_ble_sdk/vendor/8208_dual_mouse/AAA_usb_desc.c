@@ -628,6 +628,11 @@ u8 * usb_get_HID_DTYPE_Report(u8 index,u16 *g_response_len)
 		g_response_len[0]=sizeof(kb_report_desc);
 		return (u8*)&kb_report_desc[0];
 	}
+	else // debug warning
+	{
+		g_response_len[0]=sizeof(kb_report_desc);
+		return (u8*)&kb_report_desc[0];
+	}
 #elif OTA_ENABLE_AAA
 	else if(index==1)
 	{
@@ -662,6 +667,11 @@ u8 * usb_get_HID_DTYPE_HID(u8 index,u16 *g_response_len)
 		return (unsigned char*) (&km_cfg_desc[9+9+9+7+9]);
 	}
 	else if(index==2)
+	{
+		g_response_len[0]=9+7;
+		return (unsigned char*) (&km_cfg_desc[9+9+9+7+9+9+7+9]);
+	}
+	else // debug warning
 	{
 		g_response_len[0]=9+7;
 		return (unsigned char*) (&km_cfg_desc[9+9+9+7+9+9+7+9]);

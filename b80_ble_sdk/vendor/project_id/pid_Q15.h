@@ -260,6 +260,11 @@
 	#define KEY_BTN_MODE    0x20
 	#define KEY_BTN_CPI     0x40
 
+	#if WEB_KEY_FEATURE_ENABLE
+		#define KEY_WEB_OFFICE   0x0100
+		#define KEY_WEB_MEDIA    0x0200
+	#endif
+
 	#if KEY_FEATURE_BOSSKEY_ENABLE
 		#define KEY_FEATURE_BOSSKEY_VALUE 0x100
 	#endif

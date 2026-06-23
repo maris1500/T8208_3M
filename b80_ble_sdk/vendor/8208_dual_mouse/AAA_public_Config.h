@@ -177,7 +177,17 @@ extern void coled_led_mode_change_para_clear(void);
 
 #if WEB_KEY_FEATURE_ENABLE
 
+	typedef enum {
 
+		KEY_TRIGGER_NONE  = 0,
+		KEY_TRIGGER_OFFICE,
+		KEY_TRIGGER_MEDIA,
+	}web_trigger_en;
+
+	typedef struct {
+		unsigned short trigger:3;
+		unsigned short reserve:13;
+	}web_set_status_t; 
 
 	typedef enum {
 
@@ -203,15 +213,27 @@ extern void coled_led_mode_change_para_clear(void);
 
 		WEB_KEY_DPI_LOCK = 0x50,
 		WEB_KEY_SPECIAL  = 0x60,
-		WEB_KEY_KEYBOARD = 0x70,
+		WEB_KEY_OFFICE   = 0x70,
 		WEB_KEY_MEDIA    = 0x80,
 		WEB_KEY_MACRO    = 0x90,
 	}web_key_type_en;
 
+	extern web_set_status_t gc_web_sta_list;
+		
 	extern unsigned char web_key_special_tab[6];
 
 	extern char web_key_nomal(unsigned char index);
 	extern char web_key_dpi(unsigned char index);
+	extern char web_key_office(unsigned char index);
+	extern char web_key_media(unsigned char index);
+
+	extern unsigned short int web_key_left_function(void);
+	extern unsigned short int web_key_right_function(void);
+	extern unsigned short int web_key_middle_function(void);
+	extern unsigned short int web_key_k4_function(void);
+	extern unsigned short int web_key_k5_function(void);
+	extern unsigned short int web_key_dpi_function(void);
+
 #endif
 
 
@@ -637,6 +659,12 @@ extern void ui_loop(void);
 	extern void add_soft_time(void);
 	extern void check_softe_time(void);
 #endif
+
+
+extern void btn_dpi_lock_set(unsigned char value);
+extern void btn_dpi_increase_set(void);
+extern void btn_dpi_lock_set(unsigned char value);
+extern void btn_dpi_reduce_set(void);
 
 extern void ble_pm_aaa();
 

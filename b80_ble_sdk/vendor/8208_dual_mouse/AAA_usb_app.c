@@ -824,18 +824,19 @@ void app_hid_set_report_handle(u8 data_request, u8 report_id, u16 length)
 
             if (ep0_out_data_len == length)
             { // Data received completely
+			#if OTA_ENABLE_AAA
                 usb_data_t *p = (usb_data_t *)&ep0_out_data_buf[0];
-
+			#endif
                 /* clear index and data length for next Set_Report transfer */
                 ep0_out_data_len = 0;
 
-#if OTA_ENABLE_AAA
+			#if OTA_ENABLE_AAA
                 if (report_id == OTA_REPORT_ID && length == USB_OTA_LENGTH)
                 {
                     usb_data_handle(p, length);
                 }
                 else
-#endif
+			#endif
                 if (report_id == 0x05)
                 {
                     /* Custom feature report ID 0x05: driver communication data */

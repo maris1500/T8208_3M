@@ -1515,13 +1515,7 @@ void user_button_check_proc(void)
  */
 void button_process(u8 event_new)
 {
-#if (PROJECT_ID == PID_G929) || (PROJECT_ID == PID_4028) || (PROJECT_ID == PID_BG523) || (PROJECT_ID == PID_4027) || (PROJECT_ID == PID_HM668)
-	// do nothing
-#elif (PROJECT_ID == PID_4027_DRY) && (M4027_DRY_H2_ENABLE)
-	// do nothing
-#elif (PROJECT_ID == PID_S600)
-	// do nothing
-#elif WEB_KEY_FEATURE_ENABLE
+#if WEB_KEY_FEATURE_ENABLE
 	// do nothing
 #else
     if ( (last_btn_value & KEY_BTN_CPI) && event_new )
@@ -1545,38 +1539,33 @@ void button_process(u8 event_new)
         {
         	if ( WEB_KEY_DPI == web_key_special_tab[i] )
     		{
-        		 printf("dpi_test_000 \n");
-        		 web_key_special_tab[i] = WEB_KEY_NOMAL;
+        		web_key_special_tab[i] = WEB_KEY_NOMAL;
+
+        		if ( 0x40 == gc_web_data.key[i].type )
+        		{
+        			if ( 0x01 == gc_web_data.key[i].value )
+        			{
+        				printf("dpi_cycle_set \n");
+        				btn_dpi_set(); // dpi cycle
+        			}
+        			else if ( 0x02 == gc_web_data.key[i].value )
+        			{
+        				printf("dpi_increase_set \n");
+        				btn_dpi_increase_set(); // dpi increase
+        			}
+        			else if ( 0x03 == gc_web_data.key[i].value )
+        			{
+        				printf("dpi_reduce_set \n");
+        				btn_dpi_reduce_set();  // dpi reduce
+        			}
+        		}
+        		else if ( 0x50 == gc_web_data.key[i].type )
+        		{
+        			printf("dpi_lock_set \n");
+        			btn_dpi_lock_set( gc_web_data.key[i].value );
+        		}
     		}
         }
-    }
-#endif
-
-#if (PROJECT_ID == PID_MS13)
-    static unsigned char sc_dpi_default_flag = 0;
-    static unsigned int sc_dpi_default_time = 0;
-
-    if ( last_btn_value & KEY_BTN_MIDDLE )
-    {
-    	if ( connect_ok )
-    	{
-    		if ( 0 == sc_dpi_default_flag && clock_time_exceed(sc_dpi_default_time, 5*1000*1000) )
-    		{
-    			sensor_dpi_default();
-    			sc_dpi_default_time = clock_time();
-    			sc_dpi_default_flag = 1;
-    		}
-    	}
-
-    	if ( 0 == connect_ok || 1 == sc_dpi_default_flag )
-    	{
-    		sc_dpi_default_time = clock_time();
-    	}
-    }
-    else
-    {
-    	sc_dpi_default_flag = 0;
-    	sc_dpi_default_time = clock_time();
     }
 #endif
 
@@ -1630,269 +1619,6 @@ void button_process(u8 event_new)
 #endif
 
 
-#if (PROJECT_ID == PID_4028) && (0 == M4028_BLE_G24_MODE_ENABLE)
-    static unsigned int  sv_cpi_press_time = 0;
-    static unsigned char sv_cpi_press_cnt = 0, sv_cpi_flag = 0;
-
-    if ( 0 == sv_cpi_flag )
-    {
-    	if ( (last_btn_value & KEY_BTN_CPI) || (btn_value & KEY_BTN_CPI) )
-    	{
-    		sv_cpi_flag = 0;
-    	}
-    	else
-    	{
-    		sv_cpi_flag = 1;
-    	}
-    	return;
-    }
-
-	if ( last_btn_value != KEY_BTN_CPI || btn_value != KEY_BTN_CPI )
-	{
-		sv_cpi_press_time = clock_time();
-	}
-	else
-	{
-		if( clock_time_exceed(sv_cpi_press_time, 20*1000) )
-		{
-			sv_cpi_press_time = clock_time();
-			if ( sv_cpi_press_cnt < 250 && ++sv_cpi_press_cnt >= 150 )
-			{
-				sv_cpi_press_cnt = 250;
-				if ( 0 == pair_flag )
-				{
-					ble_start_pair();
-				}
-			}
-		}
-	}
-
-	if ( (last_btn_value & KEY_BTN_CPI) && event_new )
-	{
-		if ( sv_cpi_press_cnt >= 1 && sv_cpi_press_cnt <= 50 )
-		{
-			if ( connect_ok )
-			{
-				btn_dpi_set();
-			}
-		}
-		sv_cpi_press_cnt = 0;
-	}
-#endif
-
-
-
-#if (PROJECT_ID == PID_4027) || (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_S600)
-
-    static unsigned int  sv_cpi_press_time = 0;
-    static unsigned char sv_cpi_press_cnt = 0, sv_cpi_flag = 0;
-
-    if ( 0 == sv_cpi_flag )
-    {
-    	if ( (last_btn_value & KEY_BTN_CPI) || (btn_value & KEY_BTN_CPI) )
-    	{
-    		sv_cpi_flag = 0;
-    	}
-    	else
-    	{
-    		sv_cpi_flag = 1;
-    	}
-    	return;
-    }
-
-	if ( last_btn_value != KEY_BTN_CPI || btn_value != KEY_BTN_CPI )
-	{
-		sv_cpi_press_time = clock_time();
-	}
-	else
-	{
-		if( clock_time_exceed(sv_cpi_press_time, 20*1000) )
-		{
-			sv_cpi_press_time = clock_time();
-			if ( sv_cpi_press_cnt < 250 && ++sv_cpi_press_cnt >= 95 )
-			{
-				sv_cpi_press_cnt = 250;
-
-			#if (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_S600) || (PROJECT_ID == PID_S600)
-				if ( connect_ok )
-				{
-					flash_dev_info.code_led_sw = ( flash_dev_info.code_led_sw ) ? (0):(1);
-
-					if ( 0 == flash_dev_info.code_led_sw )
-					{
-						LED_CODE_POWER_ON();
-					}
-					else
-					{
-						LED_CODE_POWER_OFF();
-					}
-
-					save_dev_info_flash();
-				}
-			#else
-				if ( 0 == pair_flag )
-				{
-					if ( RF_1M_BLE_MODE == fun_mode )
-					{
-						ble_start_pair();
-					}
-					else
-					{
-						d24_start_pair();
-					}
-				}
-			#endif
-			}
-		}
-	}
-
-	if ( (last_btn_value & KEY_BTN_CPI) && event_new )
-	{
-		if ( sv_cpi_press_cnt >= 1 && sv_cpi_press_cnt <= 40 )
-		{
-			if ( connect_ok )
-			{
-				btn_dpi_set();
-			}
-		}
-		sv_cpi_press_cnt = 0;
-	}
-
-#endif
-
-
-
-#if (PROJECT_ID == PID_4027_DRY) && (M4027_DRY_H2_ENABLE)
-
-    static unsigned int  sv_cpi_press_time = 0;
-    static unsigned char sv_cpi_press_cnt = 0, sv_cpi_flag = 0;
-
-    if ( 0 == sv_cpi_flag )
-    {
-    	if ( (last_btn_value & KEY_BTN_CPI) || (btn_value & KEY_BTN_CPI) )
-    	{
-    		sv_cpi_flag = 0;
-    	}
-    	else
-    	{
-    		sv_cpi_flag = 1;
-    	}
-    	return;
-    }
-
-	if ( last_btn_value != KEY_BTN_CPI || btn_value != KEY_BTN_CPI )
-	{
-		sv_cpi_press_time = clock_time();
-	}
-	else
-	{
-		if( clock_time_exceed(sv_cpi_press_time, 20*1000) )
-		{
-			sv_cpi_press_time = clock_time();
-			if ( sv_cpi_press_cnt < 250 && ++sv_cpi_press_cnt >= 95 )
-			{
-				sv_cpi_press_cnt = 250;
-				if ( 0 == pair_flag )
-				{
-					if ( RF_1M_BLE_MODE == fun_mode )
-					{
-						ble_start_pair();
-					}
-					else
-					{
-						d24_start_pair();
-					}
-				}
-			}
-		}
-	}
-
-	if ( (last_btn_value & KEY_BTN_CPI) && event_new )
-	{
-		if ( sv_cpi_press_cnt >= 1 && sv_cpi_press_cnt <= 40 )
-		{
-			if ( connect_ok )
-			{
-				btn_dpi_set();
-			}
-		}
-		sv_cpi_press_cnt = 0;
-	}
-
-#endif
-
-
-#if (LED_COLOR_MODE_KEY_ENABLE)
-
-    static unsigned int  sv_cm_press_time = 0;
-    static unsigned char sv_cm_press_cnt = 0, sv_cm_flag = 0;
-
-    if ( 0 == sv_cm_flag )
-    {
-    	if ( (last_btn_value & KEY_COLOR_VALUE) || (btn_value & KEY_COLOR_VALUE) )
-    	{
-    		sv_cm_flag = 0;
-    	}
-    	else
-    	{
-    		sv_cm_flag = 1;
-    	}
-    	return;
-    }
-
-	if ( last_btn_value != KEY_COLOR_VALUE || btn_value != KEY_COLOR_VALUE )
-	{
-		sv_cm_press_time = clock_time();
-	}
-	else
-	{
-		if( clock_time_exceed(sv_cm_press_time, 20*1000) )
-		{
-			sv_cm_press_time = clock_time();
-			if ( sv_cm_press_cnt < 250 && ++sv_cm_press_cnt >= 95 )
-			{
-				sv_cm_press_cnt = 250;
-
-				if ( connect_ok )
-				{
-					flash_dev_info.code_led_sw = ( flash_dev_info.code_led_sw ) ? (0):(1);
-
-					if ( 0 == flash_dev_info.code_led_sw )
-					{
-						LED_CODE_POWER_ON();
-					}
-					else
-					{
-						LED_CODE_POWER_OFF();
-					}
-
-					save_dev_info_flash();
-				}
-
-			}
-		}
-	}
-
-	if ( (last_btn_value & KEY_COLOR_VALUE) && event_new )
-	{
-		if ( sv_cm_press_cnt >= 1 && sv_cm_press_cnt <= 40 )
-		{
-			if ( ++flash_dev_info.code_led_mode >= RGB_MODE_LIGHTS_MAX )
-			{
-				flash_dev_info.code_led_mode = RGB_MODE_LIGHTS_NUION;
-			}
-		#if LED_CODE_PWIR_DRIVE_ENABLE
-			ws2812_mode_change_para_clear();
-		#else
-			coled_led_mode_change_para_clear();
-		#endif
-			save_dev_info_flash();
-		}
-		sv_cm_press_cnt = 0;
-	}
-
-#endif
-
 }
 
 u8 btn_get_value()
@@ -1928,7 +1654,11 @@ u8 btn_get_value()
        #endif
 
 		#if	WEB_KEY_FEATURE_ENABLE
-
+            if ( now_value & KEY_WEB_OFFICE )
+            {
+            	 gc_web_sta_list.trigger = KEY_TRIGGER_OFFICE;
+            	 printf("KEY_TRIGGER_OFFICE \n");
+            }
 		#endif
 
         #if (KEY_FEATURE_DESKTOP_ENABLE)
@@ -2702,67 +2432,30 @@ _attribute_ram_code_ u16 btn_scan()
 	u16 now_value = 0;
 	u8 button_status = 0;
 
-#if 1 // !DEBUG_MODE
 	button_status = button_get_status(PIN_BTN_LEFT); //check pin left
 	if (button_status == 1)
 	{
-	#if M388_K4_K5_LRKEY_CHANGE_ENABLE
-		now_value |= KEY_LEFT_VALUE_2;
-	#elif WEB_KEY_FEATURE_ENABLE
-
-		web_key_special_tab[KEY_LEFT_INDEX-1] = WEB_KEY_NOMAL;
-	
-		if ( web_key_nomal(KEY_LEFT_INDEX) )
-		{
-			now_value |= gc_web_data.key[KEY_LEFT_INDEX - 1].value ;
-		}
-		else if ( web_key_dpi(KEY_LEFT_INDEX) )
-		{
-			now_value |= KEY_BTN_CPI;
-			web_key_special_tab[KEY_LEFT_INDEX-1] = WEB_KEY_DPI;
-		}
-		else
-		{
-
-		}
+	#if WEB_KEY_FEATURE_ENABLE
+		now_value |= web_key_left_function();
 	#else
 		now_value |= KEY_LEFT_VALUE;
 	#endif
 	}
 	else if (button_status == 2) 
 	{
-	#if M388_K4_K5_LRKEY_CHANGE_ENABLE
-		now_value |= KEY_LEFT_VALUE;
-	#elif WEB_KEY_FEATURE_ENABLE
+	#if WEB_KEY_FEATURE_ENABLE
 		// nothing
 	#else
 		now_value |= KEY_LEFT_VALUE_2;
 	#endif
 	}
-#endif
 
 
 	button_status = button_get_status(PIN_BTN_RIGHT); //check pin right
 	if (button_status == 1)
 	{
 	#if WEB_KEY_FEATURE_ENABLE
-
-		web_key_special_tab[KEY_RIGHT_INDEX-1] = WEB_KEY_NOMAL;
-
-		if ( web_key_nomal(KEY_RIGHT_INDEX) )
-		{
-			now_value |= gc_web_data.key[KEY_RIGHT_INDEX - 1].value ;
-		}
-		else if ( web_key_dpi(KEY_RIGHT_INDEX) )
-		{
-			now_value |= KEY_BTN_CPI;
-			web_key_special_tab[KEY_RIGHT_INDEX-1] = WEB_KEY_DPI;
-		}
-		else
-		{
-
-		}
-
+		now_value |= web_key_right_function();
 	#else
 		now_value |= KEY_RIGHT_VALUE;
 	#endif
@@ -2775,69 +2468,26 @@ _attribute_ram_code_ u16 btn_scan()
 		now_value |= KEY_RIGHT_VALUE_2;
 	#endif
 	}
-	else
-	{
-	#if (PROJECT_ID == PID_G929) || (PROJECT_ID == PID_BG523)
-		gc_dpi_func2_flag = 1;
-	#endif
-	}
 
 	button_status = button_get_status(PIN_BTN_MIDDLE); //check pin middle
 	if (button_status == 1)
 	{
-	#if M388_K4_K5_LRKEY_CHANGE_ENABLE
-		now_value |= KEY_MIDDLE_VALUE_2;
-	#elif WEB_KEY_FEATURE_ENABLE
-
-		web_key_special_tab[KEY_MIDDLE_INDEX-1] = WEB_KEY_NOMAL;
-
-		if ( web_key_nomal(KEY_MIDDLE_INDEX) )
-		{
-			now_value |= gc_web_data.key[KEY_MIDDLE_INDEX - 1].value ;
-		}
-		else if ( web_key_dpi(KEY_MIDDLE_INDEX) )
-		{
-			now_value |= KEY_BTN_CPI;
-			web_key_special_tab[KEY_MIDDLE_INDEX-1] = WEB_KEY_DPI;
-		}
-		else
-		{
-
-		}
-
+	#if WEB_KEY_FEATURE_ENABLE
+		now_value |= web_key_middle_function();
 	#else
 		now_value |= KEY_MIDDLE_VALUE;
 	#endif
 	}
 	else if (button_status == 2) 
 	{
-	#if M388_K4_K5_LRKEY_CHANGE_ENABLE
-		now_value |= KEY_MIDDLE_VALUE;
-	#elif WEB_KEY_FEATURE_ENABLE
+	#if WEB_KEY_FEATURE_ENABLE
 		// do nothing
 	#else
 		now_value |= KEY_MIDDLE_VALUE_2;
 	#endif
 	}
 
-
-#if KEY_ADC_MODE_MULTI_FUNC_ENABLE
-	if ( adc_sample_voltale() < KEY_ADC_VOLTAGE_VALUE)
-	{
-		 now_value |= KEY_BTN_MODE;
-	}
-#endif
-
-#if (PROJECT_ID == PID_4028)
-	if ( 0 == gpio_read(PIN_BTN_MODE) )
-	{
-	#if M4028_BLE_G24_MODE_ENABLE
-		now_value |= KEY_BTN_MODE;
-	#else
-		now_value |= KEY_BTN_CPI;
-	#endif
-	}
-#elif (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_M45) || (PROJECT_ID == PID_104)  || KEY_PAIR_USED_POWERUP_ENABLE
+#if  KEY_PAIR_USED_POWERUP_ENABLE
 	if ( 0 == gc_hm668_mode_key_used )
 	{
 		if ( 0 == gpio_read(PIN_BTN_MODE) )
@@ -2859,61 +2509,14 @@ _attribute_ram_code_ u16 btn_scan()
 			gc_hm668_mode_key_used = 1;
 		}
 	}
-#else
-	#if (KEY_MODE_INDEPENDENT_ENABLE)
-		if( 0 == gpio_read(PIN_BTN_MODE) )
-		{
-			now_value |= KEY_BTN_MODE;
-		}
-	#endif
 #endif
 
-#if (ADC_TO_GPIO_MODE_EN)
-	#if KEY_PAIR_USED_POWERUP_ENABLE
-		// do nothing
-	#else
-		if( 0 == gpio_read(PIN_BTN_MODE) )
-		{
-			now_value |= KEY_BTN_MODE;
-		}
-	#endif
-#endif
-
-#if KEY_MODE_COMBINE_ENABLE
-	button_status = button_get_status(PIN_BTN_MODE);//read middle btn
-    if (button_status == 1)
-    {
-        now_value |= KEY_BTN_MODE;
-    }
-	else if (button_status == 2)
-	{
-	#if KEY_FEATURE_BOSSKEY_ENABLE
-		now_value |= KEY_FEATURE_BOSSKEY_VALUE;
-	#endif
-	}
-#endif
 
 #if (KEY_CPI_INDEPENDENT_ENABLE)
 	if ( 0 == gpio_read(KEY_DPI_PIN) )
 	{
 	#if WEB_KEY_FEATURE_ENABLE
-
-		web_key_special_tab[KEY_DPI_INDEX-1] = WEB_KEY_NOMAL;
-
-		if ( web_key_nomal(KEY_DPI_INDEX) )
-		{
-			now_value |= gc_web_data.key[KEY_DPI_INDEX - 1].value ;
-		}
-		else if ( web_key_dpi(KEY_DPI_INDEX) )
-		{
-			now_value |= KEY_BTN_CPI;
-			web_key_special_tab[KEY_DPI_INDEX-1] = WEB_KEY_DPI;
-		}
-		else
-		{
-
-		}
-
+		now_value |= web_key_dpi_function();
 	#else
 		now_value |= KEY_BTN_CPI;
 	#endif
@@ -2924,23 +2527,7 @@ _attribute_ram_code_ u16 btn_scan()
 	if ( 0 == gpio_read(KEY_K4_PIN) )
 	{
 	#if WEB_KEY_FEATURE_ENABLE
-	
-		web_key_special_tab[KEY_K4_INDEX-1] = WEB_KEY_NOMAL;
-
-		if ( web_key_nomal(KEY_K4_INDEX) )
-		{
-			now_value |= gc_web_data.key[KEY_K4_INDEX - 1].value ;
-		}
-		else if ( web_key_dpi(KEY_K4_INDEX) )
-		{
-			now_value |= KEY_BTN_CPI;
-			web_key_special_tab[KEY_K4_INDEX-1] = WEB_KEY_DPI;
-		}
-		else
-		{
-
-		}
-
+		now_value |= web_key_k4_function();
 	#else
 		now_value |= KEY_BTN_K4;
 	#endif
@@ -2951,49 +2538,10 @@ _attribute_ram_code_ u16 btn_scan()
 	if ( 0 == gpio_read(KEY_K5_PIN) )
 	{
 	#if WEB_KEY_FEATURE_ENABLE
-
-		web_key_special_tab[KEY_K5_INDEX-1] = WEB_KEY_NOMAL;
-	
-		if ( web_key_nomal(KEY_K5_INDEX) )
-		{
-			now_value |= gc_web_data.key[KEY_K5_INDEX - 1].value ;
-		}
-		else if ( web_key_dpi(KEY_K5_INDEX) )
-		{
-			now_value |= KEY_BTN_CPI;
-			web_key_special_tab[KEY_K5_INDEX-1] = WEB_KEY_DPI;
-		}
-		else
-		{
-
-		}
-
+		now_value |= web_key_k5_function();
 	#else
 		now_value |= KEY_BTN_K5;
 	#endif
-	}
-#endif
-
-#if LED_COLOR_MODE_KEY_ENABLE
-	if ( 0 == gpio_read(LED_COLOR_KEY_PIN) )
-	{
-		now_value |= KEY_COLOR_VALUE;
-	}
-#endif
-
-#if	KEY_FEATURE_BOSSKEY_ENABLE
-	#if (PROJECT_ID == PID_DMS157)
-		if ( 0 == gpio_read(KEY_FEATURE_BOSSKEY_PIN) )
-		{
-			now_value |= KEY_FEATURE_BOSSKEY_VALUE;
-		}
-	#endif
-#endif
-
-#if (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
-	if ( adc_sample_voltale_high() >= KEY_ADC_VOLTAGE_VALUE )
-	{
-		now_value |= KEY_BTN_MODE;
 	}
 #endif
 
@@ -3126,60 +2674,6 @@ static void sensor_postion_init(void)
 
 	dpi_max_level = 3;
 
-#if (PROJECT_ID == PID_MS13)
-	if ( sensor_type == SENSOR_SG8670 )
-	{
-		dpi_max_level = 4;
-	}
-	else
-	{
-		dpi_max_level = 3;
-	}
-#endif
-
-#if (PROJECT_ID == PID_8693) || (PROJECT_ID == PID_G929)
-	if ( SENSOR_S201B == sensor_type || SENSOR_PAW3212 == sensor_type )
-	{
-		dpi_max_level = 4;
-	}
-	else
-	{
-		dpi_max_level = 3;
-	}
-#endif
-
-#if (PROJECT_ID == PID_DMS06)
-	if ( SENSOR_S201B == sensor_type || SENSOR_SG8925 == sensor_type || SENSOR_3065XY == sensor_type)
-	{
-		dpi_max_level = 4;
-	}
-	else
-	{
-		dpi_max_level = 3;
-	}
-#endif
-
-#if (PROJECT_ID == PID_HM660)
-	if ( SENSOR_SG8925 == sensor_type )
-	{
-		dpi_max_level = 4;
-	}
-	else
-	{
-		dpi_max_level = 3;
-	}
-#endif
-
-#if (PROJECT_ID == PID_HYC351)
-	if ( SENSOR_3065XY == sensor_type )
-	{
-		dpi_max_level = 4;
-	}
-	else
-	{
-		dpi_max_level = 3;
-	}
-#endif
 
 #if DPI_S210B_3065XY_DEFAULT_ENABLE
 	if ( SENSOR_3065XY == sensor_type || SENSOR_S201B == sensor_type )
@@ -3188,114 +2682,6 @@ static void sensor_postion_init(void)
 	}
 #endif
 
-#if (PROJECT_ID == PID_660) || (PROJECT_ID == PID_DMS06)
-	if (SENSOR_S101UL == sensor_type)
-	{
-		dpi_max_level = 5;
-	}
-#endif
-
-#if (PROJECT_ID == PID_DMS157)
-	if (SENSOR_S101UL == sensor_type)
-	{
-		dpi_max_level = 4;
-	}
-#endif
-
-#if (PROJECT_ID == PID_CM2057B)
-	if (SENSOR_PAW3212 == sensor_type )
-	{
-		dpi_max_level = 6;
-	}
-#endif
-
-#if (PROJECT_ID == PID_BG523)
-	if (SENSOR_SG8670 == sensor_type )
-	{
-		dpi_max_level = 4;
-	}
-#endif
-
-#if (PROJECT_ID == PID_M388)
-	#if BLuetoothMouse1_DPI_ENABLE
-		if ( SENSOR_SG8670 == sensor_type || SENSOR_PAW3212 == sensor_type )
-		{
-			dpi_max_level = 5;
-		}
-	#else
-		if (SENSOR_SG8670 == sensor_type)
-		{
-			dpi_max_level = 4;
-		}
-		else if (SENSOR_PAW3212 == sensor_type)
-		{
-			dpi_max_level = 5;
-		}
-	#endif
-#endif
-
-#if (PROJECT_ID == PID_MS2360)
-	if (SENSOR_PAW3212 == sensor_type || SENSOR_PAW3220DB_TJDL == sensor_type )
-	{
-		dpi_max_level = 4;
-	}
-#endif
-
-#if (PROJECT_ID == PID_TB903)
-	if ( SENSOR_S205 == sensor_type || SENSOR_SG8670 == sensor_type  )
-	{
-		dpi_max_level = 6;
-	}
-#endif
-
-#if (PROJECT_ID == PID_4027)
-	if ( SENSOR_SG8670 == sensor_type )
-	{
-		dpi_max_level = 5;
-	}
-#endif
-
-#if (PROJECT_ID == PID_M0018)
-	if ( SENSOR_KA8G2 == sensor_type )
-	{
-		dpi_max_level = 3;
-	}
-#endif
-
-#if (PROJECT_ID == PID_2187)
-	if ( SENSOR_KA8G2 == sensor_type || SENSOR_SG8670 == sensor_type )
-	{
-		dpi_max_level = 5;
-	}
-#endif
-
-#if (PROJECT_ID == PID_E368_CHARGE)
-	if (SENSOR_PAW3212 == sensor_type )
-	{
-		dpi_max_level = 4;
-	}
-#endif
-
-#if (PROJECT_ID == PID_0120)
-	if ( SENSOR_PAW3212 == sensor_type )
-	{
-		dpi_max_level = 5;
-	}
-#endif
-
-#if (PROJECT_ID == PID_104)
-	if ( SENSOR_PAW3212 == sensor_type )
-	{
-		dpi_max_level = 4;
-	}
-#endif
-
-#if (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
-	if ( SENSOR_3065XY == sensor_type )
-	{
-		dpi_max_level = 3;
-	}
-#endif
 
 #if (PROJECT_ID == PID_Q15)
 	if ( SENSOR_3311 == sensor_type )
@@ -3351,65 +2737,10 @@ void hw_init()
 	gpio_input_config_status(USB_SWITCH_PIN, PM_PIN_UP_DOWN_FLOAT );
 #endif
 
-#if (PROJECT_ID == PID_104)
-	gpio_input_config_status(GPIO_PC0, PM_PIN_PULLUP_1M );
-#endif
-
-#if KEY_FEATURE_BOSSKEY_ENABLE
-	#if (PROJECT_ID == PID_DMS157)
-		gpio_input_config_status(KEY_FEATURE_BOSSKEY_PIN, PM_PIN_PULLUP_1M );
-	#endif
-#endif
-
-#if (PROJECT_ID == PID_DMS157) ||  (PROJECT_ID == PID_RM12)
-	gpio_input_config_status(PIN_BTN_LEFT, PM_PIN_PULLUP_1M );
-	gpio_input_config_status(PIN_BTN_RIGHT, PM_PIN_PULLUP_1M );
-	gpio_input_config_status(PIN_BTN_MIDDLE, PM_PIN_PULLUP_1M );
-#endif
-
-#if (PROJECT_ID == PID_DMS157)
-	gpio_input_config_status(PIN_WHEEL_1,  PM_PIN_PULLUP_10K);
-	gpio_input_config_status(PIN_WHEEL_2,  PM_PIN_PULLUP_10K);
-#endif
-
-#if (PROJECT_ID == PID_M388)
-	#if M388_K4_K5_LRKEY_CHANGE_ENABLE
-	 	 gpio_input_config_status(PIN_BTN_MIDDLE, PM_PIN_PULLDOWN_100K );
-	 	 gpio_input_config_status(PIN_BTN_LEFT,   PM_PIN_PULLDOWN_100K );
-	#endif
-#endif
-
-#if (PROJECT_ID == PID_HM668)
-	gpio_input_config_status(PIN_SIF_SDA,  PM_PIN_PULLUP_10K);
-	gpio_output_config_status(PIN_SIF_SCL, 1);
-#endif
-
-
-#if LED_CODE_SW_CHECK_ENABLE
-	gpio_input_config_status(LED_CODE_SW_CHECK_PIN,  PM_PIN_UP_DOWN_FLOAT);
-#endif
-
-#if LED_CODE_POWER_ENABLE
-	gpio_output_config_status(LED_CODE_POWER_PIN,  1);
-#endif
-
-#if HM668_TEST_ENABLE
-	gpio_input_config_status(GPIO_PC7,  PM_PIN_PULLUP_10K);
-#endif
-
-
-#if (PROJECT_ID == PID_0120)
-	power_on_key_red( PIN_BTN_MIDDLE );
-	power_on_key_red( PIN_BTN_RIGHT );
-#endif
-
 #if MODULE_OLED_ENABLE
 	OLED_Init();
 #endif
 
-#if (PROJECT_ID == PID_XT27)
-	gpio_output_config_status(LED_RGB_NULL_PIN, LED_RGB_DPI_OFF);
-#endif
 
 #if CHARGE_ENABLE
 	gpio_input_config_status(CHARGE_PIN, PM_PIN_PULLUP_10K);
@@ -3550,7 +2881,6 @@ void hw_init()
 	batt_charge_init();
 #endif
 
-
 #if (WHEEL_LEFT_RIGHT_ENABLE)
 	gpio_input_config_status(VOICE_A_PIN, PM_PIN_UP_DOWN_FLOAT);
 	gpio_input_config_status(VOICE_B_PIN, PM_PIN_UP_DOWN_FLOAT);
@@ -3630,150 +2960,6 @@ void hw_init()
  */
 void mouse_xy_multiple()
 {
-#if (PROJECT_ID == PID_BG523)
-    s32 x = 0, y = 0;
-
-    if ( 2 == dpi_value )
-    {
-        x = ms_data.x;
-        y = ms_data.y;
-
-        x = (x << 2) / 3;
-        y = (y << 2) / 3;
-
-        ms_data.x = x;
-        ms_data.y = y;
-    }
-    else if ( 3 == dpi_value )
-    {
-        x = ms_data.x;
-        y = ms_data.y;
-		
-        x = (x * 5) / 3;
-        y = (y * 5) / 3;
-
-        ms_data.x = x;
-        ms_data.y = y;
-    }
-#endif
-
-#if (PROJECT_ID == PID_M388)
-
-    s32 x = 0, y = 0;
-#if BLuetoothMouse1_DPI_ENABLE
-    if ( sensor_type == SENSOR_PAW3212 || sensor_type == SENSOR_SG8670 )
-    {
-		if ( 3 == dpi_value )
-		{
-			x = ms_data.x;
-			y = ms_data.y;
-
-			x = (x * 4) / 3;
-			y = (y * 4) / 3;
-
-			ms_data.x = x;
-			ms_data.y = y;
-		}
-		else if ( 4 == dpi_value )
-		{
-			x = ms_data.x;
-			y = ms_data.y;
-
-			x = (x * 5) / 3;
-			y = (y * 5) / 3;
-
-			ms_data.x = x;
-			ms_data.y = y;
-		}
-    }
-#else
-    if (sensor_type == SENSOR_PAW3212)
-    {
-    	if ( 3 == dpi_value )
-    	{
-			x = ms_data.x;
-			y = ms_data.y;
-
-			x = (x * 4) / 3;
-			y = (y * 4) / 3;
-
-			ms_data.x = x;
-			ms_data.y = y;
-    	}
-    	else if ( 4 == dpi_value )
-    	{
-			x = ms_data.x;
-			y = ms_data.y;
-
-			x = x * 2;
-			y = y * 2;
-
-			ms_data.x = x;
-			ms_data.y = y;
-    	}
-    }
-    else if (sensor_type == SENSOR_SG8670)
-    {
-	   if ( 2 == dpi_value )
-	   {
-			x = ms_data.x;
-			y = ms_data.y;
-
-			x = (x << 2) / 3;
-			y = (y << 2) / 3;
-
-			ms_data.x = x;
-			ms_data.y = y;
-		}
-		else if ( 3 == dpi_value )
-		{
-			x = ms_data.x;
-			y = ms_data.y;
-
-			x = (x * 5) / 3;
-			y = (y * 5) / 3;
-
-			ms_data.x = x;
-			ms_data.y = y;
-		}
-    }
-#endif
-
-#endif
-
-#if (PROJECT_ID == PID_MS13)
-    s32 x = 0, y = 0;
-
-    if ( 3 == dpi_value )
-    {
-        x = ms_data.x;
-        y = ms_data.y;
-
-        x = (x << 2) / 3;
-        y = (y << 2) / 3;
-
-        ms_data.x = x;
-        ms_data.y = y;
-    }
-#endif
-
-#if (PROJECT_ID == PID_8693) || (PROJECT_ID == PID_G929)
-    s32 x = 0, y = 0;
-    if ( sensor_type == SENSOR_PAW3212 )
-    {
-		if ( 3 == dpi_value )
-		{
-			x = ms_data.x;
-			y = ms_data.y;
-
-			x = (x * 5) / 3;
-			y = (y * 5) / 3;
-
-			ms_data.x = x;
-			ms_data.y = y;
-		}
-    }
-#endif
 
 #if DPI_3065XY_FOUR_LEVEL_ENABLE
 	if (  SENSOR_3065XY == sensor_type && 2 == dpi_value && 1 == dpi_3605_limit_level_flag )
@@ -3789,272 +2975,6 @@ void mouse_xy_multiple()
 		ms_data.x = x;
 		ms_data.y = y;
 	}
-#endif
-
-#if (PROJECT_ID == PID_CM2057B)
-    if ( sensor_type == SENSOR_PAW3212 )
-    {
-    	s32 x1 = 0, y1 = 0;
-		if ( 4 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = (x1 << 2) / 3;
-			y1 = (y1 << 2) / 3;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-		else if (5 == dpi_value)
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = x1 << 1;
-			y1 = y1 << 1;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-    }
-#endif
-
-#if (PROJECT_ID == PID_660) || (PROJECT_ID == PID_DMS06)
-	s32 x1 = 0, y1 = 0;
-    if ( sensor_type == SENSOR_S101UL )
-    {
-		if ( 4 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = (x1 * 48 ) / 37;
-			y1 = (y1 * 48 ) / 37;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-    }
-    else if (sensor_type == SENSOR_S201B)
-    {
-		x1 = ms_data.x;
-		y1 = ms_data.y;
-
-		if ( 0 == dpi_value )
-		{
-			x1 = (x1 * 60 ) / 49;
-			y1 = (y1 * 60 ) / 49;
-		}
-		else if ( 1 == dpi_value )
-		{
-			x1 = (x1 * 16 ) / 13;
-			y1 = (y1 * 16 ) / 13;
-		}
-		else if ( 2 == dpi_value )
-		{
-			x1 = (x1 * 48 ) / 39;
-			y1 = (y1 * 48 ) / 39;
-		}
-		else if ( 3 == dpi_value )
-		{
-			x1 = (x1 * 16 ) / 13;
-			y1 = (y1 * 16 ) / 13;
-		}
-
-		ms_data.x = x1;
-		ms_data.y = y1;
-    }
-#endif
-
-#if (PROJECT_ID == PID_MS2360)
-    if ( sensor_type == SENSOR_PAW3212 )
-    {
-    	s32 x1 = 0, y1 = 0;
-		if ( 3 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = (x1 << 2) / 3;
-			y1 = (y1 << 2) / 3;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-    }
-#endif
-
-#if (PROJECT_ID == PID_4027)
-    if ( sensor_type == SENSOR_SG8670 )
-    {
-    	s32 x1 = 0, y1 = 0;
-
-		if ( 4 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = (x1 * 5) / 3;
-			y1 = (y1 * 5) / 3;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-		else if ( 5 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = (x1 * 10) / 3;
-			y1 = (y1 * 10) / 3;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-    }
-#endif
-
-#if (PROJECT_ID == PID_2187)
-    if ( sensor_type == SENSOR_SG8670 || sensor_type == SENSOR_KA8G2 )
-    {
-    	s32 x1 = 0, y1 = 0;
-
-		if ( 4 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = (x1 * 7) / 4;
-			y1 = (y1 * 7) / 4;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-    }
-#endif
-
-
-#if (PROJECT_ID == PID_E368_CHARGE)
-    if ( sensor_type == SENSOR_PAW3212 )
-    {
-    	s32 x1 = 0, y1 = 0;
-
-		if ( 3 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = (x1 * 4) / 3;
-			y1 = (y1 * 4) / 3;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-    }
-#endif
-
-#if (PROJECT_ID == PID_0120)
-    if ( sensor_type == SENSOR_PAW3212 )
-    {
-    	s32 x1 = 0, y1 = 0;
-
-		if ( 4 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = (x1 * 7) / 4;
-			y1 = (y1 * 7) / 4;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-    }
-#endif
-
-#if (PROJECT_ID == PID_TB903)
-    if ( sensor_type == SENSOR_SG8670 )
-    {
-    	s32 x1 = 0, y1 = 0;
-
-		if ( 3 == dpi_value || 4 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = ( x1 << 1 );
-			y1 = ( y1 << 1 );
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-		else if ( 5 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = ( x1 << 3 ) / 3;
-			y1 = ( y1 << 3 ) / 3;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-    }
-#endif
-
-#if (PROJECT_ID == PID_RM12)
-    if ( sensor_type == SENSOR_S201B )
-    {
-#if RM12_S2012_DPI_2_ENABLE
-    	s32 x1 = 0, y1 = 0;
-
-		if ( 0 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = ( x1 * 6 ) / 5;
-			y1 = ( y1 * 6 ) / 5;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-		else if ( 1 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = ( x1 * 8 ) / 7;
-			y1 = ( y1 * 8 ) / 7;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-		else if ( 2 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = ( x1 * 6 ) / 5;
-			y1 = ( y1 * 6 ) / 5;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-		else if ( 3 == dpi_value )
-		{
-			x1 = ms_data.x;
-			y1 = ms_data.y;
-
-			x1 = ( x1 * 8 ) / 7;
-			y1 = ( y1 * 8 ) / 7;
-
-			ms_data.x = x1;
-			ms_data.y = y1;
-		}
-#endif
-    }
 #endif
 
 }
@@ -4244,19 +3164,7 @@ void enter_deep_aaa(ANA_STATUS_AAA reason)
 	#endif
 #endif
 
-#if (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
 
-	gpio_input_config_status(GPIO_PB5, PM_PIN_PULLDOWN_100K);
-	sleep_us(200);
-	if ( 0 == gpio_read(GPIO_PB5) )
-	{
-		cpu_set_gpio_wakeup(GPIO_PB5,  1,  1);
-	}
-	else
-	{
-		cpu_set_gpio_wakeup(GPIO_PB5,  0,  1);
-	}
-#endif
 
     write_deep_ana0(reason);
 
