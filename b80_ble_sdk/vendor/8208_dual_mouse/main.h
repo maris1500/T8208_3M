@@ -52,7 +52,7 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 	typedef struct {
 		unsigned char type;
 		unsigned char value;
-		unsigned char func2;
+		unsigned char func;
 	}web_key_t;
 
 	typedef struct {

@@ -943,6 +943,9 @@ int main(void) //run in ramcode
 		#endif
 	#endif
 
+	#if WEB_KEY_FEATURE_ENABLE
+		web_function_loop();
+	#endif
 
 #if (DEBUG_MODE)
     static u32 main_tick = 0;

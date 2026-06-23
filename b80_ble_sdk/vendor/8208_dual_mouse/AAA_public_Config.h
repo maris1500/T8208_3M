@@ -177,6 +177,9 @@ extern void coled_led_mode_change_para_clear(void);
 
 #if WEB_KEY_FEATURE_ENABLE
 
+	#define WEB_KEY_START 0
+	#define WEB_KEY_END   6
+
 	typedef enum {
 
 		KEY_TRIGGER_NONE  = 0,
@@ -186,7 +189,9 @@ extern void coled_led_mode_change_para_clear(void);
 
 	typedef struct {
 		unsigned short trigger:3;
-		unsigned short reserve:13;
+		unsigned short release:4;
+	
+		unsigned short reserve:9;
 	}web_set_status_t; 
 
 	typedef enum {
@@ -234,6 +239,7 @@ extern void coled_led_mode_change_para_clear(void);
 	extern unsigned short int web_key_k5_function(void);
 	extern unsigned short int web_key_dpi_function(void);
 
+	extern void web_function_loop(void);
 #endif
 
 

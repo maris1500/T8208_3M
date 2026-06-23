@@ -9,7 +9,7 @@ char web_key_nomal(unsigned char index)
 {
 	unsigned char type = gc_web_data.key[index-1].type;
 
-	if ( 0x10 == type )
+	if ( WEB_KEY_NOMAL == type )
 	{
 		return (1);
 	}
@@ -22,7 +22,7 @@ char web_key_dpi(unsigned char index)
 {
 	unsigned char type = gc_web_data.key[index-1].type;
 
-	if ( 0x40 == type || 0x50 == type )
+	if ( WEB_KEY_DPI == type || WEB_KEY_DPI_LOCK == type )
 	{
 		return (1);
 	}
@@ -35,7 +35,7 @@ char web_key_office(unsigned char index)
 {
 	unsigned char type = gc_web_data.key[index-1].type;
 
-	if ( 0x70 == type )
+	if ( WEB_KEY_OFFICE == type )
 	{
 		return (1);
 	}
@@ -48,7 +48,7 @@ char web_key_media(unsigned char index)
 {
 	unsigned char type = gc_web_data.key[index-1].type;
 
-	if ( 0x80 == type )
+	if ( WEB_KEY_MEDIA == type )
 	{
 		return (1);
 	}
@@ -62,13 +62,13 @@ void web_key_handle(web_key_t *key, unsigned char *buf)
 {
 	unsigned char i = 0, k = 0, ret = 0;
 
-	for (i = 0; i < 6; i++)
+	for (i = WEB_KEY_START; i < WEB_KEY_END; i++)
 	{
-		if ( key[i].type != buf[k + 0] || key[i].value != buf[k + 1] || key[i].func2 != buf[k + 2] )
+		if ( key[i].type != buf[k + 0] || key[i].value != buf[k + 1] || key[i].func != buf[k + 2] )
 		{
 			key[i].type  = buf[k + 0];
 			key[i].value = buf[k + 1];
-			key[i].func2 = buf[k + 2];
+			key[i].func  = buf[k + 2];
 			ret = 1;
 		}
 		k += 3;
@@ -76,7 +76,7 @@ void web_key_handle(web_key_t *key, unsigned char *buf)
 
 	if ( ret )
 	{
-		printf("rev succ and store \n");
+		printf("rev_succ_and_store \n");
 	}
 }
 
