@@ -57,6 +57,18 @@ char web_key_media(unsigned char index)
 
 }
 
+char web_key_fire(unsigned char index)
+{
+	unsigned char type = gc_web_data.key[index-1].type;
+
+	if ( WEB_KEY_FIRE == type )
+	{
+		return (1);
+	}
+
+	return (0);
+
+}
 
 void web_key_handle(web_key_t *key, unsigned char *buf)
 {

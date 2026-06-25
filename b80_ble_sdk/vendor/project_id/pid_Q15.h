@@ -20,7 +20,7 @@
 #define DEVICE_TYPE_INDEX   DEVICE_MOUSE //1:mouse, 2:keyboard
 
 #define G24_MODE_ENABLE     1
-#define BLE_MODE_ENABLE     1
+#define BLE_MODE_ENABLE     0
 #define USB_MODE_ENABLE     1
 
 #define LED_G24_ENABLE      1
@@ -263,6 +263,10 @@
 	#if WEB_KEY_FEATURE_ENABLE
 		#define KEY_WEB_OFFICE   0x0100
 		#define KEY_WEB_MEDIA    0x0200
+		#define KEY_WEB_OTHER    0x0400
+		#define KEY_WEB_MACRO    0x0800
+
+		#define KEY_WEB_FIRE     0x1000
 	#endif
 
 	#if KEY_FEATURE_BOSSKEY_ENABLE

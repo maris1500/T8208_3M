@@ -174,6 +174,7 @@ typedef enum {
 #endif
 
 extern void coled_led_mode_change_para_clear(void);
+extern void usb_aut_report_time_reset(void);
 
 #if WEB_KEY_FEATURE_ENABLE
 
@@ -185,13 +186,19 @@ extern void coled_led_mode_change_para_clear(void);
 		KEY_TRIGGER_NONE  = 0,
 		KEY_TRIGGER_OFFICE,
 		KEY_TRIGGER_MEDIA,
+		KEY_TRIGGER_OTHER,
+		KEY_TRIGGER_FIRE,
 	}web_trigger_en;
 
 	typedef struct {
 		unsigned short trigger:3;
-		unsigned short release:4;
+
+		unsigned short release_type:3;
+		unsigned short release_count:4;
+		
+		unsigned short firekey:1;
 	
-		unsigned short reserve:9;
+		unsigned short reserve:5;
 	}web_set_status_t; 
 
 	typedef enum {
@@ -231,6 +238,7 @@ extern void coled_led_mode_change_para_clear(void);
 	extern char web_key_dpi(unsigned char index);
 	extern char web_key_office(unsigned char index);
 	extern char web_key_media(unsigned char index);
+	extern char web_key_fire(unsigned char index);
 
 	extern unsigned short int web_key_left_function(void);
 	extern unsigned short int web_key_right_function(void);

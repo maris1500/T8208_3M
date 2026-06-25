@@ -1654,11 +1654,24 @@ u8 btn_get_value()
        #endif
 
 		#if	WEB_KEY_FEATURE_ENABLE
+
+			usb_aut_report_time_reset();
+
             if ( now_value & KEY_WEB_OFFICE )
             {
             	 gc_web_sta_list.trigger = KEY_TRIGGER_OFFICE;
             	 printf("KEY_TRIGGER_OFFICE \n");
             }
+			else if ( now_value & KEY_WEB_MEDIA )
+			{
+				gc_web_sta_list.trigger = KEY_TRIGGER_MEDIA;
+				printf("KEY_TRIGGER_MEDIA \n");
+			}
+			else if ( now_value & KEY_WEB_FIRE )
+			{
+				gc_web_sta_list.trigger = KEY_TRIGGER_FIRE;
+				printf("KEY_TRIGGER_FIRE \n");
+			}
 		#endif
 
         #if (KEY_FEATURE_DESKTOP_ENABLE)
@@ -2098,6 +2111,8 @@ void get_usb_data_report_aaa()
 
         	/* smoother mouse sensor data */
         	adaptive_smoother(); //Smooth sensor data
+
+			usb_aut_report_time_reset();
 		}
     }
     else
