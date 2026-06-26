@@ -57,17 +57,20 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 
 	typedef struct {
 		unsigned int charge_mode:2;
-		unsigned int battery:8;
+		unsigned int factory_up:1;
 
-		unsigned int rate_max_support:2;
+		unsigned int rate_max_support:4;
 		unsigned int rate_cur:4;
 
 		unsigned int light_mode:4;
-		unsigned int sensor_type:3;
+		unsigned int lightness:2;
 
+		unsigned int sensor_type:3;
 		unsigned int active_time:4;
 
-		unsigned int reserve:5;
+		unsigned int sensor_wake_up:1;
+
+		unsigned int reservet:7;
 	}web_sta_t;
 
 	typedef struct

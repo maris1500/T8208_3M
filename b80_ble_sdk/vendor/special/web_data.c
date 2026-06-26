@@ -93,10 +93,115 @@ void web_key_handle(web_key_t *key, unsigned char *buf)
 	}
 }
 
+void web_report_rate(unsigned char *buf)
+{
+	if ( gc_web_data.sta.rate_cur != *buf )
+	{
+		gc_web_data.sta.rate_cur = *buf;
+		printf("rate_cur=%d \n", gc_web_data.sta.rate_cur);
+	}
+}
+
+void web_sleep_time(unsigned char *buf)
+{
+	if ( gc_web_data.sta.active_time != *buf )
+	{
+		gc_web_data.sta.active_time = *buf;
+	}
+	printf("active_time=%d \n", gc_web_data.sta.active_time);
+}
+
+void web_light_mode(unsigned char *buf)
+{
+	if ( gc_web_data.sta.light_mode != *buf )
+	{
+		gc_web_data.sta.light_mode = *buf;
+		printf("light_mode=%d \n", gc_web_data.sta.light_mode );
+	}
+
+	if ( gc_web_data.sta.lightness != *(buf+1) )
+	{
+		gc_web_data.sta.lightness = *(buf+1);
+		printf("lightness=%d \n", gc_web_data.sta.lightness );
+	}
+}
+
+void web_sensor_wakeup_modify(unsigned char *buf)
+{
+	if ( gc_web_data.sta.sensor_wake_up != *(buf+1) )
+	{
+		gc_web_data.sta.sensor_wake_up = *(buf+1);
+		printf("sensor_wake_up=%d \n", gc_web_data.sta.sensor_wake_up );
+	}
+}
+
+void web_dpi_level(unsigned char *buf)
+{
+	const unsigned char level_max[7] = {0x01, 0x03, 0x07, 0x0F, 0x1f, 0x3f, 0x7f};
+	unsigned char i = 0;
+
+	if ( gc_web_data.dpi.level_cur != *buf )
+	{
+		 gc_web_data.dpi.level_cur = *buf;
+		 printf("level_cur=%d \n", gc_web_data.dpi.level_cur );
+	}
+
+	for ( i = 0; i < 8; i++)
+	{
+		if ( level_max[i] == *(buf+1) )
+		{
+			break;
+		}
+	}
+
+	if ( gc_web_data.dpi.level_max != (i+1)  )
+	{
+		 gc_web_data.dpi.level_max = (i+1);
+		printf("level_max=%d \n", gc_web_data.dpi.level_max );
+	}
+}
+
+void web_factory_set(void)
+{
+	if ( 0 == gc_web_data.sta.factory_up )
+	{
+		gc_web_data.sta.factory_up = 1;
+		printf("factory_up \n" );
+	}
+}
+
 void web_data_process(unsigned char *buf)
 {
 	if ( 0x06 == buf[0] && 0x01 == buf[1] && 0x01 == buf[3] )
 	{
 		web_key_handle( &gc_web_data.key[0], &buf[5] );
+	}
+	else if ( 0x06 == buf[0] && 0x02 == buf[1] && 0x02 == buf[3]  )
+	{
+		web_dpi_level( &buf[5] );
+	}
+	else if ( 0x06 == buf[0] && 0x03 == buf[1] && 0x01 == buf[3]  )
+	{
+
+	}
+	else if ( 0x06 == buf[0] && 0x04 == buf[1] && 0x01 == buf[3]  )
+	{
+		web_report_rate( &buf[5] );
+	}
+	else if ( 0x06 == buf[0] && 0x07 == buf[1] && 0x01 == buf[3]  )
+	{
+		web_sleep_time( &buf[5] );
+	}
+	else if ( 0x06 == buf[0] && 0x06 == buf[1] && 0x01 == buf[3]  )
+	{
+		web_light_mode( &buf[6] );
+	}
+	else if ( 0x06 == buf[0] && 0x08 == buf[1] && 0x01 == buf[3]  )
+	{
+		web_sensor_wakeup_modify( &buf[5] );
+	}
+	else if ( 0x06 == buf[0] && 0x0f == buf[1] && 0x01 == buf[3]  )
+	{
+		web_factory_set();
 	}
 }
