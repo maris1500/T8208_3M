@@ -2204,7 +2204,11 @@ void get_usb_data_report_aaa()
 		}
 	}
 #else
-	push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));//push to fifo
+
+	if ( 0 == gc_web_sta_list.firekey )
+	{
+		push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));//push to fifo
+	}
 #endif
 
 	}

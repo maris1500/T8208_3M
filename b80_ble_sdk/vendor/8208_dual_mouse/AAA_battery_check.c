@@ -770,6 +770,8 @@ void user_battery_power_check()
 					if ( USB_IN() || CHARGE_IN() )
 				#elif USB_5V_CHECK_ENABLE
 					if ( USB_IN() )
+				#elif USB_MODE_ENABLE
+					if ( USB_OUT() || CHARGE_IN() )
 				#elif CHARGE_ENABLE
 					if ( CHARGE_IN() )
 				#endif
@@ -778,7 +780,7 @@ void user_battery_power_check()
 					}
 					else
 					{
-						enter_deep_aaa(BATTERT_SHUTDOWN_ENTER_DEEPSLEEP_ANA_AAA);
+					//	enter_deep_aaa(BATTERT_SHUTDOWN_ENTER_DEEPSLEEP_ANA_AAA);
 					}
 
 			#endif

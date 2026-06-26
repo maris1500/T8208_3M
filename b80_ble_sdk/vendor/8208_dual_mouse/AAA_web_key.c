@@ -254,53 +254,48 @@ unsigned short int web_key_dpi_function(void)
 
 void web_fire_usb_send(unsigned char direct )
 {
-	mouse_data_t mdata = {0};
-
 	if ( 0 == gc_web_sta_list.firekey ) { sg_web_key_fire_time = clock_time(); return; }
 
 	if ( direct || clock_time_exceed(sg_web_key_fire_time, gc_web_fire_sta.interval*1000) )
 	{
-		mdata.btn = 0x01;
+		ms_data.btn |= 0x01;
 		if ( gc_web_fire_sta.times )
 		{
-			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &mdata.btn, sizeof(mouse_data_t));
-			usb_aut_report_time_reset();
+			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+
+			gc_web_sta_list.release_count = 0;
+			sg_web_key_release_time = clock_time();
 			gc_web_fire_sta.times--;
-			printf("fir00\n");
+			printf("fir00 ");
 		}
 		sg_web_key_fire_time = clock_time();
 	}
 
-	if ( gc_web_fire_sta.interval <= 100 )
+	if ( gc_web_fire_sta.times  )
 	{
-		 if ( clock_time_exceed(sg_web_key_release_time,  (1000 * gc_web_fire_sta.interval / 2) ) )
-		 {
-		 	mdata.btn = 0x00;
-		 	push_usb_fifo_aaa(MOUSE_DATA_TYPE, &mdata.btn, sizeof(mouse_data_t));
-		 	sg_web_key_release_time = clock_time();
-			usb_aut_report_time_reset();
-			if ( 0 == gc_web_fire_sta.times )
+		if ( clock_time_exceed(sg_web_key_release_time,  gc_web_fire_sta.interval*600) )
+		{
+			ms_data.btn &= 0xFE;
+			if ( 0 == gc_web_sta_list.release_count  )
 			{
-				gc_web_sta_list.release_count ++;
-				printf("fir11\n");
+				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+				gc_web_sta_list.release_count = 1;
+				printf("11\n");
 			}
-		 }
+			sg_web_key_release_time = clock_time();
+		}
 	}
 	else
 	{
-		 if ( clock_time_exceed(sg_web_key_release_time,  100*1000) )
-		 {
-		 	sg_web_key_release_time = clock_time();
-			mdata.btn = 0x00;
+		if ( clock_time_exceed(sg_web_key_release_time,  10000) )
+		{
+			ms_data.btn &= 0x00;
+
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
-			usb_aut_report_time_reset();
-			printf("firaa\n");
-			if ( 0 == gc_web_fire_sta.times )
-			{
-				gc_web_sta_list.release_count ++;
-				printf("fir22\n");
-			}
-		 }
+			sg_web_key_release_time = clock_time();
+			gc_web_sta_list.release_count ++;
+			printf("f22\n");
+		}
 	}
 
 	if ( gc_web_sta_list.release_count >= 10 )
@@ -308,7 +303,6 @@ void web_fire_usb_send(unsigned char direct )
 		gc_web_sta_list.firekey = 0;
 		gc_web_fire_sta.times = 0;
 		gc_web_sta_list.release_count = 0;
-		printf("fir33\n");
 	}
 
 }

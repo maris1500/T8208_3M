@@ -507,7 +507,7 @@
 #endif
 
 #if USB_5V_ENABLE
-	#define USB_IN_CHECK_PIN  GPIO_PD5
+	#define USB_IN_CHECK_PIN  GPIO_PA7
 	#define USB_IN()	gpio_read(USB_IN_CHECK_PIN)
 	#define USB_OUT()	!gpio_read(USB_IN_CHECK_PIN)
 #endif
