@@ -811,7 +811,11 @@ void usb_handle_in_class_intf_req()
 						web_data_process( gc_web_rx_data );
 						gc_web_rx_len = 0;
 						usbhw_write_ctrl_ep_data (0x06);
+					#if WEB_HID_ENABLE
+						usbhw_write_ctrl_ep_data (0x01);
+					#else
 						usbhw_write_ctrl_ep_data (0x00);
+					#endif
 						usbhw_write_ctrl_ep_data (0x00);
 						usbhw_write_ctrl_ep_data (0x00);
 						usbhw_write_ctrl_ep_data (0x00);

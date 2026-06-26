@@ -871,6 +871,8 @@ u8 usb_data_eps_ready;
 
 static u32 gc_auto_report_tick = 0;
 
+extern unsigned char battery_voltage_percent(void);
+
 void usb_aut_report_time_reset(void)
 {
 	gc_auto_report_tick = clock_time() | 1;
@@ -878,12 +880,10 @@ void usb_aut_report_time_reset(void)
 
 int usb_status_input_in_send(void)
 {
-
-	static u8 seq;
 	static u8 sc_first_rp_flag = 0;
 
-	u8 buf[HID_WEB_REPORT_WIRE_LEN];
-	u8 i;
+	u8 buf[HID_WEB_REPORT_WIRE_LEN] = {0};
+	u8 i = 0;
 
 	if (!connect_ok || !usb_data_eps_ready) {
 		return 0;
@@ -910,6 +910,19 @@ int usb_status_input_in_send(void)
 	gc_auto_report_tick = clock_time() | 1;
 
 	buf[0] = REPORT_ID_GAMEPAD_INPUT_AAA;
+#if WEB_HID_ENABLE
+	buf[1] = 0x01;
+	buf[2] = gc_web_data.dpi.level_cur;
+	buf[3] = gc_web_data.dpi.level_max;
+	
+	buf[4] = battery_voltage_percent();
+	buf[5] = 0x01;
+
+	buf[6] = gc_web_data.sta.light_mode;
+	buf[7] = 0x00;
+	buf[8] = gc_web_data.sta.rate_max_support;
+	buf[9] = 0x11;
+#else
 	buf[1] = seq++;
 	buf[2] = 0x00;
 	buf[3] = 0x01;
@@ -919,6 +932,7 @@ int usb_status_input_in_send(void)
 	buf[7] = 0x00;
 	buf[8] = 0x02;
 	buf[9] = 0x11;
+#endif
 	for (i = 10; i < HID_WEB_REPORT_WIRE_LEN; i++) {
 		buf[i] = 0;
 	}
@@ -926,12 +940,12 @@ int usb_status_input_in_send(void)
 	usbhw_write_ep(USB_EDP_WEB_IN, buf, HID_WEB_REPORT_WIRE_LEN);
 
 
-	printf("EP4_IN_32Bytes:");
+	printf("EP4_IN_32Bytes \n");
 	// for (i = 0; i < HID_WEB_REPORT_WIRE_LEN; i++) 
 	//{
 		// printf(" %1x", buf[i]);
 	//}
-	printf("\r\n");
+	// printf("\r\n");
 
 
 	sc_first_rp_flag = 1;

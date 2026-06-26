@@ -146,7 +146,7 @@ void web_dpi_level(unsigned char *buf)
 		 printf("level_cur=%d \n", gc_web_data.dpi.level_cur );
 	}
 
-	for ( i = 0; i < 8; i++)
+	for ( i = 0; i < 8; i++ )
 	{
 		if ( level_max[i] == *(buf+1) )
 		{
@@ -157,7 +157,7 @@ void web_dpi_level(unsigned char *buf)
 	if ( gc_web_data.dpi.level_max != (i+1)  )
 	{
 		 gc_web_data.dpi.level_max = (i+1);
-		printf("level_max=%d \n", gc_web_data.dpi.level_max );
+		 printf("level_max=%d \n", gc_web_data.dpi.level_max );
 	}
 }
 
