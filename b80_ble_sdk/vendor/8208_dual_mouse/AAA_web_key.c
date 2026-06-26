@@ -252,6 +252,7 @@ unsigned short int web_key_dpi_function(void)
 
 }
 
+
 void web_fire_usb_send(unsigned char direct )
 {
 	if ( 0 == gc_web_sta_list.firekey ) { sg_web_key_fire_time = clock_time(); return; }
@@ -259,19 +260,23 @@ void web_fire_usb_send(unsigned char direct )
 	if ( direct || clock_time_exceed(sg_web_key_fire_time, gc_web_fire_sta.interval*1000) )
 	{
 		ms_data.btn |= 0x01;
-		if ( gc_web_fire_sta.times )
+		if ( gc_web_fire_sta.times || web_key_fire_pressed() )
 		{
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
 
 			gc_web_sta_list.release_count = 0;
 			sg_web_key_release_time = clock_time();
-			gc_web_fire_sta.times--;
+
+			if ( gc_web_fire_sta.times )
+			{
+				gc_web_fire_sta.times--;
+			}
 			printf("fir00 ");
 		}
 		sg_web_key_fire_time = clock_time();
 	}
 
-	if ( gc_web_fire_sta.times  )
+	if ( gc_web_fire_sta.times || web_key_fire_pressed() )
 	{
 		if ( clock_time_exceed(sg_web_key_release_time,  gc_web_fire_sta.interval*600) )
 		{

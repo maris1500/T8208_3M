@@ -1672,6 +1672,11 @@ u8 btn_get_value()
 				gc_web_sta_list.trigger = KEY_TRIGGER_FIRE;
 				printf("KEY_TRIGGER_FIRE \n");
 			}
+			else 
+			{
+				gc_web_sta_list.trigger = KEY_TRIGGER_NONE;
+			}
+			
 		#endif
 
         #if (KEY_FEATURE_DESKTOP_ENABLE)
@@ -2374,7 +2379,12 @@ void btn_set_wakeup_level_suspend(u8 enable)
 static inline u8 button_get_status(u32 pin)
 {
     u8 value = 0; //no button press
-    u32 delay_clock;
+
+#if KEY_ALL_INDENPENDENCE_ENABLE
+    //
+#else
+    u32 delay_clock = 0;
+#endif
 
 #if EMI_TEST_FUN_ENABLE_AAA
     emi_cd_push_fifo();
@@ -2407,6 +2417,14 @@ static inline u8 button_get_status(u32 pin)
     }
 #endif
 
+#if KEY_ALL_INDENPENDENCE_ENABLE
+
+    if ( !gpio_read(pin) )
+    {
+        value = 1; //connect GND
+    }
+
+#else
 
     if (!gpio_read(pin))
     { //check connect to GND
@@ -2431,6 +2449,7 @@ static inline u8 button_get_status(u32 pin)
         gpio_write(pin, 1); //init pin high
         gpio_setup_up_down_resistor(pin, PM_PIN_PULLUP_1M); //pullup 1m
     }
+#endif
 
 #if EMI_TEST_FUN_ENABLE_AAA
 	emi_cd_push_fifo();
@@ -2565,6 +2584,60 @@ _attribute_ram_code_ u16 btn_scan()
 #endif
 
 	return  now_value;
+}
+
+
+unsigned char web_key_fire_pressed(void)
+{
+	if (  button_get_status(PIN_BTN_LEFT) )
+	{
+		if ( KEY_WEB_FIRE == web_key_left_function() )
+		{
+			return (1);
+		}
+	}
+
+	if (  button_get_status(PIN_BTN_RIGHT) )
+	{
+		if ( KEY_WEB_FIRE == web_key_right_function() )
+		{
+			return (1);
+		}
+	}
+
+	if (  button_get_status(PIN_BTN_MIDDLE) )
+	{
+		if ( KEY_WEB_FIRE == web_key_middle_function() )
+		{
+			return (1);
+		}
+	}
+
+	if (  button_get_status(KEY_DPI_PIN) )
+	{
+		if ( KEY_WEB_FIRE == web_key_dpi_function() )
+		{
+			return (1);
+		}
+	}
+
+	if (  button_get_status(KEY_K4_PIN) )
+	{
+		if ( KEY_WEB_FIRE == web_key_k4_function() )
+		{
+			return (1);
+		}
+	}
+
+	if (  button_get_status(KEY_K5_PIN) )
+	{
+		if ( KEY_WEB_FIRE == web_key_k5_function() )
+		{
+			return (1);
+		}
+	}
+
+	return (0);
 }
 
 /**

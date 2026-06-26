@@ -1,6 +1,8 @@
 #ifndef _PID_Q15_H_
 #define _PID_Q15_H_
 
+#define KEY_ALL_INDENPENDENCE_ENABLE  1
+
 #define WEB_KEY_FEATURE_ENABLE  1
 
 #define IDLE_REPOER_CYCLE    1000

@@ -81,6 +81,7 @@ void web_key_handle(web_key_t *key, unsigned char *buf)
 			key[i].type  = buf[k + 0];
 			key[i].value = buf[k + 1];
 			key[i].func  = buf[k + 2];
+
 			ret = 1;
 		}
 		k += 3;
