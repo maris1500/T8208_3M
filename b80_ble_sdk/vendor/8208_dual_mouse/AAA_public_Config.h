@@ -258,6 +258,8 @@ extern void usb_aut_report_time_reset(void);
 	extern unsigned short int web_key_k5_function(void);
 	extern unsigned short int web_key_dpi_function(void);
 
+	extern void web_key_special_reset(unsigned char index);
+
 	extern void web_function_loop(void);
 	extern unsigned char web_key_fire_pressed(void);
 

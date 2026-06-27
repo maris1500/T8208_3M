@@ -16,6 +16,10 @@ static unsigned int sg_web_key_release_time = 0, sg_web_key_fire_time = 0, sg_we
 
 extern u8 push_usb_fifo_aaa(u8 type,u8 *buf,u8 len);
 
+void web_key_special_reset(unsigned char index)
+{
+	web_key_special_tab[index-1] = WEB_KEY_NOMAL;
+}
 
 unsigned short int web_key_left_function(void)
 {

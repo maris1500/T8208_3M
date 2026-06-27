@@ -194,9 +194,9 @@ void web_macro_receive(unsigned char *buf)
 
 	for ( i = 0; (i < leng)&&(i < MACRO_NUM_MAX); i++ )
 	{
-		gc_web_data[index-1].macro[i].valA = *buf++
-		gc_web_data[index-1].macro[i].valB = *buf++
-		gc_web_data[index-1].macro[i].valC = *buf++
+		gc_web_data.macro[index-1][i].valA = *buf++ ;
+		gc_web_data.macro[index-1][i].valB = *buf++ ;
+		gc_web_data.macro[index-1][i].valC = *buf++ ;
 	}
 }
 
