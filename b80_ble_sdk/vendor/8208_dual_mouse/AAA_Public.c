@@ -46,7 +46,7 @@
 #endif
 
 #if WEB_KEY_FEATURE_ENABLE
-	 unsigned char web_key_special_tab[6] = {0x00};
+	 unsigned char web_key_special_tab[KEY_NUM_MAX] = {0x00};
 #endif
 
 _attribute_data_retention_ u8 active_disconnect_reason = 0;
@@ -1671,6 +1671,11 @@ u8 btn_get_value()
 			{
 				gc_web_sta_list.trigger = KEY_TRIGGER_FIRE;
 				printf("KEY_TRIGGER_FIRE \n");
+			}
+			else if ( now_value & KEY_WEB_MACRO )
+			{
+				gc_web_sta_list.trigger = KEY_TRIGGER_MACRO;
+				printf("KEY_TRIGGER_MACRO \n");
 			}
 			else 
 			{

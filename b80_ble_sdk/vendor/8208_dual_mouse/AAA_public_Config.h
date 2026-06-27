@@ -182,12 +182,21 @@ extern void usb_aut_report_time_reset(void);
 	#define WEB_KEY_END   6
 
 	typedef enum {
+		KEY_RELEASE_NONE  = 0,
+		KEY_RELEASE_OFFICE,
+		KEY_RELEASE_MEDIA,
+		KEY_RELEASE_FIRE,
+		KEY_RELEASE_MACRO,
+	}web_key_release_en;
+
+	typedef enum {
 
 		KEY_TRIGGER_NONE  = 0,
 		KEY_TRIGGER_OFFICE,
 		KEY_TRIGGER_MEDIA,
 		KEY_TRIGGER_OTHER,
 		KEY_TRIGGER_FIRE,
+		KEY_TRIGGER_MACRO,
 	}web_trigger_en;
 
 	typedef struct {
@@ -197,8 +206,9 @@ extern void usb_aut_report_time_reset(void);
 		unsigned short release_count:4;
 		
 		unsigned short firekey:1;
-	
-		unsigned short reserve:5;
+		unsigned short macrokey:1;
+		
+		unsigned short reserve:4;
 	}web_set_status_t; 
 
 	typedef enum {
@@ -239,6 +249,7 @@ extern void usb_aut_report_time_reset(void);
 	extern char web_key_office(unsigned char index);
 	extern char web_key_media(unsigned char index);
 	extern char web_key_fire(unsigned char index);
+	extern char web_key_macro(unsigned char index);
 
 	extern unsigned short int web_key_left_function(void);
 	extern unsigned short int web_key_right_function(void);

@@ -70,6 +70,19 @@ char web_key_fire(unsigned char index)
 
 }
 
+char web_key_macro(unsigned char index)
+{
+	unsigned char type = gc_web_data.key[index-1].type;
+
+	if ( WEB_KEY_MACRO == type )
+	{
+		return (1);
+	}
+
+	return (0);
+
+}
+
 void web_key_handle(web_key_t *key, unsigned char *buf)
 {
 	unsigned char i = 0, k = 0, ret = 0;
@@ -170,38 +183,59 @@ void web_factory_set(void)
 	}
 }
 
+void web_macro_receive(unsigned char *buf)
+{
+	unsigned char leng  = *(buf) - 1;
+	unsigned char index = *(buf+1);
+	unsigned char i = 0;
+
+	buf++;
+	buf++;
+
+	for ( i = 0; (i < leng)&&(i < MACRO_NUM_MAX); i++ )
+	{
+		gc_web_data[index-1].macro[i].valA = *buf++
+		gc_web_data[index-1].macro[i].valB = *buf++
+		gc_web_data[index-1].macro[i].valC = *buf++
+	}
+}
+
 void web_data_process(unsigned char *buf)
 {
 	if ( 0x06 == buf[0] && 0x01 == buf[1] && 0x01 == buf[3] )
 	{
 		web_key_handle( &gc_web_data.key[0], &buf[5] );
 	}
-	else if ( 0x06 == buf[0] && 0x02 == buf[1] && 0x02 == buf[3]  )
+	else if ( 0x06 == buf[0] && 0x02 == buf[1] && 0x02 == buf[3] )
 	{
 		web_dpi_level( &buf[5] );
 	}
-	else if ( 0x06 == buf[0] && 0x03 == buf[1] && 0x01 == buf[3]  )
+	else if ( 0x06 == buf[0] && 0x03 == buf[1] && 0x01 == buf[3] )
 	{
 
 	}
-	else if ( 0x06 == buf[0] && 0x04 == buf[1] && 0x01 == buf[3]  )
+	else if ( 0x06 == buf[0] && 0x04 == buf[1] && 0x01 == buf[3] )
 	{
 		web_report_rate( &buf[5] );
 	}
-	else if ( 0x06 == buf[0] && 0x07 == buf[1] && 0x01 == buf[3]  )
+	else if ( 0x06 == buf[0] && 0x07 == buf[1] && 0x01 == buf[3] )
 	{
 		web_sleep_time( &buf[5] );
 	}
-	else if ( 0x06 == buf[0] && 0x06 == buf[1] && 0x01 == buf[3]  )
+	else if ( 0x06 == buf[0] && 0x06 == buf[1] && 0x01 == buf[3] )
 	{
 		web_light_mode( &buf[6] );
 	}
-	else if ( 0x06 == buf[0] && 0x08 == buf[1] && 0x01 == buf[3]  )
+	else if ( 0x06 == buf[0] && 0x08 == buf[1] && 0x01 == buf[3] )
 	{
 		web_sensor_wakeup_modify( &buf[5] );
 	}
-	else if ( 0x06 == buf[0] && 0x0f == buf[1] && 0x01 == buf[3]  )
+	else if ( 0x06 == buf[0] && 0x0f == buf[1] && 0x01 == buf[3] )
 	{
 		web_factory_set();
+	}
+	else if ( 0x06 == buf[0] && 0x10 == buf[1] && 0x01 == buf[3] )
+	{
+		web_macro_receive( &buf[5] );
 	}
 }

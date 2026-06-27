@@ -44,6 +44,9 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 
 #if WEB_HID_ENABLE
 
+	#define KEY_NUM_MAX     6
+	#define MACRO_NUM_MAX   60
+
 	typedef struct {
 		unsigned char level_max:4;
 		unsigned char level_cur:4;
@@ -54,6 +57,12 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 		unsigned char value;
 		unsigned char func;
 	}web_key_t;
+
+	typedef struct {
+		unsigned char valA;
+		unsigned char valB;
+		unsigned char valC;
+	}macro_elem_t;
 
 	typedef struct {
 		unsigned int charge_mode:2;
@@ -73,13 +82,15 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 		unsigned int reservet:7;
 	}web_sta_t;
 
+	
 	typedef struct
 	{
 		web_dpi_t  dpi;
 		web_sta_t  sta;
-		web_key_t  key[6];
-
+		web_key_t  key[KEY_NUM_MAX];
+		macro_elem_t macro[KEY_NUM_MAX][MACRO_NUM_MAX];
 	}web_data_cfg_t;
+
 
 	extern web_data_cfg_t gc_web_data;
 
