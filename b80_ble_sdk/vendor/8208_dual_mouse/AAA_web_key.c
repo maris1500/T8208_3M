@@ -378,7 +378,6 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 		case 1: 
 			ms_data.btn |= pbuf->valC;
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
-			printf("macropressed \n");
 			break;
 	
 		case 2: break;
@@ -391,7 +390,6 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 		case 9:
 			ms_data.btn &= ( ~(pbuf->valC) );
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
-			printf("macroidle\n");
 			break;
 
 		case 10: break;
@@ -418,45 +416,51 @@ void web_macro_usb_send(char direct)
 	{
 		if ( web_key_macro_count_tab[i] && web_key_macro_time_tab[i] )
 		{
-		    if ( web_key_macro_index_tab[i] < web_key_macro_max_index_get(i) - 1 )
-		    {
-				optime = 0x0F & gc_web_data.macro[i][ web_key_macro_index_tab[i] ].valA;
-				optime <<= 8;
-				optime |= gc_web_data.macro[i][ web_key_macro_index_tab[i] ].valB;
+			
+			if ( direct || !gc_web_sta_list.macrodelay )
+			{
+				gc_web_sta_list.macrodelay = 1;
+				web_key_macro_time_tab[i] = clock_time() | 0x01;
 
-				if ( 0x00 == optime )
-				{
-					optime = 50;
-				}
-				
-				if ( direct || clock_time_exceed(web_key_macro_time_tab[i], optime*1000) )
-				{
-					if ( 0 == direct )
-					{
-						web_key_macro_index_tab[i]++;
-					}
-					printf("macroindex=%d %d \n",  web_key_macro_index_tab[i], optime);
-					web_macro_usb_send_detailed_data( &gc_web_data.macro[i][ web_key_macro_index_tab[i] ] );
-					web_key_macro_time_tab[i] = clock_time() | 0x01;
-				}
-		    }
+				web_macro_usb_send_detailed_data( &gc_web_data.macro[i][ web_key_macro_index_tab[i] ] );
+			}
 			else
 			{
-			    web_key_macro_index_tab[i] = 0x00;
-				
-				if ( web_key_macro_count_tab[i] )
-				{
-					web_key_macro_count_tab[i]--;
-				}
+			    if ( web_key_macro_index_tab[i] < web_key_macro_max_index_get(i) - 1 )
+			    {
+					optime = 0x0F & gc_web_data.macro[i][ web_key_macro_index_tab[i] ].valA;
+					optime <<= 8;
+					optime |= gc_web_data.macro[i][ web_key_macro_index_tab[i] ].valB;
 
-				if ( 0x00 == web_key_macro_count_tab[i] )
+					if ( 0x00 == optime )
+					{
+						optime = 50;
+					}
+					
+					if ( clock_time_exceed(web_key_macro_time_tab[i], optime*1000) )
+					{
+						web_key_macro_index_tab[i]++;
+						gc_web_sta_list.macrodelay = 0;
+					}
+			    }
+				else
 				{
-					web_key_macro_time_tab[i] = 0x00;
+				    web_key_macro_index_tab[i] = 0x00;
+					gc_web_sta_list.macrodelay = 0;
+					
+					if ( web_key_macro_count_tab[i] )
+					{
+						web_key_macro_count_tab[i]--;
+					}
+
+					if ( 0x00 == web_key_macro_count_tab[i] )
+					{
+						web_key_macro_time_tab[i] = 0x00;
+						gc_web_sta_list.macrokey = 0;
+					}
 				}
 			}
-
 		}
-		
 	}
 }
 
