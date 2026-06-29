@@ -45,7 +45,7 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 #if WEB_HID_ENABLE
 
 	#define KEY_NUM_MAX     6
-	#define MACRO_NUM_MAX   60
+	#define MACRO_NUM_MAX   40
 
 	typedef struct {
 		unsigned char level_max:4;

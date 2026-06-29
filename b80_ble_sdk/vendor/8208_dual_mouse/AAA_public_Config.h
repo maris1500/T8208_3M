@@ -36,6 +36,8 @@
 #include "aaa_emi.h"
 #include "aaa_app_config.h"
 
+#include "main.h"
+
 extern my_fifo_t fifo_km;
 
 typedef enum
@@ -242,7 +244,11 @@ extern void usb_aut_report_time_reset(void);
 
 	extern web_set_status_t gc_web_sta_list;
 		
-	extern unsigned char web_key_special_tab[6];
+	extern unsigned char web_key_special_tab[KEY_NUM_MAX];
+
+	extern unsigned int  web_key_macro_time_tab[KEY_NUM_MAX];
+	extern unsigned char web_key_macro_index_tab[KEY_NUM_MAX];
+	extern unsigned char web_key_macro_count_tab[KEY_NUM_MAX];
 
 	extern char web_key_nomal(unsigned char index);
 	extern char web_key_dpi(unsigned char index);

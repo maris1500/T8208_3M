@@ -47,6 +47,10 @@
 
 #if WEB_KEY_FEATURE_ENABLE
 	 unsigned char web_key_special_tab[KEY_NUM_MAX] = {0x00};
+
+	 unsigned int   web_key_macro_time_tab[KEY_NUM_MAX]  = {0x00};
+	 unsigned char  web_key_macro_count_tab[KEY_NUM_MAX] = {0x00};
+	 unsigned char  web_key_macro_index_tab[KEY_NUM_MAX] = {0x00};
 #endif
 
 _attribute_data_retention_ u8 active_disconnect_reason = 0;
@@ -2215,7 +2219,7 @@ void get_usb_data_report_aaa()
 	}
 #else
 
-	if ( 0 == gc_web_sta_list.firekey )
+	if ( 0 == gc_web_sta_list.firekey && 0 == gc_web_sta_list.macrokey )
 	{
 		push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));//push to fifo
 	}
@@ -2492,6 +2496,10 @@ _attribute_ram_code_ u16 btn_scan()
 		now_value |= KEY_LEFT_VALUE_2;
 	#endif
 	}
+	else
+	{
+		web_key_special_reset(KEY_LEFT_INDEX);
+	}
 
 
 	button_status = button_get_status(PIN_BTN_RIGHT); //check pin right
@@ -2511,6 +2519,10 @@ _attribute_ram_code_ u16 btn_scan()
 		now_value |= KEY_RIGHT_VALUE_2;
 	#endif
 	}
+	else
+	{
+		web_key_special_reset(KEY_RIGHT_INDEX);
+	}
 
 	button_status = button_get_status(PIN_BTN_MIDDLE); //check pin middle
 	if (button_status == 1)
@@ -2528,6 +2540,10 @@ _attribute_ram_code_ u16 btn_scan()
 	#else
 		now_value |= KEY_MIDDLE_VALUE_2;
 	#endif
+	}
+	else
+	{
+		web_key_special_reset(KEY_MIDDLE_INDEX);
 	}
 
 #if  KEY_PAIR_USED_POWERUP_ENABLE
@@ -2564,6 +2580,10 @@ _attribute_ram_code_ u16 btn_scan()
 		now_value |= KEY_BTN_CPI;
 	#endif
 	}
+	else
+	{
+		web_key_special_reset(KEY_DPI_INDEX);
+	}
 #endif
 
 #if KEY_K4_Independence_CTRL_EN
@@ -2575,6 +2595,10 @@ _attribute_ram_code_ u16 btn_scan()
 		now_value |= KEY_BTN_K4;
 	#endif
 	}
+	else
+	{
+		web_key_special_reset(KEY_K4_INDEX);
+	}
 #endif
 
 #if KEY_K5_Independence_CTRL_EN
@@ -2585,6 +2609,10 @@ _attribute_ram_code_ u16 btn_scan()
 	#else
 		now_value |= KEY_BTN_K5;
 	#endif
+	}
+	else
+	{
+		web_key_special_reset(KEY_K5_INDEX);
 	}
 #endif
 

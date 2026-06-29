@@ -11,7 +11,7 @@
 web_set_status_t gc_web_sta_list;
 web_key_fire_t   gc_web_fire_sta;   
 
-static unsigned int sg_web_key_release_time = 0, sg_web_key_fire_time = 0, sg_web_key_macro_time = 0;
+static unsigned int sg_web_key_release_time = 0, sg_web_key_fire_time = 0;
 
 
 extern u8 push_usb_fifo_aaa(u8 type,u8 *buf,u8 len);
@@ -350,31 +350,114 @@ void web_fire_usb_send(unsigned char direct )
 
 }
 
-
-void web_macro_usb_send(void)
+unsigned char web_key_macro_max_index_get(unsigned char k)
 {
-	if ( 0 == gc_web_sta_list.macrokey ) { sg_web_key_macro_time = clock_time(); return; }
+	unsigned char i = 0, n = 0;
 
-	if ( clock_time_exceed(sg_web_key_macro_time, gc_web_fire_sta.interval*1000) )
+	for ( i = 0; i < MACRO_NUM_MAX; i++)
 	{
-		sg_web_key_macro_time = clock_time();
-	}
-
-	if ( gc_web_fire_sta.times )
-	{
-		if ( clock_time_exceed(sg_web_key_release_time,  gc_web_fire_sta.interval*600) )
+		if ( gc_web_data.macro[k][i].valA || gc_web_data.macro[k][i].valB || gc_web_data.macro[k][i].valC )
 		{
-			sg_web_key_release_time = clock_time();
+			n++;
+		}
+		else
+		{
+			break;
 		}
 	}
-	else
-	{
-		if ( clock_time_exceed(sg_web_key_release_time,  10000) )
-		{
-			
-		}
-	}
+	
+	return (n);
+}
 
+void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
+{
+	unsigned char type = (pbuf->valA & 0xF0) >> 4;
+
+	switch (type)
+	{
+		case 1: 
+			ms_data.btn |= pbuf->valC;
+			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			printf("macropressed \n");
+			break;
+	
+		case 2: break;
+		case 3: break;
+
+		case 4: break;
+		case 5: break;
+		case 6: break;
+
+		case 9:
+			ms_data.btn &= ( ~(pbuf->valC) );
+			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			printf("macroidle\n");
+			break;
+
+		case 10: break;
+		case 11: break;
+
+		case 12: break;
+		case 13: break;
+		case 14: break;
+
+		default:break;
+	}
+	
+	printf("maro_AA=%1x, %1x, %1x \n", pbuf->valA, pbuf->valB, pbuf->valC);
+}
+
+void web_macro_usb_send(char direct)
+{
+	unsigned char i = 0;
+	unsigned int optime = 0;
+
+	if ( 0 == gc_web_sta_list.macrokey ) { return; }
+
+	for ( i = 0; i < KEY_NUM_MAX; i++ )
+	{
+		if ( web_key_macro_count_tab[i] && web_key_macro_time_tab[i] )
+		{
+		    if ( web_key_macro_index_tab[i] < web_key_macro_max_index_get(i) - 1 )
+		    {
+				optime = 0x0F & gc_web_data.macro[i][ web_key_macro_index_tab[i] ].valA;
+				optime <<= 8;
+				optime |= gc_web_data.macro[i][ web_key_macro_index_tab[i] ].valB;
+
+				if ( 0x00 == optime )
+				{
+					optime = 50;
+				}
+				
+				if ( direct || clock_time_exceed(web_key_macro_time_tab[i], optime*1000) )
+				{
+					if ( 0 == direct )
+					{
+						web_key_macro_index_tab[i]++;
+					}
+					printf("macroindex=%d %d \n",  web_key_macro_index_tab[i], optime);
+					web_macro_usb_send_detailed_data( &gc_web_data.macro[i][ web_key_macro_index_tab[i] ] );
+					web_key_macro_time_tab[i] = clock_time() | 0x01;
+				}
+		    }
+			else
+			{
+			    web_key_macro_index_tab[i] = 0x00;
+				
+				if ( web_key_macro_count_tab[i] )
+				{
+					web_key_macro_count_tab[i]--;
+				}
+
+				if ( 0x00 == web_key_macro_count_tab[i] )
+				{
+					web_key_macro_time_tab[i] = 0x00;
+				}
+			}
+
+		}
+		
+	}
 }
 
 void web_key_function_process(void)
@@ -453,11 +536,14 @@ void web_key_function_process(void)
 				gc_web_sta_list.macrokey = 1;
 
 				gc_web_sta_list.release_type = KEY_RELEASE_MACRO;
-				sg_web_key_release_time = clock_time();
 
-				web_fire_usb_send(1);
-		
-				printf("Sendfire:%1x %1x \n", gc_web_fire_sta.interval, gc_web_fire_sta.times);
+				sg_web_key_release_time    = clock_time();
+				web_key_macro_time_tab[i]  = clock_time() | 0x01;
+				web_key_macro_count_tab[i] = gc_web_data.key[i].func;
+
+				web_macro_usb_send(1);
+
+				printf("Sendmacro00:%d %d %4x\n", i, web_key_macro_count_tab[i], web_key_macro_time_tab[i]);
 			}
 		}
 		gc_web_sta_list.trigger = KEY_TRIGGER_NONE;
@@ -499,6 +585,7 @@ void web_key_function_process(void)
 	}
 
 	web_fire_usb_send(0);
+	web_macro_usb_send(0);
 	
 }
 
