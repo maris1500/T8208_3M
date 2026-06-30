@@ -372,7 +372,8 @@ unsigned char web_key_macro_max_index_get(unsigned char k)
 void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 {
 	unsigned char type = (pbuf->valA & 0xF0) >> 4;
-
+	unsigned char sendbuff[8] = {0x00};
+	
 	switch (type)
 	{
 		case 1: 
@@ -380,8 +381,15 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
 			break;
 	
-		case 2: break;
-		case 3: break;
+		case 2: 
+			sendbuff[0] = pbuf->valC;
+			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));
+			break;
+	
+		case 3: 
+			sendbuff[2] = pbuf->valC;
+			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));
+			break;
 
 		case 4: break;
 		case 5: break;
@@ -392,8 +400,13 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
 			break;
 
-		case 10: break;
-		case 11: break;
+		case 10: 
+			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));
+			break;
+			
+		case 11: 
+			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));
+			break;
 
 		case 12: break;
 		case 13: break;
@@ -402,7 +415,7 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 		default:break;
 	}
 	
-	printf("maro_AA=%1x, %1x, %1x \n", pbuf->valA, pbuf->valB, pbuf->valC);
+	printf("maro_AA=%d %1x %1x %1x \n", type, pbuf->valA, pbuf->valB, pbuf->valC);
 }
 
 void web_macro_usb_send(char direct)
@@ -421,7 +434,7 @@ void web_macro_usb_send(char direct)
 			{
 				gc_web_sta_list.macrodelay = 1;
 				web_key_macro_time_tab[i] = clock_time() | 0x01;
-
+				
 				web_macro_usb_send_detailed_data( &gc_web_data.macro[i][ web_key_macro_index_tab[i] ] );
 			}
 			else
@@ -434,7 +447,7 @@ void web_macro_usb_send(char direct)
 
 					if ( 0x00 == optime )
 					{
-						optime = 50;
+						optime = 10;
 					}
 					
 					if ( clock_time_exceed(web_key_macro_time_tab[i], optime*1000) )
@@ -547,7 +560,7 @@ void web_key_function_process(void)
 
 				web_macro_usb_send(1);
 
-				printf("Sendmacro00:%d %d %4x\n", i, web_key_macro_count_tab[i], web_key_macro_time_tab[i]);
+			//	printf("Sendmacro00:%d %d %4x\n", i, web_key_macro_count_tab[i], web_key_macro_time_tab[i]);
 			}
 		}
 		gc_web_sta_list.trigger = KEY_TRIGGER_NONE;
