@@ -13,6 +13,7 @@ web_key_fire_t   gc_web_fire_sta;
 
 static unsigned int sg_web_key_release_time = 0, sg_web_key_fire_time = 0;
 
+unsigned char macro_buff[8] = {0x00};
 
 extern u8 push_usb_fifo_aaa(u8 type,u8 *buf,u8 len);
 
@@ -372,7 +373,6 @@ unsigned char web_key_macro_max_index_get(unsigned char k)
 void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 {
 	unsigned char type = (pbuf->valA & 0xF0) >> 4;
-	unsigned char sendbuff[8] = {0x00};
 	
 	switch (type)
 	{
@@ -382,13 +382,13 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 			break;
 	
 		case 2: 
-			sendbuff[0] = pbuf->valC;
-			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));
+			macro_buff[0] |= pbuf->valC;
+			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
 			break;
 	
 		case 3: 
-			sendbuff[2] = pbuf->valC;
-			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));
+			macro_buff[2] = pbuf->valC;
+			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
 			break;
 
 		case 4: break;
@@ -401,11 +401,13 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 			break;
 
 		case 10: 
-			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));
+			macro_buff[0] &= ( ~(pbuf->valC) );
+			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
 			break;
 			
 		case 11: 
-			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));
+			macro_buff[2] = 0;
+			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
 			break;
 
 		case 12: break;
@@ -420,10 +422,40 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 
 void web_macro_usb_send(char direct)
 {
-	unsigned char i = 0;
+	unsigned char i = 0, k = 0;
 	unsigned int optime = 0;
 
 	if ( 0 == gc_web_sta_list.macrokey ) { return; }
+
+	if ( gc_web_sta_list.macrorelease )
+	{
+		if ( clock_time_exceed(sg_web_key_release_time, 10*1000) )
+		{
+			macro_buff[0] = 0x00;
+			macro_buff[1] = 0x00;
+			macro_buff[2] = 0x00;
+
+			if ( gc_web_sta_list.release_count%2 )
+			{
+				push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+			}
+			else
+			{
+				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			}
+
+			sg_web_key_release_time = clock_time();
+			gc_web_sta_list.release_count++;
+		}
+
+		if ( gc_web_sta_list.release_count >= 10 )
+		{
+			gc_web_sta_list.macrorelease = 0;
+			gc_web_sta_list.macrokey = 0;
+		}
+
+		return;
+	}
 
 	for ( i = 0; i < KEY_NUM_MAX; i++ )
 	{
@@ -469,11 +501,22 @@ void web_macro_usb_send(char direct)
 					if ( 0x00 == web_key_macro_count_tab[i] )
 					{
 						web_key_macro_time_tab[i] = 0x00;
-						gc_web_sta_list.macrokey = 0;
 					}
 				}
 			}
 		}
+
+
+		if ( 0x00 == web_key_macro_count_tab[i] && 0x00 == web_key_macro_time_tab[i] )
+		{
+			k++;
+		}
+
+		if ( k >= KEY_NUM_MAX )
+		{
+			gc_web_sta_list.macrorelease = 1;
+		}
+
 	}
 }
 

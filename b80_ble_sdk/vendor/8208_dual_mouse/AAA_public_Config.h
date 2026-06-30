@@ -211,8 +211,9 @@ extern void usb_aut_report_time_reset(void);
 		
 		unsigned short macrokey:1;
 		unsigned short macrodelay:1;
+		unsigned short macrorelease:1;
 		
-		unsigned short reserve:3;
+		unsigned short reserve:2;
 	}web_set_status_t; 
 
 	typedef enum {
