@@ -391,8 +391,33 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
 			break;
 
-		case 4: break;
-		case 5: break;
+		case 4: 
+			ms_data.x = 0x00;
+			if (pbuf->valC >= 0x81 )
+			{
+				ms_data.x = pbuf->valC | 0xFF00;
+			}
+			else if (pbuf->valC <= 0x7F)
+			{
+				ms_data.x = pbuf->valC;
+			}
+			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			break;
+
+			
+		case 5: 
+			ms_data.y = 0x00;
+			if (pbuf->valC >= 0x81 )
+			{
+				ms_data.y = pbuf->valC | 0xFF00;
+			}
+			else if (pbuf->valC <= 0x7F)
+			{
+				ms_data.y = pbuf->valC;
+			}
+			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			break;
+
 		case 6: break;
 
 		case 9:
@@ -410,8 +435,18 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
 			break;
 
-		case 12: break;
-		case 13: break;
+		case 12: 
+			ms_data.x = 0;
+			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			break;
+
+			
+		case 13: 
+			ms_data.y = 0;
+			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			break;
+
+		
 		case 14: break;
 
 		default:break;
@@ -490,6 +525,7 @@ void web_macro_usb_send(char direct)
 			    }
 				else
 				{
+
 				    web_key_macro_index_tab[i] = 0x00;
 					gc_web_sta_list.macrodelay = 0;
 					
