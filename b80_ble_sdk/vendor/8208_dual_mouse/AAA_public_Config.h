@@ -184,6 +184,12 @@ extern void usb_aut_report_time_reset(void);
 	#define WEB_KEY_END   6
 
 	typedef enum {
+		KEY_MACRO_NONE  = 0,
+		KEY_MACRO_PRESSED,
+		KEY_MACRO_BOUNCE,
+	}web_key_macro_en;
+
+	typedef enum {
 		KEY_RELEASE_NONE  = 0,
 		KEY_RELEASE_OFFICE,
 		KEY_RELEASE_MEDIA,
@@ -212,8 +218,9 @@ extern void usb_aut_report_time_reset(void);
 		unsigned short macrokey:1;
 		unsigned short macrodelay:1;
 		unsigned short macrorelease:1;
-		
-		unsigned short reserve:2;
+		unsigned short macrocontinuous:1;
+
+		unsigned short reserve:1;
 	}web_set_status_t; 
 
 	typedef enum {
@@ -246,7 +253,8 @@ extern void usb_aut_report_time_reset(void);
 	}web_key_type_en;
 
 	extern web_set_status_t gc_web_sta_list;
-		
+
+	extern const unsigned int key_pin_list_tab[KEY_NUM_MAX];
 	extern unsigned char web_key_special_tab[KEY_NUM_MAX];
 
 	extern unsigned int  web_key_macro_time_tab[KEY_NUM_MAX];
@@ -271,6 +279,8 @@ extern void usb_aut_report_time_reset(void);
 
 	extern void web_function_loop(void);
 	extern unsigned char web_key_fire_pressed(void);
+	extern web_key_macro_en web_key_macro_staus(unsigned char index);
+	extern web_key_macro_en web_key_macro_press_any(unsigned char index);
 
 #endif
 

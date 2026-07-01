@@ -455,9 +455,29 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 	printf("maro_AA=%d %1x %1x %1x \n", type, pbuf->valA, pbuf->valB, pbuf->valC);
 }
 
+unsigned char web_macro_operation(unsigned char i)
+{
+	if ( KEY_MACRO_PRESSED == web_key_macro_staus(i) )
+	{
+		return 1;
+	}
+
+	if ( gc_web_sta_list.macrocontinuous )
+	{
+		return 1;
+	}
+
+	if ( web_key_macro_count_tab[i] )
+	{
+		return 1;
+	}
+
+	return 0;
+}
+
 void web_macro_usb_send(char direct)
 {
-	unsigned char i = 0, k = 0;
+	unsigned char i = 0, k = 0, m = 0;
 	unsigned int optime = 0;
 
 	if ( 0 == gc_web_sta_list.macrokey ) { return; }
@@ -487,6 +507,7 @@ void web_macro_usb_send(char direct)
 		{
 			gc_web_sta_list.macrorelease = 0;
 			gc_web_sta_list.macrokey = 0;
+			printf("release_succ \n");
 		}
 
 		return;
@@ -494,14 +515,13 @@ void web_macro_usb_send(char direct)
 
 	for ( i = 0; i < KEY_NUM_MAX; i++ )
 	{
-		if ( web_key_macro_count_tab[i] && web_key_macro_time_tab[i] )
+		if ( web_macro_operation(i) && web_key_macro_time_tab[i] )
 		{
-			
 			if ( direct || !gc_web_sta_list.macrodelay )
 			{
 				gc_web_sta_list.macrodelay = 1;
-				web_key_macro_time_tab[i] = clock_time() | 0x01;
-				
+				web_key_macro_time_tab[i]  = clock_time() | 0x01;
+				printf("pf111\n");
 				web_macro_usb_send_detailed_data( &gc_web_data.macro[i][ web_key_macro_index_tab[i] ] );
 			}
 			else
@@ -525,10 +545,10 @@ void web_macro_usb_send(char direct)
 			    }
 				else
 				{
-
 				    web_key_macro_index_tab[i] = 0x00;
 					gc_web_sta_list.macrodelay = 0;
-					
+
+
 					if ( web_key_macro_count_tab[i] )
 					{
 						web_key_macro_count_tab[i]--;
@@ -536,13 +556,34 @@ void web_macro_usb_send(char direct)
 
 					if ( 0x00 == web_key_macro_count_tab[i] )
 					{
-						web_key_macro_time_tab[i] = 0x00;
+						if ( 0x20 == (0xF0 & gc_web_data.key[i].value) )
+						{
+							web_key_macro_time_tab[i] = 0x00;
+							printf("key_macro_time000\n");
+						}
 					}
 				}
 			}
 		}
 
+		if ( KEY_MACRO_PRESSED == web_key_macro_press_any(i) )
+		{
+			gc_web_sta_list.macrocontinuous = 0;
 
+			for ( m = 0; m < KEY_NUM_MAX; m++ )
+			{
+				if ( 0x40 == (0xF0 & gc_web_data.key[m].value) )
+				{
+					web_key_macro_time_tab[m] = 0x00;
+				}
+			}
+		}
+	
+		if ( KEY_MACRO_BOUNCE == web_key_macro_staus(i) )
+		{
+			web_key_macro_time_tab[i] = 0x00;
+		}
+			
 		if ( 0x00 == web_key_macro_count_tab[i] && 0x00 == web_key_macro_time_tab[i] )
 		{
 			k++;
@@ -630,7 +671,7 @@ void web_key_function_process(void)
 			if ( WEB_KEY_MACRO == web_key_special_tab[i] )
 			{
 				gc_web_sta_list.macrokey = 1;
-
+				gc_web_sta_list.macrocontinuous = 1;
 				gc_web_sta_list.release_type = KEY_RELEASE_MACRO;
 
 				sg_web_key_release_time    = clock_time();
@@ -639,7 +680,8 @@ void web_key_function_process(void)
 
 				web_macro_usb_send(1);
 
-			//	printf("Sendmacro00:%d %d %4x\n", i, web_key_macro_count_tab[i], web_key_macro_time_tab[i]);
+				// printf("Sendmacro00:%d %d %4x ", i, web_key_macro_count_tab[i], web_key_macro_time_tab[i]);
+				// printf("%d %d %d \n", gc_web_sta_list.macrokey, gc_web_sta_list.macrocontinuous, gc_web_sta_list.release_type);
 			}
 		}
 		gc_web_sta_list.trigger = KEY_TRIGGER_NONE;

@@ -51,6 +51,14 @@
 	 unsigned int   web_key_macro_time_tab[KEY_NUM_MAX]  = {0x00};
 	 unsigned char  web_key_macro_count_tab[KEY_NUM_MAX] = {0x00};
 	 unsigned char  web_key_macro_index_tab[KEY_NUM_MAX] = {0x00};
+
+	 const unsigned int key_pin_list_tab[KEY_NUM_MAX] = {
+	 	PIN_BTN_LEFT,
+		PIN_BTN_RIGHT,
+		PIN_BTN_MIDDLE,
+		KEY_K5_PIN,
+		KEY_K4_PIN,
+		KEY_DPI_PIN };
 #endif
 
 _attribute_data_retention_ u8 active_disconnect_reason = 0;
@@ -2671,6 +2679,37 @@ unsigned char web_key_fire_pressed(void)
 	}
 
 	return (0);
+}
+
+web_key_macro_en web_key_macro_staus(unsigned char index)
+{
+	unsigned char type = (0xF0 & gc_web_data.key[index].value);
+	unsigned char num  = (0x0F & gc_web_data.key[index].value);
+
+	if ( 0x10 == type )
+	{
+		if ( button_get_status( key_pin_list_tab[num - 1] ) )
+		{
+			return (KEY_MACRO_PRESSED);
+		}
+		return (KEY_MACRO_BOUNCE);
+	}
+	return (KEY_MACRO_NONE);
+}
+
+web_key_macro_en web_key_macro_press_any(unsigned char index)
+{
+	unsigned char type = (0xF0 & gc_web_data.key[index].value);
+
+	if ( 0x40 != type )
+	{
+		if ( button_get_status( key_pin_list_tab[index] ) )
+		{
+			return (KEY_MACRO_PRESSED);
+		}
+	}
+
+	return (KEY_MACRO_BOUNCE);
 }
 
 /**
