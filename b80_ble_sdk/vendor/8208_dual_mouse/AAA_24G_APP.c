@@ -625,7 +625,7 @@ void ui_loop_24g()
 			my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push btn data to fifo
 		} 
 	#if (PROJECT_ID == PID_Q15)
-		else if ( (gc_check_dongle_data_counter > IDLE_REPOER_CYCLE) || (gc_check_dongle_sleep_counter > IDLE_REPOER_CYCLE/100) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
+		else if ( (gc_check_dongle_data_counter >= IDLE_REPOER_CYCLE) || (gc_check_dongle_sleep_counter >= 10) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
 	#else
 		else if ((idle_count < 3) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
 	#endif
@@ -640,7 +640,7 @@ void ui_loop_24g()
 			
 			if (p == 0)
 			{
-				printf("mouse_idle_data\n");
+				// printf("mouse_idle_data\n");
 				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push mouse data to fifo
 			}
 		}
@@ -776,7 +776,7 @@ void pm_poll()
 						gc_mouse_sta.need_suspend_flag = 1; //set enter suspend flag
 						wake_src = PM_WAKEUP_TIMER|PM_WAKEUP_PAD; //wake up source = PM_WAKEUP_TIMER|PM_WAKEUP_PAD
 					#if SENSOR_MOTION_ENABLE
-						interval = 100; //wake up interval = 1000ms
+						interval = 50; //wake up interval = 1000ms
 					#else
 						interval = 100; //wake up interval = 100ms
 					#endif

@@ -1667,7 +1667,9 @@ u8 btn_get_value()
 
 		#if	WEB_KEY_FEATURE_ENABLE
 
+		#if USB_MODE_ENABLE
 			usb_aut_report_time_reset();
+		#endif
 
             if ( now_value & KEY_WEB_OFFICE )
             {
@@ -2133,8 +2135,10 @@ void get_usb_data_report_aaa()
 
         	/* smoother mouse sensor data */
         	adaptive_smoother(); //Smooth sensor data
-
+        	
+		#if USB_MODE_ENABLE
 			usb_aut_report_time_reset();
+		#endif
 		}
     }
     else

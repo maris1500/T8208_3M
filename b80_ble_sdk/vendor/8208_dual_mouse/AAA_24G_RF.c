@@ -352,13 +352,16 @@ u8  Read_Payload(void) // u8  Read_Payload(u8 *payload)
     u8 ret = 0, i = 0;
 
     ret = rx_packet[4] & 0x3f; //get length of rx paylaod
-    printf("rx_dax=");
-    for (i = 0; i < (ret + 5); i++)
-    {
-    	printf("%1x ", rx_packet[i]);
-    }
-    printf("\n");
 
+	// if ( ret + 5 >= 32 )
+	{
+	    printf("rx_dax=");
+	    for (i = 0; i < (ret + 5); i++)
+	    {
+	    	printf("%1x ", rx_packet[i]);
+	    }
+	    printf("\n");
+	}
 #endif
 
     return 1;

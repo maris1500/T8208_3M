@@ -15,7 +15,9 @@ static unsigned int sg_web_key_release_time = 0, sg_web_key_fire_time = 0;
 
 unsigned char macro_buff[8] = {0x00};
 
-extern u8 push_usb_fifo_aaa(u8 type,u8 *buf,u8 len);
+#if USB_MODE_ENABLE
+	extern u8 push_usb_fifo_aaa(u8 type,u8 *buf,u8 len);
+#endif
 
 void web_key_special_reset(unsigned char index)
 {
@@ -300,8 +302,9 @@ void web_fire_usb_send(unsigned char direct )
 		ms_data.btn |= 0x01;
 		if ( gc_web_fire_sta.times || web_key_fire_pressed() )
 		{
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
-
+		#endif
 			gc_web_sta_list.release_count = 0;
 			sg_web_key_release_time = clock_time();
 
@@ -321,7 +324,9 @@ void web_fire_usb_send(unsigned char direct )
 			ms_data.btn &= 0xFE;
 			if ( 0 == gc_web_sta_list.release_count  )
 			{
+			#if USB_MODE_ENABLE
 				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			#endif
 				gc_web_sta_list.release_count = 1;
 				printf("11\n");
 			}
@@ -333,8 +338,9 @@ void web_fire_usb_send(unsigned char direct )
 		if ( clock_time_exceed(sg_web_key_release_time,  10000) )
 		{
 			ms_data.btn &= 0x00;
-
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+		#endif
 			sg_web_key_release_time = clock_time();
 			gc_web_sta_list.release_count ++;
 			printf("f22\n");
@@ -378,17 +384,23 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 	{
 		case 1: 
 			ms_data.btn |= pbuf->valC;
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+		#endif
 			break;
 	
 		case 2: 
 			macro_buff[0] |= pbuf->valC;
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+		#endif
 			break;
 	
 		case 3: 
 			macro_buff[2] = pbuf->valC;
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+		#endif
 			break;
 
 		case 4: 
@@ -401,7 +413,9 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 			{
 				ms_data.x = pbuf->valC;
 			}
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+		#endif
 			break;
 
 			
@@ -415,35 +429,47 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 			{
 				ms_data.y = pbuf->valC;
 			}
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+		#endif
 			break;
 
 		case 6: break;
 
 		case 9:
 			ms_data.btn &= ( ~(pbuf->valC) );
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+		#endif
 			break;
 
 		case 10: 
 			macro_buff[0] &= ( ~(pbuf->valC) );
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+		#endif
 			break;
 			
 		case 11: 
 			macro_buff[2] = 0;
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+		#endif
 			break;
 
 		case 12: 
 			ms_data.x = 0;
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+		#endif
 			break;
 
 			
 		case 13: 
 			ms_data.y = 0;
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+		#endif
 			break;
 
 		
@@ -492,11 +518,15 @@ void web_macro_usb_send(char direct)
 
 			if ( gc_web_sta_list.release_count%2 )
 			{
+			#if USB_MODE_ENABLE
 				push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+			#endif
 			}
 			else
 			{
+			#if USB_MODE_ENABLE
 				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			#endif
 			}
 
 			sg_web_key_release_time = clock_time();
@@ -612,8 +642,9 @@ void web_key_function_process(void)
 				sendbuff[2] = gc_web_data.key[i].func;
 
 				gc_web_sta_list.release_type = KEY_RELEASE_OFFICE;
+			#if USB_MODE_ENABLE
 				push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));//push to fifo
-				
+			#endif
 				printf("Sendoffice:%1x %1x \n", sendbuff[0], sendbuff[2]);
 			}
 		}
@@ -630,8 +661,9 @@ void web_key_function_process(void)
 				sendbuff[1] = gc_web_data.key[i].func;
 
 				gc_web_sta_list.release_type = KEY_RELEASE_MEDIA;
+			#if USB_MODE_ENABLE
 				push_usb_fifo_aaa(CONSUME_DATA_TYPE, sendbuff, 2);//push to fifo
-				
+			#endif
 				printf("Sendmedia:%1x %1x \n", sendbuff[0], sendbuff[2]);
 			}
 		}
@@ -692,7 +724,9 @@ void web_key_function_process(void)
 		if (  clock_time_exceed(sg_web_key_release_time, 10*1000) )
 		{
 			sg_web_key_release_time = clock_time();
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));//push to fifo
+		#endif
 			if (++gc_web_sta_list.release_count >= 10 )
 			{
 				gc_web_sta_list.release_count = 0;
@@ -705,7 +739,9 @@ void web_key_function_process(void)
 		if (  clock_time_exceed(sg_web_key_release_time, 10*1000) )
 		{
 			sg_web_key_release_time = clock_time();
+		#if USB_MODE_ENABLE
 			push_usb_fifo_aaa(CONSUME_DATA_TYPE, sendbuff, 2);//push to fifo
+		#endif
 			if (++gc_web_sta_list.release_count >= 10 )
 			{
 				gc_web_sta_list.release_type = KEY_RELEASE_NONE;

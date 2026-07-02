@@ -5,7 +5,7 @@
 
 #define WEB_KEY_FEATURE_ENABLE  1
 
-#define IDLE_REPOER_CYCLE    1000
+#define IDLE_REPOER_CYCLE    500
 #define KEY_PAIR_USED_POWERUP_ENABLE  1
 #define WEB_HID_ENABLE  1
 #define WEB_HID_LENGTH  32
@@ -22,8 +22,8 @@
 #define DEVICE_TYPE_INDEX   DEVICE_MOUSE //1:mouse, 2:keyboard
 
 #define G24_MODE_ENABLE     1
-#define BLE_MODE_ENABLE     0
-#define USB_MODE_ENABLE     1
+#define BLE_MODE_ENABLE     1
+#define USB_MODE_ENABLE     0
 
 #define LED_G24_ENABLE      1
 #define LED_BT1_ENABLE      0
