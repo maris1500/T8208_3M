@@ -353,7 +353,7 @@ u8  Read_Payload(void) // u8  Read_Payload(u8 *payload)
 
     ret = rx_packet[4] & 0x3f; //get length of rx paylaod
 
-	// if ( ret + 5 >= 32 )
+	if ( ret >= 32 )
 	{
 	    printf("rx_dax=");
 	    for (i = 0; i < (ret + 5); i++)
@@ -362,6 +362,21 @@ u8  Read_Payload(void) // u8  Read_Payload(u8 *payload)
 	    }
 	    printf("\n");
 	}
+
+	if ( 2 == ret )
+	{
+		if ( 0x02 == rx_packet[4] && 0x00 == rx_packet[5] && 0x20 == rx_packet[6] )
+		{
+			if ( 0 == gc_web_wireless.rev_start )
+			{
+				printf("g24_web_start \n");
+			}
+			
+			gc_web_wireless.rev_start = 1;
+			gc_web_wireless.rev_timeout = 0;
+		}
+	}
+	
 #endif
 
     return 1;

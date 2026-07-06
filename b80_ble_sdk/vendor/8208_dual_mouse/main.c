@@ -61,6 +61,7 @@
 
 #if WEB_HID_ENABLE
 	 web_data_cfg_t gc_web_data;
+	 volatile web_g24_ble_t  gc_web_wireless;
 #endif
 
 mouse_sta_t gc_mouse_sta;

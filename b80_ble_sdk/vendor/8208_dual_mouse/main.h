@@ -48,6 +48,13 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 	#define MACRO_NUM_MAX   40
 
 	typedef struct {
+		unsigned short int rev_start:1;
+		unsigned short int rev_timeout:8;
+
+		unsigned short int reservet:7;
+	}web_g24_ble_t;
+
+	typedef struct {
 		unsigned char level_max:4;
 		unsigned char level_cur:4;
 	}web_dpi_t;
@@ -93,6 +100,7 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 
 
 	extern web_data_cfg_t gc_web_data;
+	extern volatile web_g24_ble_t  gc_web_wireless;
 
 	#define  WEB_DATA_LENGTH_MAX  sizeof(web_data_cfg_t)
 
