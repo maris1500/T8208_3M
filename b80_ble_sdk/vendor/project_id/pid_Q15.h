@@ -5,7 +5,7 @@
 
 #define WEB_KEY_FEATURE_ENABLE  1
 
-#define IDLE_REPOER_CYCLE    500
+#define IDLE_REPOER_CYCLE    250
 #define KEY_PAIR_USED_POWERUP_ENABLE  1
 #define WEB_HID_ENABLE  1
 #define WEB_HID_LENGTH  32
@@ -206,7 +206,7 @@
 	#define D24G_COMMUNICATION_TIMER_OUT    280 //unit 1us
 #else
 	#define D24G_PAIR_TIMER_OUT             350 //unit 1us
-	#define D24G_COMMUNICATION_TIMER_OUT    280 //unit 1us
+	#define D24G_COMMUNICATION_TIMER_OUT    500 //unit 1us 280
 #endif
 
 #define KEY_PRESS_HOLD_CHECK_TIME3			2800 //unit 1ms

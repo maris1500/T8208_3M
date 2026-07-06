@@ -81,6 +81,7 @@ typedef struct
 #endif
     s8 wheel;
     s8 wheel_level;
+
 } mouse_data_t;
 
 
