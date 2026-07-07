@@ -178,10 +178,23 @@ typedef enum {
 extern void coled_led_mode_change_para_clear(void);
 extern void usb_aut_report_time_reset(void);
 
+extern km_3_c_1_data_t * km_data_point(void);
+
 #if WEB_KEY_FEATURE_ENABLE
 
 	#define WEB_KEY_START 0
 	#define WEB_KEY_END   6
+
+	#define EX_G24_TYPE_IN 6
+	#define EX_G24_PAR1_IN 7
+	#define EX_G24_PAR2_IN 8
+	#define EX_G24_PAR3_IN 9
+
+	typedef enum {
+		EX_G24_NONE = 0,
+		EX_G24_OFFICE,
+		EX_G24_MEDIA,
+	}web_ex_g24_en;
 
 	typedef enum {
 		KEY_MACRO_NONE  = 0,

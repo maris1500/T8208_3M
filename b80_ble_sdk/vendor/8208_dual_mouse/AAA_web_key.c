@@ -303,8 +303,19 @@ void web_fire_usb_send(unsigned char direct )
 		if ( gc_web_fire_sta.times || web_key_fire_pressed() )
 		{
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			}
 		#endif
+
+		#if G24_MODE_ENABLE
+			if ( RF_2M_2P4G_MODE == mcu_mode_get() )
+			{
+				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));
+			}
+		#endif
+
 			gc_web_sta_list.release_count = 0;
 			sg_web_key_release_time = clock_time();
 
@@ -325,8 +336,19 @@ void web_fire_usb_send(unsigned char direct )
 			if ( 0 == gc_web_sta_list.release_count  )
 			{
 			#if USB_MODE_ENABLE
-				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+				if ( RF_USB_MODE == mcu_mode_get() )
+				{
+					push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+				}
 			#endif
+
+			#if G24_MODE_ENABLE
+				if ( RF_2M_2P4G_MODE == mcu_mode_get() )
+				{
+					my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));
+				}
+			#endif
+
 				gc_web_sta_list.release_count = 1;
 				printf("11\n");
 			}
@@ -339,8 +361,19 @@ void web_fire_usb_send(unsigned char direct )
 		{
 			ms_data.btn &= 0x00;
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			}
 		#endif
+
+		#if G24_MODE_ENABLE
+			if ( RF_2M_2P4G_MODE == mcu_mode_get() )
+			{
+				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));
+			}
+		#endif
+
 			sg_web_key_release_time = clock_time();
 			gc_web_sta_list.release_count ++;
 			printf("f22\n");
@@ -385,21 +418,30 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 		case 1: 
 			ms_data.btn |= pbuf->valC;
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			}
 		#endif
 			break;
 	
 		case 2: 
 			macro_buff[0] |= pbuf->valC;
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+			}
 		#endif
 			break;
 	
 		case 3: 
 			macro_buff[2] = pbuf->valC;
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+			}
 		#endif
 			break;
 
@@ -414,7 +456,10 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 				ms_data.x = pbuf->valC;
 			}
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			}
 		#endif
 			break;
 
@@ -430,7 +475,10 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 				ms_data.y = pbuf->valC;
 			}
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			}
 		#endif
 			break;
 
@@ -439,28 +487,40 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 		case 9:
 			ms_data.btn &= ( ~(pbuf->valC) );
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			}
 		#endif
 			break;
 
 		case 10: 
 			macro_buff[0] &= ( ~(pbuf->valC) );
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+			}
 		#endif
 			break;
 			
 		case 11: 
 			macro_buff[2] = 0;
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+			}
 		#endif
 			break;
 
 		case 12: 
 			ms_data.x = 0;
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			}
 		#endif
 			break;
 
@@ -468,7 +528,10 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 		case 13: 
 			ms_data.y = 0;
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+			}
 		#endif
 			break;
 
@@ -519,13 +582,19 @@ void web_macro_usb_send(char direct)
 			if ( gc_web_sta_list.release_count%2 )
 			{
 			#if USB_MODE_ENABLE
-				push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+				if ( RF_USB_MODE == mcu_mode_get() )
+				{
+					push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, macro_buff, sizeof(macro_buff));
+				}
 			#endif
 			}
 			else
 			{
 			#if USB_MODE_ENABLE
-				push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+				if ( RF_USB_MODE == mcu_mode_get() )
+				{
+					push_usb_fifo_aaa(MOUSE_DATA_TYPE, &ms_data.btn, sizeof(mouse_data_t));
+				}
 			#endif
 			}
 
@@ -630,7 +699,14 @@ void web_macro_usb_send(char direct)
 void web_key_function_process(void)
 {
 	unsigned char i = 0;
+
+#if USB_MODE_ENABLE
 	unsigned char sendbuff[8] = {0x00};
+#endif
+
+#if G24_MODE_ENABLE
+	km_3_c_1_data_t *p_km = km_data_point();
+#endif
 
 	if ( KEY_TRIGGER_OFFICE == gc_web_sta_list.trigger )
 	{
@@ -638,14 +714,38 @@ void web_key_function_process(void)
 		{
 			if ( WEB_KEY_OFFICE == web_key_special_tab[i] )
 			{
-				sendbuff[0] = gc_web_data.key[i].value;
-				sendbuff[2] = gc_web_data.key[i].func;
+			#if USB_MODE_ENABLE
+				if ( RF_USB_MODE == mcu_mode_get() )
+				{
+					sendbuff[0] = gc_web_data.key[i].value;
+					sendbuff[2] = gc_web_data.key[i].func;
+				}
+			#endif
 
 				gc_web_sta_list.release_type = KEY_RELEASE_OFFICE;
+
 			#if USB_MODE_ENABLE
-				push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));//push to fifo
+				if ( RF_USB_MODE == mcu_mode_get() )
+				{
+					push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));//push to fifo
+				}
 			#endif
+
+			#if G24_MODE_ENABLE
+				if ( RF_2M_2P4G_MODE == mcu_mode_get() )
+				{
+					p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_OFFICE;
+					p_km->km_dat[EX_G24_PAR1_IN] = gc_web_data.key[i].value;
+					p_km->km_dat[EX_G24_PAR2_IN] = 0x00;
+					p_km->km_dat[EX_G24_PAR3_IN] = gc_web_data.key[i].func;
+
+					my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));
+				}
+			#endif
+
+			#if USB_MODE_ENABLE
 				printf("Sendoffice:%1x %1x \n", sendbuff[0], sendbuff[2]);
+			#endif
 			}
 		}
 
@@ -657,14 +757,26 @@ void web_key_function_process(void)
 		{
 			if ( WEB_KEY_MEDIA == web_key_special_tab[i] )
 			{
-				sendbuff[0] = gc_web_data.key[i].value;
-				sendbuff[1] = gc_web_data.key[i].func;
+			#if USB_MODE_ENABLE
+				if ( RF_USB_MODE == mcu_mode_get() )
+				{
+					sendbuff[0] = gc_web_data.key[i].value;
+					sendbuff[1] = gc_web_data.key[i].func;
+				}
+			#endif
 
 				gc_web_sta_list.release_type = KEY_RELEASE_MEDIA;
+
 			#if USB_MODE_ENABLE
-				push_usb_fifo_aaa(CONSUME_DATA_TYPE, sendbuff, 2);//push to fifo
+				if ( RF_USB_MODE == mcu_mode_get() )
+				{
+					push_usb_fifo_aaa(CONSUME_DATA_TYPE, sendbuff, 2);//push to fifo
+				}
 			#endif
+
+			#if USB_MODE_ENABLE
 				printf("Sendmedia:%1x %1x \n", sendbuff[0], sendbuff[2]);
+			#endif
 			}
 		}
 
@@ -724,9 +836,26 @@ void web_key_function_process(void)
 		if (  clock_time_exceed(sg_web_key_release_time, 10*1000) )
 		{
 			sg_web_key_release_time = clock_time();
+
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));//push to fifo
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(NORMAL_KB_DATA_TYPE, sendbuff, sizeof(sendbuff));//push to fifo
+			}
 		#endif
+
+		#if G24_MODE_ENABLE
+			if ( RF_2M_2P4G_MODE == mcu_mode_get() )
+			{
+				p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_OFFICE;
+				p_km->km_dat[EX_G24_PAR1_IN] = 0x00;
+				p_km->km_dat[EX_G24_PAR2_IN] = 0x00;
+				p_km->km_dat[EX_G24_PAR3_IN] = 0x00;
+
+				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));
+			}
+		#endif
+
 			if (++gc_web_sta_list.release_count >= 10 )
 			{
 				gc_web_sta_list.release_count = 0;
@@ -740,7 +869,10 @@ void web_key_function_process(void)
 		{
 			sg_web_key_release_time = clock_time();
 		#if USB_MODE_ENABLE
-			push_usb_fifo_aaa(CONSUME_DATA_TYPE, sendbuff, 2);//push to fifo
+			if ( RF_USB_MODE == mcu_mode_get() )
+			{
+				push_usb_fifo_aaa(CONSUME_DATA_TYPE, sendbuff, 2);//push to fifo
+			}
 		#endif
 			if (++gc_web_sta_list.release_count >= 10 )
 			{

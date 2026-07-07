@@ -71,6 +71,7 @@ rf_packet_t rf_km_buf =
 };
 km_3_c_1_data_t *p_km_data = (km_3_c_1_data_t*)&rf_km_buf.dat[0]; //2.4G communication data packet
 
+
 #if (AES_METHOD == 1)
 	rf_packet_t rf_km_buf_enc =
 	{
@@ -202,6 +203,24 @@ _attribute_ram_code_sec_ u8 rf_rx_process(rf_packet_t *p_rf_data)
 
     return 0;
 }
+
+#if	WEB_HID_ENABLE
+
+km_3_c_1_data_t * km_data_point(void)
+{
+	return (p_km_data);
+}
+
+void km_data_ex_reset(void)
+{
+	p_km_data->km_dat[EX_G24_TYPE_IN] = EX_G24_NONE;
+	p_km_data->km_dat[EX_G24_PAR1_IN] = 0x00;
+	p_km_data->km_dat[EX_G24_PAR2_IN] = 0x00;
+	p_km_data->km_dat[EX_G24_PAR3_IN] = 0x00;
+}
+
+#endif
+
 
 /**
  * @brief	Set the 2.4G pairing flag and restart
@@ -622,6 +641,14 @@ void ui_loop_24g()
 		{
 			has_new_key_event = 0;//reset has new mouse action flag 0
 			reset_idle_status();//reset idle parameters
+
+		#if	WEB_HID_ENABLE
+			km_data_ex_reset();
+		#endif
+
+		#if	WEB_HID_ENABLE
+			if ( 0 == gc_web_sta_list.firekey && 0 == gc_web_sta_list.macrokey )
+		#endif
 			my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push btn data to fifo
 		} 
 	#if (PROJECT_ID == PID_Q15)
@@ -652,6 +679,14 @@ void ui_loop_24g()
 				// p_km_data->km_dat[6] = 0xAA;
 				// p_km_data->km_dat[7] = 0xBB;
 				// p_km_data->km_dat[8] = 0xCC;
+				// p_km_data->km_dat[9] = 0xDD;
+			#if	WEB_HID_ENABLE
+				km_data_ex_reset();
+			#endif
+
+			#if	WEB_HID_ENABLE
+				if ( 0 == gc_web_sta_list.firekey && 0 == gc_web_sta_list.macrokey )
+			#endif
 				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push mouse data to fifo
 			}
 		}
