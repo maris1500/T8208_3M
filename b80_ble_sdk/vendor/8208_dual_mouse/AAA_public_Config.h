@@ -254,6 +254,9 @@ extern void usb_aut_report_time_reset(void);
 
 	extern web_set_status_t gc_web_sta_list;
 
+	extern volatile unsigned char gc_web_rx_data[WEB_DATA_LENGTH+3];
+	extern volatile unsigned char gc_web_rx_len;
+
 	extern const unsigned int key_pin_list_tab[KEY_NUM_MAX];
 	extern unsigned char web_key_special_tab[KEY_NUM_MAX];
 

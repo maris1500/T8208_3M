@@ -46,7 +46,8 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 
 	#define KEY_NUM_MAX     6
 	#define MACRO_NUM_MAX   40
-
+	#define WEB_DATA_LENGTH 32
+	
 	typedef struct {
 		unsigned short int rev_start:1;
 		unsigned short int rev_timeout:8;

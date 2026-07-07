@@ -625,8 +625,8 @@ void ui_loop_24g()
 			my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push btn data to fifo
 		} 
 	#if (PROJECT_ID == PID_Q15)
-		// else if ( (gc_check_dongle_data_counter >= IDLE_REPOER_CYCLE) || (gc_check_dongle_sleep_counter >= 50) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
-		else if ( gc_check_dongle_data_counter >= IDLE_REPOER_CYCLE || gc_check_dongle_sleep_counter >= 10 )   //Idle count <3 or button action, send communication packet
+		// else if ( (gc_check_dongle_data_counter >= 1000) || (gc_check_dongle_sleep_counter >= 20) )	//Idle count <3 or button action, send communication packet
+		 else if ( gc_check_dongle_data_counter >= IDLE_REPOER_CYCLE || gc_check_dongle_sleep_counter >= 10 )   //Idle count <3 or button action, send communication packet
 	#else
 		else if ((idle_count < 3) || (ms_data.btn))	//Idle count <3 or button action, send communication packet
 	#endif
@@ -649,6 +649,9 @@ void ui_loop_24g()
 			if (p == 0)
 			{
 				// printf("mouse_idle_data\n");
+				// p_km_data->km_dat[6] = 0xAA;
+				// p_km_data->km_dat[7] = 0xBB;
+				// p_km_data->km_dat[8] = 0xCC;
 				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push mouse data to fifo
 			}
 		}
@@ -867,7 +870,7 @@ void pm_poll()
 		#endif
 	
 	#if (PROJECT_ID == PID_Q15)
-		if ( gc_web_wireless.rev_start )
+		// if ( gc_web_wireless.rev_start )
 		{
 			gc_mouse_sta.need_suspend_flag = 0;
 		}

@@ -138,7 +138,11 @@ typedef struct
 	
 	u32 did; //device id
 
+#if WEB_HID_ENABLE
+	u8  km_dat[6 + WEB_HID_G24_LEN]; //data or km
+#else
 	u8  km_dat[6]; //data or km
+#endif
 
 	u8  rsv1[3]; //for aes  16 bytes
 	u16 crc16;

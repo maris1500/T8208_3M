@@ -98,11 +98,7 @@ u8 g_rate = 0; //default 0 for all report
 #endif
 
 #if WEB_HID_ENABLE
-	unsigned char gc_web_rx_data[35] = {0};
-	unsigned char gc_web_rx_len = 0;
-
 	extern void usb_aut_report_time_reset(void);
-
 #endif
 
 void usb_register_set_report(usb_set_hid_report_t src)

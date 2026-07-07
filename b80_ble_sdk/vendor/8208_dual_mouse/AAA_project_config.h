@@ -40,6 +40,7 @@ extern "C" {
 
 //#include "../common/ota.h"
 #include "../common/flash_fw_check.h"
+#include "main.h"
 
 /**************************************/
 #if _CHIP_IS_OTP_  // ECLIPS SET
@@ -200,6 +201,10 @@ typedef struct{ //The length has to be a multiple of 4!!!
 } custom_cfg_t;
 extern custom_cfg_t user_config;
 #endif
+
+
+extern volatile unsigned char gc_web_rx_data[WEB_DATA_LENGTH+3];
+extern volatile unsigned char gc_web_rx_len;
 
 /***********************************/
 #if 1

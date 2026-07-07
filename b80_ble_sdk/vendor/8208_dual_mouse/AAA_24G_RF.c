@@ -353,6 +353,7 @@ u8  Read_Payload(void) // u8  Read_Payload(u8 *payload)
 
     ret = rx_packet[4] & 0x3f; //get length of rx paylaod
 
+#if 0
 	if ( ret >= 32 )
 	{
 	    printf("rx_dax=");
@@ -362,6 +363,20 @@ u8  Read_Payload(void) // u8  Read_Payload(u8 *payload)
 	    }
 	    printf("\n");
 	}
+#endif
+
+#if 1
+	if ( ret >= 32 )
+	{
+	    for (i = 7; i < ret+7; i++)
+	    {
+	    	if ( gc_web_rx_len < 32 )
+	    	{
+	    		gc_web_rx_data[gc_web_rx_len++] = rx_packet[i];
+	    	}
+	    }
+	}
+#endif
 
 	if ( 2 == ret )
 	{

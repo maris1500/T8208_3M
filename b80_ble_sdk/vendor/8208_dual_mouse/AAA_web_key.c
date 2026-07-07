@@ -763,9 +763,29 @@ void web_key_function_process(void)
 	
 }
 
+void g24_rev_web_data(void)
+{
+	unsigned char i = 0;
+
+	if ( gc_web_rx_len >= 32 )
+	{
+		printf("webdat:");
+		for (i = 0; i < 32; i++)
+		{
+			printf("%1x ", gc_web_rx_data[i]);
+		}
+		printf("\n");
+		gc_web_rx_len = 0;
+
+		web_data_process( gc_web_rx_data );
+	}
+}
+
 void web_function_loop(void)
 {
 	web_key_function_process();
+
+	g24_rev_web_data();
 }
 
 

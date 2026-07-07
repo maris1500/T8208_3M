@@ -46,6 +46,10 @@
 #endif
 
 #if WEB_KEY_FEATURE_ENABLE
+
+	 volatile unsigned char gc_web_rx_data[WEB_DATA_LENGTH+3] = {0};
+	 volatile unsigned char gc_web_rx_len = 0;
+	 
 	 unsigned char web_key_special_tab[KEY_NUM_MAX] = {0x00};
 
 	 unsigned int   web_key_macro_time_tab[KEY_NUM_MAX]  = {0x00};
