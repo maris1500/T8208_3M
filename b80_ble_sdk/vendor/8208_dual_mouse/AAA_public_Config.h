@@ -194,6 +194,8 @@ extern km_3_c_1_data_t * km_data_point(void);
 		EX_G24_NONE = 0,
 		EX_G24_OFFICE,
 		EX_G24_MEDIA,
+		EX_G24_MACRO_MSKEY,
+		EX_G24_MACRO_KBKEY
 	}web_ex_g24_en;
 
 	typedef enum {
@@ -201,6 +203,15 @@ extern km_3_c_1_data_t * km_data_point(void);
 		KEY_MACRO_PRESSED,
 		KEY_MACRO_BOUNCE,
 	}web_key_macro_en;
+
+	typedef enum {
+
+		MACRO_TYPE_NONE = 0,
+
+		MACRO_TYPE_NORMAL_MOUSE_DOWN = 0x01,
+		MACRO_TYPE_NORMAL_MOUSE_UP   = 0x09,
+
+	}web_key_macro_type_en;
 
 	typedef enum {
 		KEY_RELEASE_NONE  = 0,
@@ -294,6 +305,7 @@ extern km_3_c_1_data_t * km_data_point(void);
 	extern void web_key_special_reset(unsigned char index);
 
 	extern void web_function_loop(void);
+	extern void km_data_ex_reset(void);
 	extern unsigned char web_key_fire_pressed(void);
 	extern web_key_macro_en web_key_macro_staus(unsigned char index);
 	extern web_key_macro_en web_key_macro_press_any(unsigned char index);
