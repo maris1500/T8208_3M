@@ -660,7 +660,7 @@ void ui_loop_24g()
 			gc_check_dongle_sleep_counter = 0;
 		#endif
 
-			if ( ++gc_web_wireless.rev_timeout >= 200 )
+			if ( ++gc_web_wireless.rev_timeout >= 150 )
 			{
 				gc_web_wireless.rev_start = 0;
 				gc_web_wireless.rev_timeout = 0;
@@ -897,11 +897,14 @@ void pm_poll()
 			}
 		#endif
 	
-	#if (PROJECT_ID == PID_Q15)
-		// if ( gc_web_wireless.rev_start )
+
+	#if WEB_G24_LOWER_ENABLE
+		if ( gc_web_wireless.rev_start )
 		{
 			gc_mouse_sta.need_suspend_flag = 0;
 		}
+	#else
+		gc_mouse_sta.need_suspend_flag = 0;
 	#endif
 
 		/* If the need_suspend_flag is set, enter suspend */

@@ -11,6 +11,7 @@
 #define WEB_HID_LENGTH  32
 #define WEB_HID_G24_LEN  4
 
+#define WEB_G24_LOWER_ENABLE    0
 #define MCU_QFN40_ENABLE        1
 #define UL1001_DPI_2_ENABLE     0
 

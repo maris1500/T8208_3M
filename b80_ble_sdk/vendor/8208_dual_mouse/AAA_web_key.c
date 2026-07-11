@@ -786,7 +786,7 @@ void web_macro_usb_send(char direct)
 			{
 				gc_web_sta_list.macrodelay = 1;
 				web_key_macro_time_tab[i]  = clock_time() | 0x01;
-				printf("pf111\n");
+				printf("pf11:%d\n", web_key_macro_index_tab[i]);
 				web_macro_usb_send_detailed_data( &gc_web_data.macro[i][ web_key_macro_index_tab[i] ] );
 			}
 			else
