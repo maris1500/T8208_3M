@@ -296,10 +296,6 @@ unsigned short int web_key_dpi_function(void)
 
 void web_fire_usb_send(unsigned char direct )
 {
-#if G24_MODE_ENABLE
-	km_3_c_1_data_t *p_km = km_data_point();
-#endif
-
 	if ( 0 == gc_web_sta_list.firekey ) { sg_web_key_fire_time = clock_time(); return; }
 
 	if ( direct || clock_time_exceed(sg_web_key_fire_time, gc_web_fire_sta.interval*1000) )
@@ -462,9 +458,10 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 			{
 				p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_MACRO_KBKEY;
 				p_km->km_dat[EX_G24_PAR1_IN] = macro_buff[0];
-				p_km->km_dat[EX_G24_PAR2_IN] = 0x00;
-				p_km->km_dat[EX_G24_PAR3_IN] = 0x00;
+				p_km->km_dat[EX_G24_PAR2_IN] = macro_buff[1];
+				p_km->km_dat[EX_G24_PAR3_IN] = macro_buff[2];
 				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));
+				printf("maro2:%d %d %d \n", macro_buff[0], macro_buff[1], macro_buff[2]);
 			}
 		#endif
 
@@ -484,12 +481,12 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 			if ( RF_2M_2P4G_MODE == mcu_mode_get() )
 			{
 				p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_MACRO_KBKEY;
-				p_km->km_dat[EX_G24_PAR1_IN] = 0x00;
-				p_km->km_dat[EX_G24_PAR2_IN] = 0x00;
+				p_km->km_dat[EX_G24_PAR1_IN] = macro_buff[0];
+				p_km->km_dat[EX_G24_PAR2_IN] = macro_buff[1];
 				p_km->km_dat[EX_G24_PAR3_IN] = macro_buff[2];
 				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));
 
-				 printf("maro_3:%1x \n", macro_buff[2]);
+				printf("maro3:%d %d %d \n", macro_buff[0], macro_buff[1], macro_buff[2]);
 			}
 		#endif
 
@@ -516,7 +513,7 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 		#if G24_MODE_ENABLE
 			if ( RF_2M_2P4G_MODE == mcu_mode_get() )
 			{
-				p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_MACRO_MSKEY;
+				p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_NONE;
 				p_km->km_dat[EX_G24_PAR1_IN] = 0x00;
 				p_km->km_dat[EX_G24_PAR2_IN] = 0x00;
 				p_km->km_dat[EX_G24_PAR3_IN] = 0x00;
@@ -547,7 +544,7 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 		#if G24_MODE_ENABLE
 			if ( RF_2M_2P4G_MODE == mcu_mode_get() )
 			{
-				p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_MACRO_MSKEY;
+				p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_NONE;
 				p_km->km_dat[EX_G24_PAR1_IN] = 0x00;
 				p_km->km_dat[EX_G24_PAR2_IN] = 0x00;
 				p_km->km_dat[EX_G24_PAR3_IN] = 0x00;
@@ -597,6 +594,8 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 				p_km->km_dat[EX_G24_PAR2_IN] = 0x00;
 				p_km->km_dat[EX_G24_PAR3_IN] = 0x00;
 				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));
+
+				printf("maro10:%d\n", macro_buff[2]);
 			}
 		#endif
 
@@ -619,9 +618,8 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 				p_km->km_dat[EX_G24_PAR2_IN] = 0x00;
 				p_km->km_dat[EX_G24_PAR3_IN] = macro_buff[2];
 
-				printf("maro_11:%1x\n", macro_buff[2]);
-
 				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));
+				printf("maro11:%d\n", macro_buff[2]);
 			}
 		#endif
 			break;
@@ -638,7 +636,7 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 		#if G24_MODE_ENABLE
 			if ( RF_2M_2P4G_MODE == mcu_mode_get() )
 			{
-				p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_MACRO_MSKEY;
+				p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_NONE;
 				p_km->km_dat[EX_G24_PAR1_IN] = 0x00;
 				p_km->km_dat[EX_G24_PAR2_IN] = 0x00;
 				p_km->km_dat[EX_G24_PAR3_IN] = 0x00;
@@ -661,7 +659,7 @@ void web_macro_usb_send_detailed_data(macro_elem_t *pbuf)
 		#if G24_MODE_ENABLE
 			if ( RF_2M_2P4G_MODE == mcu_mode_get() )
 			{
-				p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_MACRO_MSKEY;
+				p_km->km_dat[EX_G24_TYPE_IN] = EX_G24_NONE;
 				p_km->km_dat[EX_G24_PAR1_IN] = 0x00;
 				p_km->km_dat[EX_G24_PAR2_IN] = 0x00;
 				p_km->km_dat[EX_G24_PAR3_IN] = 0x00;
@@ -712,7 +710,7 @@ void web_macro_usb_send(char direct)
 
 	if ( gc_web_sta_list.macrorelease )
 	{
-		if ( clock_time_exceed(sg_web_key_release_time, 5*1000) )
+		if ( clock_time_exceed(sg_web_key_release_time, 10*1000) )
 		{
 			macro_buff[0] = 0x00;
 			macro_buff[1] = 0x00;
@@ -767,10 +765,13 @@ void web_macro_usb_send(char direct)
 			gc_web_sta_list.release_count++;
 		}
 
-		if ( gc_web_sta_list.release_count >= 15 )
+		if ( gc_web_sta_list.release_count >= 10 )
 		{
-			gc_web_sta_list.macrorelease = 0;
-			gc_web_sta_list.macrokey = 0;
+			gc_web_sta_list.macrorelease  = 0;
+			gc_web_sta_list.release_count = 0;
+			gc_web_sta_list.macrokey = 0;		
+			gc_web_sta_list.macrocontinuous = 0;
+			gc_web_sta_list.release_type = KEY_RELEASE_NONE;
 			printf("release_succ \n");
 		}
 
@@ -811,7 +812,6 @@ void web_macro_usb_send(char direct)
 				{
 				    web_key_macro_index_tab[i] = 0x00;
 					gc_web_sta_list.macrodelay = 0;
-
 
 					if ( web_key_macro_count_tab[i] )
 					{
@@ -856,6 +856,7 @@ void web_macro_usb_send(char direct)
 		if ( k >= KEY_NUM_MAX )
 		{
 			gc_web_sta_list.macrorelease = 1;
+			sg_web_key_release_time = clock_time();
 		}
 
 	}
@@ -991,12 +992,16 @@ void web_key_function_process(void)
 			{
 				gc_web_sta_list.macrokey = 1;
 				gc_web_sta_list.macrocontinuous = 1;
+				gc_web_sta_list.macrorelease = 0;
+				gc_web_sta_list.release_count = 0;
+				gc_web_sta_list.macrodelay = 0;
+
 				gc_web_sta_list.release_type = KEY_RELEASE_MACRO;
 
-				sg_web_key_release_time    = clock_time();
+				sg_web_key_release_time    = clock_time() | 0x01;
 				web_key_macro_time_tab[i]  = clock_time() | 0x01;
 				web_key_macro_count_tab[i] = gc_web_data.key[i].func;
-
+			
 				web_macro_usb_send(1);
 
 				// printf("Sendmacro00:%d %d %4x ", i, web_key_macro_count_tab[i], web_key_macro_time_tab[i]);
@@ -1078,7 +1083,7 @@ void web_key_function_process(void)
 
 	web_fire_usb_send(0);
 	web_macro_usb_send(0);
-	
+
 }
 
 void g24_rev_web_data(void)

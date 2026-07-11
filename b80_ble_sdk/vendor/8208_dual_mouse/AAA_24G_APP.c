@@ -643,10 +643,6 @@ void ui_loop_24g()
 			reset_idle_status();//reset idle parameters
 
 		#if	WEB_HID_ENABLE
-			km_data_ex_reset();
-		#endif
-
-		#if	WEB_HID_ENABLE
 			if ( 0 == gc_web_sta_list.firekey && 0 == gc_web_sta_list.macrokey )
 		#endif
 			my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push btn data to fifo
@@ -676,18 +672,15 @@ void ui_loop_24g()
 			if (p == 0)
 			{
 				// printf("mouse_idle_data\n");
-				// p_km_data->km_dat[6] = 0xAA;
-				// p_km_data->km_dat[7] = 0xBB;
-				// p_km_data->km_dat[8] = 0xCC;
-				// p_km_data->km_dat[9] = 0xDD;
-			#if	WEB_HID_ENABLE
-				km_data_ex_reset();
-			#endif
-
 			#if	WEB_HID_ENABLE
 				if ( 0 == gc_web_sta_list.firekey && 0 == gc_web_sta_list.macrokey )
 			#endif
-				my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push mouse data to fifo
+				{
+				#if	WEB_HID_ENABLE
+					km_data_ex_reset();
+				#endif
+					 my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push mouse data to fifo
+				}
 			}
 		}
 
