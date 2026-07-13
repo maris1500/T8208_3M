@@ -190,12 +190,14 @@ extern km_3_c_1_data_t * km_data_point(void);
 	#define EX_G24_PAR2_IN 8
 	#define EX_G24_PAR3_IN 9
 
+
 	typedef enum {
 		EX_G24_NONE = 0,
 		EX_G24_OFFICE,
 		EX_G24_MEDIA,
 		EX_G24_MACRO_MSKEY,
-		EX_G24_MACRO_KBKEY
+		EX_G24_MACRO_KBKEY,
+		EX_G24_INFOR,
 	}web_ex_g24_en;
 
 	typedef enum {
@@ -312,6 +314,14 @@ extern km_3_c_1_data_t * km_data_point(void);
 
 #endif
 
+typedef enum
+{
+	BATT_DISCHARGE = 0x00,
+	BATT_CHARGEING,
+	BATT_CHARGE_FULL,
+}bat_status_en;
+
+extern bat_status_en battery_status_back(void);
 
 #if (PROJECT_ID == PID_104)
 

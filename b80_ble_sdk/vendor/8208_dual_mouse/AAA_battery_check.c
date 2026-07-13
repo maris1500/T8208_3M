@@ -486,6 +486,30 @@ void battery_voltage_compensation(unsigned short int vol)
 	}
 #endif
 
+bat_status_en battery_status_back(void)
+{
+#if USB_MODE_ENABLE || USB_5V_ENABLE
+	if ( USB_IN() )
+	{
+		if ( CHARGE_IN() )
+		{
+			return (BATT_CHARGEING);
+		}
+
+		if ( CHARGE_FULL() )
+		{
+			return (BATT_CHARGE_FULL);
+		}
+	}
+	else
+	{
+		return (BATT_DISCHARGE);
+	}
+#endif
+
+	return (BATT_DISCHARGE);
+}
+
 void user_battery_power_check()
 {
 	#define BATT_PRINTF_ENABLE	0

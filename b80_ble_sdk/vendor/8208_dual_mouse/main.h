@@ -44,6 +44,14 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 
 #if WEB_HID_ENABLE
 
+	#define G24_MOVE_CONN   0
+	#define G24_MOVE_DPI    1
+	#define G24_MOVE_RATE   4
+	#define G24_MOVE_CHARGE 6
+
+	#define G24_MOVE_LIGHT  0
+	#define G24_MOVE_SENSOR 3
+
 	#define KEY_NUM_MAX     6
 	#define MACRO_NUM_MAX   40
 	#define WEB_DATA_LENGTH 32

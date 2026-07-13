@@ -493,7 +493,9 @@
 	#define LED_DPI_BAT_B_ACT(x)   gpio_write(LED_RGB_DPI_BAT_PIN_B,x)
 #endif
 
-#if USB_MODE_ENABLE
+#define USB_5V_ENABLE  1
+
+#if USB_MODE_ENABLE || USB_5V_ENABLE
 	#define USB_IN_CHECK_PIN  	GPIO_PA7
 	#define USB_IN()			gpio_read(USB_IN_CHECK_PIN)
 	#define USB_OUT()			!gpio_read(USB_IN_CHECK_PIN)
@@ -501,7 +503,7 @@
 
 
 #define CHARGE_ENABLE  1
-#define USB_5V_ENABLE  0
+// #define USB_5V_ENABLE  0
 
 #if CHARGE_ENABLE
 	#define CHARGE_PIN  	GPIO_PB6
@@ -510,11 +512,11 @@
 	#define CHARGE_FULL()	gpio_read(CHARGE_PIN)
 #endif
 
-#if USB_5V_ENABLE
-	#define USB_IN_CHECK_PIN  GPIO_PA7
-	#define USB_IN()	gpio_read(USB_IN_CHECK_PIN)
-	#define USB_OUT()	!gpio_read(USB_IN_CHECK_PIN)
-#endif
+//#if USB_5V_ENABLE
+//	#define USB_IN_CHECK_PIN  GPIO_PA7
+//	#define USB_IN()	gpio_read(USB_IN_CHECK_PIN)
+//	#define USB_OUT()	!gpio_read(USB_IN_CHECK_PIN)
+//#endif
 
 
 #define PIN_DEBUG_RF_TX_LEVEL(x)

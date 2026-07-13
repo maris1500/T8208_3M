@@ -219,6 +219,24 @@ void km_data_ex_reset(void)
 	p_km_data->km_dat[EX_G24_PAR3_IN] = 0x00;
 }
 
+void mouse_info_report(void)
+{
+	unsigned char value = 0x00;
+
+	p_km_data->km_dat[EX_G24_TYPE_IN] = EX_G24_INFOR;
+
+	p_km_data->km_dat[EX_G24_PAR1_IN] = battery_voltage_percent();
+
+	value |= (connect_ok << G24_MOVE_CONN);
+	value |= (dpi_value  << G24_MOVE_DPI);
+	value |= (report_rate << G24_MOVE_RATE);
+	value |= (battery_status_back() << G24_MOVE_CHARGE);
+	p_km_data->km_dat[EX_G24_PAR2_IN] = value;
+
+	value = 0x00;
+
+}
+
 #endif
 
 
