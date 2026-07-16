@@ -2846,14 +2846,12 @@ static void sensor_postion_init(void)
 
 	dpi_max_level = 3;
 
-
 #if DPI_S210B_3065XY_DEFAULT_ENABLE
 	if ( SENSOR_3065XY == sensor_type || SENSOR_S201B == sensor_type )
 	{
 		dpi_max_level = 4;
 	}
 #endif
-
 
 #if (PROJECT_ID == PID_Q15)
 	if ( SENSOR_3311 == sensor_type )

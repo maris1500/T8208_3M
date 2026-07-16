@@ -1,6 +1,7 @@
 #ifndef _PID_Q15_H_
 #define _PID_Q15_H_
 
+#define Q15_SENSOR_INIT_2_ENABLE      1
 #define KEY_ALL_INDENPENDENCE_ENABLE  1
 
 #define WEB_KEY_FEATURE_ENABLE  1
@@ -335,7 +336,7 @@
 #define DEBUG_MODE  1
 
 #if DEBUG_MODE
-	#define PRINT_BAUD_RATE       100000    // 1M baud rate,should Not bigger than 1Mb/s
+	#define PRINT_BAUD_RATE       10000    // 1M baud rate,should Not bigger than 1Mb/s
 	#define DEBUG_INFO_TX_PIN     GPIO_PA3 // Software uart printing gpio
 #endif
 

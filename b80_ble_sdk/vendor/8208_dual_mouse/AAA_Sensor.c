@@ -144,7 +144,7 @@ void sensor_set_wakeup_level_deepsleep(u8 enable)
 void sif_init(void)
 {
 #if (PROJECT_ID == PID_Q15)
-	sleep_ms(100);
+	sleep_ms(10);
 #endif
 
 #if SENSOR_CS_ENABLE
@@ -279,7 +279,7 @@ _attribute_ram_code_sec_ u8 I2C_PAN3204LL_ReadRegister(u8 cAddr)
     sif_spi_sda_input_enable;  // delay 15us
 #endif
 
-    //WaitUs(5);       //this delay is necessary
+    WaitUs(5);       //this delay is necessary
 
     dat = sif_ReadByte();
 	
@@ -696,17 +696,21 @@ void config_3311_part_B(void)
 	unsigned int i = 0;
 	unsigned char reg = 0x00;
 
-	for ( i = 0; i < 1000; i++ )
+	for ( i = 0; i < 0x38; i++ )
 	{
 		reg = I2C_PAN3204LL_ReadRegister(0x20);
 		if ( 0x0F == reg)
 		{
-			i = 65535;
+			break;
 		}
 
 		sleep_ms(1);
 	}
-	printf("->reg:%1x %d \n", reg, i);
+
+	if ( i >= 0x38 )
+	{
+		printf("Sensor_init_failed \n");
+	}
 }
 
 const unsigned char config_3311_part_C[] =
@@ -1156,39 +1160,103 @@ void KA8G2_Optimization_Setting()
  * @return	none
  * @note 	called when power on, or mouse waked up from deep-sleep
  */
+
+
+static void mouse_sensor_run_func1(void)
+{
+	u8 reg1_value = 0, reg2_value = 0;
+
+	sleep_us(45);
+	I2C_PAN3204LL_WriteRegister(0x43, 0x1D);
+
+    sleep_us(45);
+    reg1_value = I2C_PAN3204LL_ReadRegister(0x46);
+
+    sleep_us(45);
+    I2C_PAN3204LL_WriteRegister(0x43, 0x1E);
+
+    sleep_us(45);
+    reg2_value = I2C_PAN3204LL_ReadRegister(0x46);
+
+    sleep_us(45);
+    I2C_PAN3204LL_WriteRegister(0x7F, 0x14);
+
+    sleep_us(45);
+    I2C_PAN3204LL_WriteRegister(0x6A, reg1_value);
+
+    sleep_us(45);
+    I2C_PAN3204LL_WriteRegister(0x6C, reg2_value);
+}
+
+static u8 g_corded_gaming_mode[0x12][0x2] =
+{
+    {0x7F, 0x05},
+    {0x62, 0x04},
+    {0x7E, 0x00},
+    {0x61, 0x13},
+    {0x55, 0x87},
+
+    {0x51, 0x0C},
+    {0x53, 0x0C},
+    {0x7F, 0x06},
+    {0x60, 0x40},
+    {0x61, 0x00},
+
+    {0x62, 0x10},
+    {0x63, 0x00},
+    {0x7F, 0x00},
+    {0x77, 0x24},
+    {0x78, 0x01},
+
+    {0x79, 0x4F},
+    {0x7A, 0x08},
+    {0x7B, 0x4A},
+};
+
+static void paw3311_set_gaming_mode(void)
+{
+	unsigned char i = 0;
+    for (i = 0; i < 0x12; i++)
+    {
+    	I2C_PAN3204LL_WriteRegister(g_corded_gaming_mode[i][0], g_corded_gaming_mode[i][1]);
+        sleep_us(45);
+    }
+}
+
 unsigned int OPTSensor_Init(unsigned int poweron)
 {
 	// Do the full chip reset.
 	u8 reg6=0;
 	
 	sif_init(); //initial sensor pin
+
+#if Q15_SENSOR_INIT_2_ENABLE
+
+	product_id1 = I2C_PAN3204LL_ReadRegister( REG_PAN3204LL_PRODUCT_ID1 );
+	product_id2 = I2C_PAN3204LL_ReadRegister( 0x5F );
+
+	printf("id12:%1x %1x \n", product_id1, product_id2);
+
+	sensor_type = SENSOR_3311;
+#else
 	if (OPTSensor_resync(33) == 0)	{printf("------>OPTSensor_Init failed \n");return 0;} //check sensor id
 	Sensor3204_Wakeup(sensor_type);
+#endif
+
 
 #if (PROJECT_ID == PID_Q15)
 	if ( sensor_type == SENSOR_3311 )
 	{
-		unsigned char reg_r1 = 0x00, reg_r2 = 0x00;
-
-		I2C_PAN3204LL_WriteRegister(0x7F, 0x00);
+	#if Q15_SENSOR_INIT_2_ENABLE
 		I2C_PAN3204LL_WriteRegister(0x3A, 0x5A);
-		sleep_ms(60);
+		sleep_ms(6);
 
 		I2C_PAN3204LL_WriteRegister(0x40, 0x80);
 		I2C_PAN3204LL_WriteRegister(0x55, 0x01);
-		sleep_ms(2);
+		sleep_ms(1);
 
-		I2C_PAN3204LL_WriteRegister(0x7F, 0x0E);
-		I2C_PAN3204LL_WriteRegister(0x43, 0x1D);
-
-		reg_r1 = I2C_PAN3204LL_ReadRegister(0x46);
-		I2C_PAN3204LL_WriteRegister(0x43, 0x1E);
-		reg_r2 = I2C_PAN3204LL_ReadRegister(0x46);
-
-		I2C_PAN3204LL_WriteRegister(0x7F, 0x14);
-		I2C_PAN3204LL_WriteRegister(0x6A, reg_r1);
-		I2C_PAN3204LL_WriteRegister(0x6C, reg_r2);
-
+		mouse_sensor_run_func1();
+	#endif
 	}
 	else
 #endif
@@ -1301,30 +1369,23 @@ unsigned int OPTSensor_Init(unsigned int poweron)
 		}
 		else if ( sensor_type == SENSOR_3311 )
 		{
-			DownloadConfigTable(config_3311_part_A, sizeof(config_3311_part_A));
-			config_3311_part_B();
+	#if Q15_SENSOR_INIT_2_ENABLE
+		DownloadConfigTable(config_3311_part_A, sizeof(config_3311_part_A));
+		config_3311_part_B();
 
-		//	I2C_PAN3204LL_WriteRegister(REG_PAN3204LL_CONFIGURATION, 0x00); //reset sensor
-		//	sleep_ms(10);
-		//	I2C_PAN3204LL_WriteRegister(0x19, 0x10);
+		I2C_PAN3204LL_WriteRegister(0x19, 0x10);
+		I2C_PAN3204LL_WriteRegister(0x40, 0x00);
+		I2C_PAN3204LL_WriteRegister(0x61, 0xD5);  // load configuration
 		I2C_PAN3204LL_WriteRegister(0x7F, 0x00);
-		I2C_PAN3204LL_WriteRegister(0x3A, 0x5A);  // load configuration
-		sleep_ms(50);							  // ����ȣ�
 
-			I2C_PAN3204LL_ReadRegister(0x02);
-			I2C_PAN3204LL_ReadRegister(0x03);
-			I2C_PAN3204LL_ReadRegister(0x04);
-			I2C_PAN3204LL_ReadRegister(0x05);
-			I2C_PAN3204LL_ReadRegister(0x06);
+		I2C_PAN3204LL_ReadRegister(0x02);
+		I2C_PAN3204LL_ReadRegister(0x03);
+		I2C_PAN3204LL_ReadRegister(0x04);
+		I2C_PAN3204LL_ReadRegister(0x05);
+		I2C_PAN3204LL_ReadRegister(0x06);
 
-			DownloadConfigTable(config_3311_part_C, sizeof(config_3311_part_C));
-
-
-			I2C_PAN3204LL_ReadRegister(0x02);
-			I2C_PAN3204LL_ReadRegister(0x03);
-			I2C_PAN3204LL_ReadRegister(0x04);
-			I2C_PAN3204LL_ReadRegister(0x05);
-			I2C_PAN3204LL_ReadRegister(0x06);
+		paw3311_set_gaming_mode();
+	#endif
 		}
 	}
 	
@@ -1456,8 +1517,8 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
             ms_data.x = reg_x;
             ms_data.y = reg_y;
 
-            if (reg_x || reg_y )
-             printf("xy=%2x, %2x \n", reg_x, reg_y);
+           // if (reg_x || reg_y )
+           //  printf("xy=%2x, %2x \n", reg_x, reg_y);
 		}
 		else
 	#endif
@@ -2497,7 +2558,11 @@ void check_sensor_dircet(u8 sensor_dir)
     }
     else if (sensor_dir == SENSOR_DIRECTION_CLOCK_6)
     {
+	#if Q15_SENSOR_INIT_2_ENABLE
+    	// do nothing
+	#else
         ms_data.x = -ms_data.x;
+	#endif
     }
     else if (sensor_dir == SENSOR_DIRECTION_CLOCK_9)
     {
