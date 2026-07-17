@@ -1576,8 +1576,13 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
  */
 void OPTSensor_Shutdown(void)
 {
+
+#if (PROJECT_ID == PID_Q15)
+
+	I2C_PAN3204LL_WriteRegister(0x3B, 0xb6);
+
+#else
 	u8 reg06 = 0;
-	
 	for (u8 i=0; i<8; i++)
 	{  
 		/* set sensor to shutdown */
@@ -1596,7 +1601,8 @@ void OPTSensor_Shutdown(void)
 			OPTSensor_resync(1);
 		}
 	}
-	
+#endif
+
 	sensor_gpio_powerDownConfig(); //reset sensor pin when MCU power down
 }
 

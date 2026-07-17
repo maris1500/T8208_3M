@@ -24,7 +24,7 @@
 #include "drivers.h"
 #include "../common/blt_led.h"
 #include "../8208_dual_mouse/AAA_public_Config.h"
-#include "../module/AAA_digital_tube.h"
+
 
 device_led_t device_led;
 
@@ -77,13 +77,6 @@ void gpio_higsesistance_config(GPIO_PinTypeDef pin)
     gpio_setup_up_down_resistor(pin, PM_PIN_UP_DOWN_FLOAT);
 }
 
-#if MODULE_DIGITAL_TUBE_ENABLE
-	void digital_tube_io_out(GPIO_PinTypeDef pin, unsigned char led_sta)
-	{
-		gpio_set_output_en(pin, 1);
-		gpio_write( pin, led_sta );
-	}
-#endif
 
 void device_led_on_off(u8 on)
 {

@@ -780,9 +780,6 @@ extern void led_g24_conned_succ_dis_next(void);
 
 extern unsigned char battery_voltage_percent(void);
 
-#if MODULE_DIGITAL_TUBE_ENABLE
-	extern void digital_tube_io_out(GPIO_PinTypeDef pin, unsigned char led_sta);
-#endif
 
 typedef enum
 {

@@ -23,9 +23,6 @@
 #include "AAA_public_config.h"
 #include "AAA_battery_check.h"
 
-#if (MODULE_MCU_EXTERNAL_ENABLE)
-#include "../module/AAA_mcu_ext.h"
-#endif
 
 #if LED_BATT_CAP_LEVEL_ENABLE
 	#include "../module/AAA_batt_cap.h"

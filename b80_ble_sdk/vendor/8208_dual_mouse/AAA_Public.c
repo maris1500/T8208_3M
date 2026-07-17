@@ -24,18 +24,9 @@
 #include "AAA_battery_check.h"
 #include "AAA_led_rgb.h"
 #include "AAA_LED.h"
-#include "AAA_oled.h"
 #include "AAA_24G_APP.h"
 
 #include "main.h"
-
-#if MODULE_OLED_ENABLE
-	extern void OLED_Init(void);
-#endif
-
-#if (MODULE_DIGITAL_TUBE_ENABLE)
-#include "../module/AAA_digital_tube.h"
-#endif
 
 #if LED_CODE_PWIR_DRIVE_ENABLE
 	#include "../module/AAA_ws2812x_led.h"
@@ -136,9 +127,6 @@ MYFIFO_INIT (fifo_km, 12, 8); //The size must be a multiple of 4 bytes
 	key_function_special_en gc_key_special_sta = KEY_SPE_NONE;
 #endif
 
-#if G24_DELAY_ENTER_SLEEP_ENABLE
-	extern void mouse_moved_time_clean(void);
-#endif
 
 #if DPI_3065XY_FOUR_LEVEL_ENABLE
 	extern unsigned char dpi_3605_limit_level_flag;
@@ -166,21 +154,11 @@ unsigned int flash_mid;
 
 extern void id_sleep_enable(int);
 
-#if (PROJECT_ID == PID_660) || (PROJECT_ID == PID_FX282) || (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_DMS157) || VOLTAGE_TEMP_HANDLE_ENABLE
+#if VOLTAGE_TEMP_HANDLE_ENABLE
 	extern unsigned char gc_vol_cap_reg_temp;
 #endif
 
-#if (PROJECT_ID == PID_0120)
-	extern void led_code_factory_reset(void);
-	extern void led_adv_all_off(void);
-	extern unsigned char power_on_key_red(u32 pin);
-#endif
 
-#if (PROJECT_ID == PID_0120) || (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_M45)
-	#if  LED_CODE_ENABLE
-		extern void rgb3810_sleep_close(void);
-	#endif
-#endif
 
 #if (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_M45)
 	#if  LED_CODE_ENABLE
@@ -824,126 +802,6 @@ void key_pressed_mode_change_pro(void)
 
 #endif
 
-#if (PROJECT_ID == PID_G929)
-
-void g929_mode_change_check(void)
-{
-	static u32 key_press_hold_tick = 0;
-	static u32 key_release_hold_tick = 0;
-	static u8 mode_btn_release_cnt = 0, mode_btn_change_flag = 0;
-	unsigned char need_change_mode = 0;
-
-	if ( (btn_value & KEY_BTN_MODE) && (0 == mode_btn_change_flag) ) // key press
-	{
-		mode_btn_release_cnt++;
-
-		if ( (pair_flag == 1) && (deep_flag == BLE_PAIR_REBOOT_ANA_AAA || deep_flag == CLEAR_FLAG_ANA_AAA) )
-		{
-			if( mode_btn_release_cnt >= 2 )
-			{
-				need_change_mode=1;
-				mode_btn_change_flag = 1;
-			}
-		}
-	#if (PROJECT_ID == PID_8693)
-		else if ( deep_flag == DEEP_SLEEP_ANA_AAA  )
-		{
-			if( mode_btn_release_cnt >= 2 )
-			{
-				need_change_mode=1;
-			}
-		}
-	#endif
-		else
-		{
-			need_change_mode=1;
-			mode_btn_change_flag = 1;
-		}
-
-
-		if ( (fun_mode == RF_1M_BLE_MODE) && (flash_dev_info.mast_id < 1) )
-		{
-			if ( (device_switch_flag == 0) && (need_change_mode==1) )
-			{
-				device_switch_flag =1;
-
-				flash_dev_info.mast_id ++;
-				flash_dev_info.mode = RF_1M_BLE_MODE;
-
-				if ( flash_dev_info.mast_id >= BLE_DEVICE_ID_MAX )
-				{
-					flash_dev_info.mast_id = BLE_DEVICE_ID_0;
-				}
-
-				if (connect_ok)
-				{ //when BLE connecting, disconnect first and set disconnect reason = switch muti_channel
-					active_disconnect_reason = MUTI_DEVICE_REBOOT_ANA_AAA;
-
-					ble_switch_count_flag ++;
-				}
-				else
-				{ //no connect, direct reboot
-					clear_pair_flag();
-					save_dev_info_flash();
-
-					sleep_ms(50);
-					user_reboot(MUTI_DEVICE_REBOOT_ANA_AAA);
-				}
-			}
-		}
-		else if ( (mode_change_flag == 0) && (need_change_mode==1) )
-		{
-
-			mode_change_flag = 1;
-			clear_pair_flag();
-			if (fun_mode == RF_1M_BLE_MODE)
-			{
-				if (connect_ok)
-				{ //when BLE connecting, disconnect first and set disconnect reason = switch mode change
-					active_disconnect_reason = MODE_CHANGE_REBOOT_ANA_AAA;
-
-					ble_switch_count_flag ++;
-				}
-				else
-				{
-					flash_dev_info.mode = RF_2M_2P4G_MODE;
-
-					save_dev_info_flash();
-					sleep_ms(50);
-					user_reboot(MODE_CHANGE_REBOOT_ANA_AAA);
-				}
-			}
-			else //when 2.4G mode, direct reboot
-			{
-				flash_dev_info.mode = RF_1M_BLE_MODE;
-				flash_dev_info.mast_id = 0;
-
-				save_dev_info_flash();
-				sleep_ms(50);
-				user_reboot(MODE_CHANGE_REBOOT_ANA_AAA);
-			}
-		}
-	}
-	else
-	{
-		if (mode_change_flag || device_switch_flag)
-		{
-			if (key_release_hold_tick == 0)
-			{
-				key_release_hold_tick = clock_time();
-			}
-			else if (clock_time_exceed(key_release_hold_tick, 100*1000)) //release time enough
-			{
-				mode_change_flag = 0;
-				device_switch_flag = 0;
-			}
-		}
-		key_press_hold_tick = clock_time(); //clear press count
-	}
-
-}
-#endif
-
 
 #if (SWITCH_MODE_ENABLE)
 
@@ -1410,10 +1268,6 @@ void user_button_check_proc(void)
 	code_led_color_mode_change();
 #endif
 
-#if M0018_KEY_DPI_COMBINE_ENABLE
-	m0018_dpi_none_set_dpi();
-#endif
-
 #if	MOUSE_FACTORY_RESET_ENABLE
 	mouse_factory_reset_loop();
 #endif
@@ -1459,9 +1313,6 @@ void user_button_check_proc(void)
 	key_pressed_mode_change_pro();
 #endif
 
-#if (PROJECT_ID == PID_G929)
-	g929_mode_change_check();
-#endif
 
 #if (SWITCH_MODE_ENABLE)
 	key_switch_change_pro();
@@ -1584,56 +1435,6 @@ void button_process(u8 event_new)
         }
     }
 #endif
-
-
-#if (PROJECT_ID == PID_G929) || (PROJECT_ID == PID_BG523)
-    static unsigned int  sv_cpi_press_time = 0;
-    static unsigned char sv_cpi_press_cnt = 0, sv_cpi_flag = 0;
-
-
-    if ( 0 == sv_cpi_flag || 0 == gc_dpi_func2_flag )
-    {
-    	if ( (last_btn_value & KEY_BTN_CPI) || (btn_value & KEY_BTN_CPI) )
-    	{
-    		sv_cpi_flag = 0;
-    	}
-    	else
-    	{
-    		sv_cpi_flag = 1;
-    	}
-    	return;
-    }
-
-	if ( last_btn_value != KEY_BTN_CPI || btn_value != KEY_BTN_CPI )
-	{
-		sv_cpi_press_time = clock_time();
-	}
-	else
-	{
-		if( clock_time_exceed(sv_cpi_press_time, 20*1000) )
-		{
-			sv_cpi_press_time = clock_time();
-			if ( sv_cpi_press_cnt < 250 && ++sv_cpi_press_cnt >= 110 )
-			{
-				sv_cpi_press_cnt = 250;
-				btn_value |= KEY_BTN_MODE;
-			}
-		}
-	}
-
-	if ( (last_btn_value & KEY_BTN_CPI) && event_new )
-	{
-		if ( sv_cpi_press_cnt >= 1 && sv_cpi_press_cnt <= 50 )
-		{
-			if ( connect_ok )
-			{
-				btn_dpi_set();
-			}
-		}
-		sv_cpi_press_cnt = 0;
-	}
-#endif
-
 
 }
 
@@ -1949,49 +1750,7 @@ void get_current_cpi_value_handle(void)
 
 	if (dpi_value >= dpi_max_level)
 	{
-	#if (PROJECT_ID == PID_HM660) || (PROJECT_ID == PID_660) || (PROJECT_ID == PID_BG523)
-		dpi_value = 0;
-	#elif (PROJECT_ID == PID_CM2057B)
-		if (SENSOR_PAW3212 == sensor_type )
-		{
-			dpi_value = 2;
-		}
-		else
-		{
-			dpi_value = 1;
-		}
-	#elif (PROJECT_ID == PID_DMS03A)
-		if ( SENSOR_S201B == sensor_type )
-		{
-			dpi_value = 0;
-		}
-		else
-		{
-			dpi_value = 1;
-		}
-	#elif (PROJECT_ID == PID_HM668)
-		if ( SENSOR_S201B == sensor_type || SENSOR_3065XY == sensor_type )
-		{
-			dpi_value = 0;
-		}
-		else
-		{
-			dpi_value = 1;
-		}
-	#elif (PROJECT_ID == PID_DMS157)
-		dpi_value = 0;
-	#elif (PROJECT_ID == PID_104)
-		if ( SENSOR_PAW3212 == sensor_type )
-		{
-			dpi_value = 2;
-		}
-		else
-		{
-			dpi_value = 1;
-		}
-	#else
 		dpi_value = 1;
-	#endif
 	}
 }
 
@@ -2598,7 +2357,7 @@ _attribute_ram_code_ u16 btn_scan()
 	}
 	else
 	{
-		web_key_special_reset(KEY_DPI_INDEX);
+		// web_key_special_reset(KEY_DPI_INDEX);
 	}
 #endif
 
@@ -2907,17 +2666,8 @@ void hw_init()
 	gpio_input_config_status(USB_SWITCH_PIN, PM_PIN_UP_DOWN_FLOAT );
 #endif
 
-#if MODULE_OLED_ENABLE
-	OLED_Init();
-#endif
-
-
 #if CHARGE_ENABLE
 	gpio_input_config_status(CHARGE_PIN, PM_PIN_PULLUP_10K);
-#endif
-
-#if LED_COLOR_LIGHTS_ENABLE
-	gpio_output_config_status(PIN_COLOR_LOGO_LED, LED_COLOR_LOGO_OFF);
 #endif
 
 #if USB_MODE_ENABLE || USB_5V_CHECK_ENABLE || USB_5V_ENABLE
@@ -2932,9 +2682,6 @@ void hw_init()
 	gpio_input_config_status(KEY_K5_PIN, PM_PIN_PULLUP_10K);
 #endif
 
-#if (MODULE_DIGITAL_TUBE_ENABLE)
-	digital_tube_init();
-#endif
 
 #if	USB_5V_CHARGE_LED_ENABLE
 	gpio_output_config_status(USB_5V_CHARGE_LED_PIN, LED_OFF);
@@ -2966,9 +2713,9 @@ void hw_init()
 	#endif
 #else
 	#if LED_G24_ENABLE
-		#if (PROJECT_ID == PID_NR300) || (PROJECT_ID == PID_535) || (PROJECT_ID == PID_S600)
+		#if (PROJECT_ID == PID_NR300)
 			gpio_output_config_status(PIN_24G_LED, LED_ON);
-		#elif (PROJECT_ID == PID_XT27) || (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
+		#elif (PROJECT_ID == PID_XT27)
 			// do nothing
 		#else
 			gpio_output_config_status(PIN_24G_LED, LED_OFF);
@@ -2976,9 +2723,9 @@ void hw_init()
 	#endif
 
 	#if LED_BT1_ENABLE
-		#if (PROJECT_ID == PID_NR300) || (PROJECT_ID == PID_535) || (PROJECT_ID == PID_S600)
+		#if (PROJECT_ID == PID_NR300)
 			gpio_output_config_status(PIN_BLE1_LED, LED_ON);
-		#elif (PROJECT_ID == PID_XT27) || (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
+		#elif (PROJECT_ID == PID_XT27)
 			// do nothing
 		#else
 			gpio_output_config_status(PIN_BLE1_LED, LED_OFF);
@@ -2986,7 +2733,7 @@ void hw_init()
 	#endif
 
 	#if LED_BT2_ENABLE
-		#if (PROJECT_ID == PID_NR300) || (PROJECT_ID == PID_535) || (PROJECT_ID == PID_S600)
+		#if (PROJECT_ID == PID_NR300)
 			gpio_output_config_status(PIN_BLE2_LED, LED_ON);
 		#else
 			gpio_output_config_status(PIN_BLE2_LED, LED_OFF);
@@ -2996,7 +2743,7 @@ void hw_init()
 	#if LED_BAT_VOLTAGE_ENABLE || LED_DPI_INDICATE_ENABLE
 		#if (PROJECT_ID == PID_NR300)
 			gpio_output_config_status(PIN_BAT_DPI_LED, LED_ON);
-		#elif (PROJECT_ID == PID_0120) || (PROJECT_ID == PID_DMS157) || (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
+		#elif (PROJECT_ID == PID_0120)
 			// do nothing
 		#else
 			gpio_output_config_status(PIN_BAT_DPI_LED, LED_OFF);
@@ -3026,26 +2773,10 @@ void hw_init()
 	gpio_input_config_status(KEY_DPI_PIN, PM_PIN_PULLUP_1M);
 #endif
 
-
 #if LED_COLOR_MODE_KEY_ENABLE
 	gpio_input_config_status(LED_COLOR_KEY_PIN, PM_PIN_PULLUP_1M);
 #endif
 
-
-#if LED_RGB_DPI_ACTION_ENABLE
-	gpio_output_config_status(LED_RGB_DPI_PIN_R, LED_RGB_DPI_OFF);
-	gpio_output_config_status(LED_RGB_DPI_PIN_G, LED_RGB_DPI_OFF);
-	gpio_output_config_status(LED_RGB_DPI_PIN_B, LED_RGB_DPI_OFF);
-#endif
-
-#if LED_RGB_BAT_DPI_ENABLE
-	gpio_output_config_status(LED_RGB_DPI_BAT_PIN_R, LED_RGB_DPI_BAT_OFF);
-	gpio_output_config_status(LED_RGB_DPI_BAT_PIN_B, LED_RGB_DPI_BAT_OFF);
-#endif
-
-#if LED_LOGO_ACTION_ENABLE
-	gpio_output_config_status(PIN_LOGO_LED, LED_LOGO_OFF);
-#endif
 
 #if (LED_BATT_CAP_LEVEL_ENABLE)
 	batt_charge_init();
@@ -3091,11 +2822,7 @@ void hw_init()
 	#endif
 #endif
 
-#if (PROJECT_ID == PID_0120)
-	rgb_code_dpi_set( RGB_CODE_STATUS_DPI_START,  RGB_CODE_ACT_SET );
-#endif
-
-#if (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_M45) || (PROJECT_ID == PID_S600)
+#if (PROJECT_ID == PID_HM668)
 	#if LED_CODE_PWIR_DRIVE_ENABLE
 		// do nothing
 	#else
@@ -3117,10 +2844,6 @@ void hw_init()
 	 rgb_led_pwm_init();
 #endif
 
-#if (MODULE_MCU_EXTERNAL_ENABLE)
-	gpio_output_config(EXTER_MCU_IO_PIN);
-	gpio_write(EXTER_MCU_IO_PIN, 0);
-#endif
 }
 
 /**
@@ -3169,9 +2892,6 @@ void mouse_task_when_rf()
         	has_new_key_event |= SENSOR_DATA_EVENT_AAA; //set event flag
         	mouse_xy_multiple(); //modify DPI by soft
 
-		#if G24_DELAY_ENTER_SLEEP_ENABLE
-        	 mouse_moved_time_clean();
-		#endif
 
             user_cfg.sensor_direct = SENSOR_DIRECTION_OPTION;
 
@@ -3243,7 +2963,7 @@ void user_reboot(u8 reason)
     write_deep_ana0(reason); //write reason to analog register
     //start_reboot();
     sleep_ms(10);
-#if (PROJECT_ID == PID_660) || (PROJECT_ID == PID_FX282) || (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_DMS157) || VOLTAGE_TEMP_HANDLE_ENABLE
+#if (PROJECT_ID == PID_660) || VOLTAGE_TEMP_HANDLE_ENABLE
 	analog_write(BATTERY_CAP_REG, gc_vol_cap_reg_temp);
 #endif
 	cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_TIMER, clock_time() + 50*CLOCK_16M_SYS_TIMER_CLK_1MS); //reboot
@@ -3296,14 +3016,7 @@ void adv_count_poll()
     adv_count += n;
 }
 
-#if (OLED_SCREEN_ENABLE)
-extern void oled_close(void);
-#endif
 
-
-#if (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
-	extern void ext_mcu_enter_sleep(void);
-#endif
 
 /**
  * @brief	Enter deep sleep process
@@ -3314,18 +3027,6 @@ void enter_deep_aaa(ANA_STATUS_AAA reason)
 {
     printf("---->enter_deep_aaa in\n");
 
-#if (OLED_SCREEN_ENABLE)
-	oled_close();
-#endif
-
-#if (PROJECT_ID == PID_0120)
-	rgb3810_sleep_close();
-#endif
-
-#if (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
-	ext_mcu_enter_sleep();
-#endif
-
 #if (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_M45) || (PROJECT_ID == PID_104)
 	#if LED_CODE_PWIR_DRIVE_ENABLE
 		ws2812_sleep_close();
@@ -3333,7 +3034,6 @@ void enter_deep_aaa(ANA_STATUS_AAA reason)
 		// rgb3810_sleep_close();
 	#endif
 #endif
-
 
 
     write_deep_ana0(reason);
@@ -3391,7 +3091,7 @@ void enter_deep_aaa(ANA_STATUS_AAA reason)
 	#endif
 
 	#if KEY_MODE_INDEPENDENT_ENABLE
-		#if (PROJECT_ID == PID_0120) || (PROJECT_ID == PID_535) || (PROJECT_ID == PID_104)
+		#if (PROJECT_ID == PID_0120)
 			// do nothing
 		#else
 			cpu_set_gpio_wakeup(PIN_BTN_MODE,  !gpio_read(PIN_BTN_MODE),  0);
@@ -3406,25 +3106,11 @@ void enter_deep_aaa(ANA_STATUS_AAA reason)
 		#endif
 	#endif
 
-	#if (LED_COLOR_MODE_KEY_ENABLE)
-		if ( 0 == gpio_read(LED_COLOR_KEY_PIN) )
-		{
-			cpu_set_gpio_wakeup(LED_COLOR_KEY_PIN,  1,  0);
-		}
-		else
-		{
-			cpu_set_gpio_wakeup(LED_COLOR_KEY_PIN,  0,  0);
-		}
-	#endif
 
 	#if (ADC_TO_GPIO_MODE_EN)
 		cpu_set_gpio_wakeup(PIN_BTN_MODE,  !gpio_read(PIN_BTN_MODE),  0);
 	#endif
 
-	#if (PROJECT_ID == PID_8693) || (PROJECT_ID == PID_BM2060)
-		gpio_input_config_status(GPIO_PB5, PM_PIN_PULLUP_10K);
-		cpu_set_gpio_wakeup(GPIO_PB5,  !gpio_read(GPIO_PB5),  1);
-	#endif
 
 	#if SENSOR_FUN_ENABLE_AAA
 		#if (SENSOR_SHUT_DOWN_ENABLE==0)

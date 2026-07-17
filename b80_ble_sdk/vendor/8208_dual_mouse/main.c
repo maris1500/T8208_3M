@@ -25,23 +25,12 @@
 #include "main.h"
 #include "AAA_led_rgb.h"
 
-#if	MODULE_OLED_ENABLE
-	extern void oled_display(void);
-#endif
-
 #if USB_MODE_ENABLE
 	extern u8 usb_has_judge;
 	extern void usb_main_loop(void);
 	extern void usb_user_init(void);
 #endif
 
-#if (IIC_DRIVE_ENABLE)
-	#include "AAA_iic.h"
-#endif
-
-#if (MODULE_DIGITAL_TUBE_ENABLE)
-	#include "../module/AAA_digital_tube.h"
-#endif
 
 #if LED_LOGO_ACTION_ENABLE
  	extern void led_logo_action(void);
@@ -51,7 +40,7 @@
  	extern void protect_led_ram_on(void);
 #endif
 
-#if (PROJECT_ID == PID_660) || (PROJECT_ID == PID_FX282) || (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_DMS157) || VOLTAGE_TEMP_HANDLE_ENABLE
+#if  VOLTAGE_TEMP_HANDLE_ENABLE
  	unsigned char gc_vol_cap_reg_temp = 0;
 #endif
 
@@ -70,10 +59,6 @@ mouse_sta_t gc_mouse_sta;
 	mcu_pm_flag_t  mcu_sleep_status;
 #endif
 
-#if (MODULE_DIGITAL_TUBE_ENABLE)
-	extern void digital_tube_pro(void);
-#endif
-
 #if (KEY_FEATURE_DESKTOP_ENABLE)
 	extern unsigned char sk_m115_logo_led_on_flag;
 	extern void key_homekey_judement(void);
@@ -87,10 +72,6 @@ mouse_sta_t gc_mouse_sta;
 	extern void led_connect_none_status_clear(void);
 #endif
 
-#if (MODULE_MCU_EXTERNAL_ENABLE)
-	extern void ext_mcu_pro(void);
-#endif
-
 #if LED_COLOR_LIGHTS_ENABLE
 	extern void led_color_logo_action(void);
 #endif
@@ -99,11 +80,7 @@ mouse_sta_t gc_mouse_sta;
 	extern unsigned char run_app_code(void);
 #endif
 
-#if (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
-	extern void ext_mcu_prepare(void);
-#endif
-
-#if (PROJECT_ID == PID_MS13) || (PROJECT_ID == PID_8693) || (PROJECT_ID == PID_HM660) || (PROJECT_ID == PID_DMS06) || MOUSE_REPORT_250HZ_ENABLE
+#if  MOUSE_REPORT_250HZ_ENABLE
 	_attribute_data_retention_user u8 report_rate = 4;	//2.4G reporting rate 8--250hz
 #elif MOUSE_REPORT_500HZ_ENABLE
 	_attribute_data_retention_user u8 report_rate = 2;
@@ -121,7 +98,7 @@ _attribute_data_retention_user int dev_info_idx;	//The offset value of the locat
 	int dev_web_info_idex = 0;
 #endif
 
-#if (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_M45) || (PROJECT_ID == PID_104) || (PROJECT_ID == PID_S600)
+#if (PROJECT_ID == PID_HM668)
 	#if LED_CODE_PWIR_DRIVE_ENABLE
 		extern void ws2812_code_loop_pro(void);
 	#else
@@ -129,13 +106,9 @@ _attribute_data_retention_user int dev_info_idx;	//The offset value of the locat
 	#endif
 #endif
 
-#if (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_104)  || KEY_PAIR_USED_POWERUP_ENABLE
+#if KEY_PAIR_USED_POWERUP_ENABLE
 	unsigned char gc_hm668_mode_key_used = 0;
 	unsigned char gc_hm668_battery_try_times = 0;
-#endif
-
-#if (PROJECT_ID == PID_M45)
-	unsigned char gc_hm668_mode_key_used = 0;
 #endif
 
 
@@ -628,7 +601,7 @@ int main(void) //run in ramcode
     usb_has_judge =  analog_read(DEEP_ANA_REG7);
 #endif
 
-#if (PROJECT_ID == PID_660) || (PROJECT_ID == PID_FX282) || (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_DMS157) || VOLTAGE_TEMP_HANDLE_ENABLE
+#if VOLTAGE_TEMP_HANDLE_ENABLE
     gc_vol_cap_reg_temp = analog_read(BATTERY_CAP_REG);
 #endif
 
@@ -647,7 +620,7 @@ int main(void) //run in ramcode
 		flash_dev_info.slave_mac_addr[3] = 0;
 		flash_dev_info.dongle_id = 0;
 
-	#if (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_104) || (PROJECT_ID == PID_S600)
+	#if (PROJECT_ID == PID_HM668)
 		flash_dev_info.code_led_sw = 0;
 		flash_dev_info.code_led_mode = 0;
 	#endif
@@ -677,7 +650,7 @@ int main(void) //run in ramcode
 	gc_web_data.key[2].type = 0x10; gc_web_data.key[2].value = 0x04;
 	gc_web_data.key[3].type = 0x10; gc_web_data.key[3].value = 0x08;
 	gc_web_data.key[4].type = 0x10; gc_web_data.key[4].value = 0x10;
-	gc_web_data.key[5].type = 0x40; gc_web_data.key[5].value = 0x02;
+	gc_web_data.key[5].type = 0x40; gc_web_data.key[5].value = 0x01;
 
 	printf("webtemp: %d\n", WEB_DATA_LENGTH_MAX);
 #endif
@@ -690,27 +663,11 @@ int main(void) //run in ramcode
 
 	mouse_mode_init();
 
-#if (PROJECT_ID == PID_4028)
-	#if	(0 == M4028_BLE_G24_MODE_ENABLE)
-		flash_dev_info.mode = RF_1M_BLE_MODE;
-		fun_mode = RF_1M_BLE_MODE;
-	#endif
-
-	flash_dev_info.mast_id = BLE_DEVICE_ID_0;
-#endif
-
-#if (PROJECT_ID == PID_PCM8266)
-	flash_dev_info.mode = RF_1M_BLE_MODE;
-	fun_mode = RF_1M_BLE_MODE;
-#endif
 
 #if KEY_MODE_CHANGE_G24_BLE_ENABLE || KEY_PRESS_CHANGE_MODE_ENABLE
 	flash_dev_info.mast_id = BLE_DEVICE_ID_0;
 #endif
 
-#if (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
-	flash_dev_info.mast_id = BLE_DEVICE_ID_0;
-#endif
 
 	if ( flash_dev_info.mode >= RF_MAX_MODE )
 	{
@@ -723,7 +680,7 @@ int main(void) //run in ramcode
 		flash_dev_info.mast_id = BLE_DEVICE_ID_0;
 	}
 
-	#if (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_M45) || (PROJECT_ID == PID_S600)
+	#if (PROJECT_ID == PID_HM668)
 		if ( flash_dev_info.code_led_sw >= 2 )
 		{
 			flash_dev_info.code_led_sw = 0;
@@ -733,10 +690,6 @@ int main(void) //run in ramcode
 		{
 			flash_dev_info.code_led_mode = RGB_MODE_LIGHTS_NUION;
 		}
-	#endif
-
-	#if (PROJECT_ID == PID_S600)
-		flash_dev_info.code_led_mode = RGB_MODE_LIGHTS_BREATH;
 	#endif
 
 	#if (PROJECT_ID == PID_104)
@@ -833,7 +786,7 @@ int main(void) //run in ramcode
 
 	irq_enable(); //Interrupt enable
 
-#if (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_M45) || (PROJECT_ID == PID_104) || KEY_PAIR_USED_POWERUP_ENABLE
+#if KEY_PAIR_USED_POWERUP_ENABLE
 	if ( 0 == gpio_read(PIN_BTN_MODE) )
 	{
 		gc_hm668_mode_key_used = 1;
@@ -860,10 +813,6 @@ int main(void) //run in ramcode
 	}
 
 	adv_begin_tick = clock_time()|1; //start ADV count
-
-#if (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
-	ext_mcu_prepare();
-#endif
 
 	while (1) {
 
@@ -912,14 +861,6 @@ int main(void) //run in ramcode
 		 user_button_check_proc();
 	#endif
 
-	#if	MODULE_OLED_ENABLE
-		 oled_display();
-	#endif
-
-	#if MODULE_DIGITAL_TUBE_ENABLE
-		 digital_tube_pro();
-	#endif
-
 	#if LED_LOGO_ACTION_ENABLE
  		led_logo_action();
  	#endif
@@ -938,7 +879,7 @@ int main(void) //run in ramcode
 		led_connect_none_status_clear();
 	#endif
 
-	#if (PROJECT_ID == PID_0120) || (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_M45) || (PROJECT_ID == PID_104) || (PROJECT_ID == PID_S600)
+	#if (PROJECT_ID == PID_0120)
  	 	 #if LED_CODE_PWIR_DRIVE_ENABLE
 			 ws2812_code_loop_pro();
 		 #else

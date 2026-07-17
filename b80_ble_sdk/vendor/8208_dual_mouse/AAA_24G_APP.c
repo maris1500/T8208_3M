@@ -711,35 +711,6 @@ void ui_loop_24g()
 	}
 }
 
-#if G24_DELAY_ENTER_SLEEP_ENABLE
-
-	#define MOUSE_QUITE_TIMEOUT   (10*1000*1000)
-	static unsigned int sg_mouse_move_time = 0;
-	static unsigned char sg_mouse_move_flag = 0;
-
-	void mouse_moved_time_clean(void)
-	{
-		sg_mouse_move_time = clock_time() | 0x01;
-		sg_mouse_move_flag = 0;
-	}
-
-	unsigned char mouse_not_action_timeout(void)
-	{
-		if ( 1 == sg_mouse_move_flag )
-		{
-			return (1);
-		}
-
-		if ( 0 == sg_mouse_move_flag && clock_time_exceed(sg_mouse_move_time, MOUSE_QUITE_TIMEOUT) )
-		{
-			sg_mouse_move_flag = 1;
-			return (1);
-		}
-
-		return (0);
-	}
-#endif
-
 /**
  * @brief	Sleep task scheduling
  * @param	none
@@ -838,14 +809,6 @@ void pm_poll()
 						interval = 100; //wake up interval = 100ms
 					#endif
 
-					#if (PROJECT_ID == PID_0120)
-						interval = 70;
-					#endif
-
-					#if (PROJECT_ID == PID_HM668)
-						interval = 20;
-					#endif
-
 					#if (PROJECT_ID == PID_DMS157)
 						interval = 20;
 					#endif
@@ -869,9 +832,9 @@ void pm_poll()
 				if (no_ack > 79000)
 			#elif (PROJECT_ID == PID_M388)
 				if (no_ack > 14000)
-			#elif (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
+			#elif (PROJECT_ID == PID_MS631)
 				if (no_ack > 11000)
-			#elif (PROJECT_ID == PID_M0018) || (PROJECT_ID == PID_M0018) || (PROJECT_ID == PID_535)
+			#elif (PROJECT_ID == PID_M0018) || (PROJECT_ID == PID_Q15)
 				if (no_ack > 40500)
 			#elif (PROJECT_ID == PID_0120)
 				if (no_ack > 8000)
@@ -891,12 +854,6 @@ void pm_poll()
 			}
 		}
 
-		#if (G24_DELAY_ENTER_SLEEP_ENABLE)
-			if ( 0 == mouse_not_action_timeout() )
-			{
-				gc_mouse_sta.need_suspend_flag = 0;
-			}
-		#endif
 
 		#if PM_SYS_LOW_POWER_ENABLE
 			if ( 0 == mcu_sleep_status.enter_lower )
@@ -953,7 +910,7 @@ void d24_main_loop()
 	if (device_status == STATE_NORMAL)
 	{
 	#if (PROJECT_ID == PID_Q15)
-		temp = report_rate*1000 - 200; //unit 1us
+		temp = report_rate*1000; //unit 1us
 	#else
 		temp = report_rate*1000;
 	#endif

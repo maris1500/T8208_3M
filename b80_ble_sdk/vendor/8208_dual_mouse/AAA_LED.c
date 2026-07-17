@@ -28,9 +28,6 @@
 	#include "../module/AAA_mcu_ext.h"
 #endif
 
-#if (MODULE_DIGITAL_TUBE_ENABLE)
-	#include "../module/AAA_digital_tube.h"
-#endif
 
 #if Dongle_Lark_A1_Flash_Enable
     extern unsigned char gc_lark_flash_pair;
@@ -171,9 +168,6 @@ void led_g24_conned_succ_display(void)
 	device_led_setup( sg_led_conn_succ );
 #endif
 
-#if MODULE_DIGITAL_TUBE_ENABLE
-	digital_tube_g24_status(TUBE_LED_SUCC);
-#endif
 
 #if (PROJECT_ID == PID_104)
 	led_adv_sta = LED_ADV_SUCC;
@@ -205,9 +199,6 @@ void led_g24_conned_succ_dis_next(void)
 	device_led_setup(sg_led_conn_over);
 #endif
 
-#if MODULE_DIGITAL_TUBE_ENABLE
-	digital_tube_g24_status(TUBE_LED_ALL_ON);
-#endif
 }
 
 void led_ble_conned_succ_dis_next(void)
@@ -235,10 +226,6 @@ void led_ble_conned_succ_dis_next(void)
 	device_led_setup(sg_led_conn_over);
 #endif
 
-#if MODULE_DIGITAL_TUBE_ENABLE
-	digital_tube_ble_status(TUBE_LED_ALL_ON);
-#endif
-
 }
 
 
@@ -246,9 +233,6 @@ void led_ble_Adv_poll()
 {
     if ( pair_flag && (connect_ok == 0) )
     {
-	#if MODULE_DIGITAL_TUBE_ENABLE
-		digital_tube_ble_status(TUBE_LED_PAIR);
-	#endif
 
 	#if MODULE_MCU_EXTERNAL_ENABLE
 		ext_mcu_io.conn = EXT_LED_PAIR;
@@ -258,9 +242,6 @@ void led_ble_Adv_poll()
     }
     else
     {
-    #if MODULE_DIGITAL_TUBE_ENABLE
-		digital_tube_ble_status(TUBE_LED_RECONN);
-	#endif
 
 	#if (PROJECT_ID == PID_M0018) || (PROJECT_ID == PID_2187)
 		if ( 0 == led_status_flag.led_conn_next && 0 == connect_ok )
@@ -289,9 +270,6 @@ void led_2p4_Adv_poll()
     if (pair_flag)
 #endif
     {
-    #if MODULE_DIGITAL_TUBE_ENABLE
-    	digital_tube_g24_status(TUBE_LED_PAIR);
-	#endif
 
 	#if MODULE_MCU_EXTERNAL_ENABLE
     	ext_mcu_io.conn = EXT_LED_PAIR;
@@ -301,9 +279,6 @@ void led_2p4_Adv_poll()
     }
     else
     {
-    #if MODULE_DIGITAL_TUBE_ENABLE
-    	digital_tube_g24_status(TUBE_LED_RECONN);
-	#endif
 
 	#if MODULE_MCU_EXTERNAL_ENABLE
     	ext_mcu_io.conn = EXT_LED_RECONN;
@@ -344,10 +319,6 @@ void led_ble_ConnectedStatus()
 #else
     device_led_setup(sg_led_conn_succ);
     led_status_flag.led_conn_next = 1;
-#endif
-
-#if MODULE_DIGITAL_TUBE_ENABLE
-	digital_tube_ble_status(TUBE_LED_SUCC);
 #endif
 
 #if (PROJECT_ID == PID_104)

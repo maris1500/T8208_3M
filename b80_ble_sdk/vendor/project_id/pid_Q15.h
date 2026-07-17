@@ -161,8 +161,8 @@
 #define D24G_ADV_ENTER_DEEPSLEEP_AFTER_TIME_OUT_ENABLE_AAA		1 //1:2.4G ADV overtime enter deep sleep
 #define D24G_CONNECT_ENTER_DEEPSLEEP_AFTER_TIME_OUT_ENABLE_AAA	1 //1:2.4G connect overtime enter deep sleep
 
-#define BLE_ADV_TIMER_OUT  				180 // unit 1s 180
-#define D24G_ADV_TIMER_OUT  			60  // unit 1s 60
+#define BLE_ADV_TIMER_OUT  				120 // unit 1s 180
+#define D24G_ADV_TIMER_OUT  			120  // unit 1s 60
 
 #define BLE_CONNECT_TIME_OUT  			600 // unit 1s 600
 #define D24G_CONNECT_TIME_OUT  			600 // unit 1s 600
@@ -185,7 +185,7 @@
 #define SENSOR_CS_ENABLE			1 //0-CS PIN not be used, 1-CS PIN is used
 #define SENSOR_MISO_ENABLE          0
 #define SENSOR_MOTION_ENABLE		1 //0-MOTION PIN not be used, 1-MOTION PIN is used
-#define SENSOR_SHUT_DOWN_ENABLE 	0 //0-sensor enter sleep2 when deep sleep, 1-sensor enter shutdown when deep sleep
+#define SENSOR_SHUT_DOWN_ENABLE 	1 //0-sensor enter sleep2 when deep sleep, 1-sensor enter shutdown when deep sleep
 
 #define BLT_APP_LED_ENABLE          1 //anable led display
 #define ADC_TO_GPIO_MODE_EN         0
@@ -334,7 +334,7 @@
 #endif
 
 
-#define DEBUG_MODE  0
+#define DEBUG_MODE  1
 
 #if DEBUG_MODE
 	#define PRINT_BAUD_RATE       100000    // 1M baud rate,should Not bigger than 1Mb/s

@@ -68,24 +68,12 @@ typedef enum
 
 #if BLE_PARA_UPDATA_CHANGE_ENABLE
 	#define DEFAULT_INTERVAL	6
-	#define DEFAULT_LATENCY		15 //0x2C 44
+	#define DEFAULT_LATENCY		20 //0x2C 44
 	#define DEFAULT_TIMEOUT		300
-#elif (PROJECT_ID == PID_M388) || (PROJECT_ID == PID_0120) || (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_M45)
-	#define DEFAULT_INTERVAL	6
-	#define DEFAULT_LATENCY 	10 //0x2C 44
-	#define DEFAULT_TIMEOUT 	200
-#elif (PROJECT_ID == PID_DMS157)
-	#define DEFAULT_INTERVAL	6
-	#define DEFAULT_LATENCY 	15 //0x2C 44
-	#define DEFAULT_TIMEOUT 	200
 #else
 	#define DEFAULT_INTERVAL	6
 	#define DEFAULT_LATENCY 	44 //0x2C //44
 	#define DEFAULT_TIMEOUT 	300
-#endif
-
-#if (MODULE_DIGITAL_TUBE_ENABLE)
-	extern void digital_tube_pro(void);
 #endif
 
 extern void led_ble_conned_succ_dis_next(void);
@@ -1313,10 +1301,6 @@ void set_adv_type()
  */
 void ble_status_proc_aaa(u8 is_new_key_event)
 {
-	
-#if (MODULE_DIGITAL_TUBE_ENABLE)
-	digital_tube_pro();
-#endif
 
     if (ble_status_aaa == T5S_CONNECTED_STATUS_AAA)
     { //connected
@@ -1342,17 +1326,9 @@ void ble_status_proc_aaa(u8 is_new_key_event)
 	#else
         Switch_Adv_Type = 0;
 	
-	#if (MODULE_DIGITAL_TUBE_ENABLE)
-		digital_tube_pro();
-	#endif
-
         set_adv_type();
 
 	#endif
-
-#if (MODULE_DIGITAL_TUBE_ENABLE)
-	digital_tube_pro();
-#endif
 
         set_adv_scanRsp_data(); //Set broadcast and scan response content
         bls_ll_setAdvEnable(1); //adv enable
@@ -1378,13 +1354,13 @@ void ble_status_proc_aaa(u8 is_new_key_event)
         {
             ble_start_pair();
         }
-	#elif (PROJECT_ID == PID_M388) || (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
+	#elif (PROJECT_ID == PID_M388)
 	    else if (adv_count >= 11)
         {
         	/* BLE reconnect timeout: 10s *///30s now
             ble_status_aaa = DEEP_SLEEPE_STATUS_AAA;
         }
-	#elif (PROJECT_ID == PID_M0018) || (PROJECT_ID == PID_535)
+	#elif (PROJECT_ID == PID_M0018) || (PROJECT_ID == PID_Q15)
 	    else if (adv_count >= 31)
         {
         	/* BLE reconnect timeout: 10s *///30s now
@@ -1476,10 +1452,6 @@ void ble_status_proc_aaa(u8 is_new_key_event)
             enter_deep_aaa(DEEP_SLEEP_ANA_AAA);
         }
     }
-
-#if (MODULE_DIGITAL_TUBE_ENABLE)
-	digital_tube_pro();
-#endif
 
 }
 
