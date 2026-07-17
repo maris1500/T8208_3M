@@ -48,6 +48,11 @@
 	extern void batt_dpi_two_loop(void);
 #endif
 
+#if DPI_RGB_SET_ENABLE
+	extern void dpi_rgb_port_init(void);
+	extern void dpi_rgb_display(void);
+#endif
+
 #if WEB_HID_ENABLE
 	 web_data_cfg_t gc_web_data;
 	 volatile web_g24_ble_t  gc_web_wireless;
@@ -889,6 +894,10 @@ int main(void) //run in ramcode
 
 	#if WEB_KEY_FEATURE_ENABLE
 		web_function_loop();
+	#endif
+
+	#if	DPI_RGB_SET_ENABLE
+		// dpi_rgb_display();
 	#endif
 
 #if (DEBUG_MODE)

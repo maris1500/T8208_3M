@@ -356,7 +356,6 @@ static inline void pwm_ir_fifo_set_data_entry(unsigned short pulse_num, unsigned
  * @return	  none.
  */
 static inline unsigned short pwm_config_dma_fifo_waveform(int carrier_en, Pwm0Pulse_SelectDef pulse_type,  unsigned short pulse_num)
-
 {
 	return  ( carrier_en<<15 | pulse_type | (pulse_num & 0x3fff) );
 }

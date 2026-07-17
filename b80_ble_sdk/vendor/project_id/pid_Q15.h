@@ -102,7 +102,7 @@
 #define KEY_FEATURE_MIKE_AI_ENABLE     0
 #define KEY_LEFT_MIDDLE_RIGHT_ENABLE   0
 
-#define PM_SYS_LOW_POWER_ENABLE        0
+#define PM_SYS_LOW_POWER_ENABLE        1
 
 
 #define LED_RGB_RUN_TIME          60
@@ -599,7 +599,29 @@
 	#define  USB_SWITCH_OFF()   gpio_read(GPIO_PB2)
 #endif
 
+#define RGB_ANODE_ENABLE  1
+
+#define DPI_RGB_SET_ENABLE 1
+
 #if DPI_RGB_SET_ENABLE
+
+	#define PWM_INIT_DEFAULT    0
+	#define MIN_SCAL_CNT        0
+	#define MAX_SCAL_CNT        990
+	#define PWM_DEFAULT_DUTY    750
+	#define PWM_MAX_SCALE       1000
+
+	#define DPI_RGB_R_PIN  GPIO_PD5
+	#define DPI_RGB_G_PIN  GPIO_PD3
+	#define DPI_RGB_B_PIN  GPIO_PD2
+
+	#define RGB_R_IO_FUN  PWM1
+	#define RGB_G_IO_FUN  PWM5
+	#define RGB_B_IO_FUN  PWM4
+
+	#define RGB_R_PWMID  PWM1_ID
+	#define RGB_G_PWMID  PWM5_ID
+	#define RGB_B_PWMID  PWM4_ID
 
 #endif
 

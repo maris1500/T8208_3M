@@ -1,33 +1,63 @@
 #include "AAA_led_rgb.h"
 
-#if (LED_RGB_ENABLE)
-#include "AAA_public_config.h"
-#include "AAA_LED.h"
-#include "main.h"
+#if LED_RGB_ENABLE || DPI_RGB_SET_ENABLE
+	#include "AAA_public_config.h"
+	#include "AAA_LED.h"
+	#include "main.h"
 #endif
 
 
 
-#if (LED_RGB_ENABLE)
+#if	LED_RGB_ENABLE || DPI_RGB_SET_ENABLE
 
-#define LED_RGB_ON    LED_ON
-#define LED_RGB_OFF   LED_OFF
-
-const unsigned int rgb_group_tab[LED_RGB_GROUP_NUM] = {LED_RGB_GROUP1, LED_RGB_GROUP2, LED_RGB_GROUP3, LED_RGB_GROUP4,LED_RGB_GROUP5, LED_RGB_GROUP6};
-unsigned char sg_rgb_led_index = LED_RGB_TASK_BREATH;
-
-void led_rgb_all_on(void);
-void led_rgb_all_off(void);
 
 void led_rgb_set_pwm(u16 r, u16 g, u16 b)
 {
-	pwm_set_cycle_and_duty(PWM0_ID, (u16)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US),  (u16)(r * CLOCK_SYS_CLOCK_1US) );
-	pwm_set_cycle_and_duty(PWM1_ID, (u16)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US),  (u16)(g * CLOCK_SYS_CLOCK_1US) );
-	pwm_set_cycle_and_duty(PWM2_ID, (u16)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US),  (u16)(b * CLOCK_SYS_CLOCK_1US) );
+	pwm_set_cycle_and_duty(RGB_R_PWMID, (u16)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US),  (u16)(r * CLOCK_SYS_CLOCK_1US) );
+	pwm_set_cycle_and_duty(RGB_G_PWMID, (u16)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US),  (u16)(g * CLOCK_SYS_CLOCK_1US) );
+	pwm_set_cycle_and_duty(RGB_B_PWMID, (u16)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US),  (u16)(b * CLOCK_SYS_CLOCK_1US) );
 }
 
 void led_rgb_set_color(LED_RGB_COLOR_EN color, unsigned short duty)
 {
+#if RGB_ANODE_ENABLE
+	switch( color )
+	{
+		case LED_RGB_CYAN:
+			led_rgb_set_pwm(PWM_MAX_SCALE, duty, duty);
+			break;
+
+		case LED_RGB_BLUE:
+			led_rgb_set_pwm(PWM_MAX_SCALE, PWM_MAX_SCALE, duty);
+			break;
+
+		case LED_RGB_PURPLE:
+			led_rgb_set_pwm(duty, PWM_MAX_SCALE, duty);
+			break;
+
+		case LED_RGB_RED:
+			led_rgb_set_pwm(duty, PWM_MAX_SCALE, PWM_MAX_SCALE);
+			break;
+
+		case LED_GRB_ORANGE:
+			led_rgb_set_pwm(duty, duty, PWM_MAX_SCALE);
+			break;
+
+		case LED_RGB_GREEN:
+			led_rgb_set_pwm(PWM_MAX_SCALE, duty, PWM_MAX_SCALE);
+			break;
+
+	#if (PROJECT_ID == PID_Q15)
+		// nothing
+	#else
+		case LED_RGB_WHITE:
+			led_rgb_set_pwm(duty, duty, duty);
+			break;
+	#endif
+
+		default : break;
+	}
+#else
 	switch( color )
 	{
 		case LED_RGB_CYAN:   led_rgb_set_pwm(0, duty, duty);  break;
@@ -39,15 +69,33 @@ void led_rgb_set_color(LED_RGB_COLOR_EN color, unsigned short duty)
 		case LED_RGB_WHITE:  led_rgb_set_pwm(duty, duty, duty); break;
 		default : break;
 	}
+#endif
 }
 
 void led_rgb_stop(void)
 {
-	led_rgb_set_pwm(0, 0, 0);
-	pwm_stop(PWM0_ID);
-	pwm_stop(PWM1_ID);
-	pwm_stop(PWM2_ID);
+#if RGB_ANODE_ENABLE
+	led_rgb_set_pwm(PWM_MAX_SCALE, PWM_MAX_SCALE, PWM_MAX_SCALE);
+#else
+	led_rgb_set_pwm(PWM_INIT_DEFAULT, PWM_INIT_DEFAULT, PWM_INIT_DEFAULT);
+#endif
+
+	pwm_stop(RGB_R_PWMID);
+	pwm_stop(RGB_G_PWMID);
+	pwm_stop(RGB_B_PWMID);
 }
+
+#endif
+
+
+#if LED_RGB_ENABLE
+
+#define LED_RGB_ON    LED_ON
+#define LED_RGB_OFF   LED_OFF
+
+const unsigned int rgb_group_tab[LED_RGB_GROUP_NUM] = {LED_RGB_GROUP1, LED_RGB_GROUP2, LED_RGB_GROUP3, LED_RGB_GROUP4,LED_RGB_GROUP5, LED_RGB_GROUP6};
+unsigned char sg_rgb_led_index = LED_RGB_TASK_BREATH;
+
 
 void led_rgb_all_on(void)
 {
@@ -608,3 +656,97 @@ void led_rgb_pro(void)
 
 #endif
 
+
+#if DPI_RGB_SET_ENABLE
+
+extern u8 dpi_value;
+extern u8 gl_cpi_change_flag;
+
+static u8  rgb_breath_cycle = 0, rgb_breath_init_flag = 0;
+
+void dpi_rgb_port_init(void)
+{
+	pwm_set_clk(CLOCK_SYS_CLOCK_HZ, CLOCK_SYS_CLOCK_HZ);
+
+	gpio_set_func(DPI_RGB_R_PIN, RGB_R_IO_FUN);
+	pwm_set_mode(RGB_R_PWMID, 	 PWM_NORMAL_MODE);
+	pwm_set_cycle_and_duty(RGB_R_PWMID, (unsigned short)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US),  (unsigned short)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US));
+
+	gpio_set_func(DPI_RGB_G_PIN, RGB_G_IO_FUN);
+	pwm_set_mode(RGB_G_PWMID,    PWM_NORMAL_MODE);
+	pwm_set_cycle_and_duty(RGB_G_PWMID, (unsigned short)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US),  (unsigned short)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US));
+
+	gpio_set_func(DPI_RGB_B_PIN, RGB_B_IO_FUN);
+	pwm_set_mode(RGB_B_PWMID,    PWM_NORMAL_MODE);
+	pwm_set_cycle_and_duty(RGB_B_PWMID, (unsigned short)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US),  (unsigned short)(PWM_MAX_SCALE * CLOCK_SYS_CLOCK_1US));
+
+	pwm_start(RGB_R_PWMID);
+	pwm_start(RGB_G_PWMID);
+	pwm_start(RGB_B_PWMID);
+
+	rgb_breath_init_flag = 0;
+}
+
+void dpi_rgb_start(void)
+{
+	rgb_breath_cycle = 0;
+}
+
+void dpi_rgb_display(void)
+{
+	#define LED_MAX_BREATH_CYCLE  3
+	#define LED_MAX_1_DUTY        500
+	#define LED_MIN_2_DUTY        2
+
+	static u32 rgb_breath_tick = 0;
+	static u16 rgb_breath_duty = PWM_MAX_SCALE;
+	static u8  rgb_breath_flag = 1;
+
+	if ( 0 == gl_cpi_change_flag )
+	{
+		rgb_breath_tick = clock_time();
+		return;
+	}
+
+	if ( clock_time_exceed(rgb_breath_tick, 10*1000) )
+	{
+		rgb_breath_tick = clock_time();
+
+		if ( rgb_breath_flag )
+		{
+			if (rgb_breath_duty < LED_MAX_1_DUTY)
+				rgb_breath_duty -= 1;
+			else
+				rgb_breath_duty -= 25; // 20
+
+			if ( rgb_breath_duty <= LED_MIN_2_DUTY )
+			{
+				rgb_breath_flag = 0;
+				rgb_breath_duty = LED_MIN_2_DUTY;
+			}
+		}
+		else
+		{
+			rgb_breath_duty += 15;
+			if ( rgb_breath_duty >= PWM_MAX_SCALE )
+			{
+				rgb_breath_flag = 1;
+				rgb_breath_duty = PWM_MAX_SCALE;
+				rgb_breath_cycle++;
+			}
+		}
+
+		led_rgb_set_color(dpi_value, rgb_breath_duty);
+	}
+
+	if ( rgb_breath_cycle >= LED_MAX_BREATH_CYCLE )
+	{
+		rgb_breath_duty = PWM_MAX_SCALE;
+		gl_cpi_change_flag = 1;
+		rgb_breath_flag = 1;
+		rgb_breath_cycle = 0;
+	}
+
+}
+
+#endif

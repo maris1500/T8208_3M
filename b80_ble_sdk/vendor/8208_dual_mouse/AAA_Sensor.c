@@ -27,11 +27,6 @@
 	unsigned char gc_dms006_cpi_flag = 0;
 #endif
 
-#if (PROJECT_ID == PID_660) || (PROJECT_ID == PID_HM668)
-	unsigned char gc_digital_dpi_flag = 0;
-	unsigned short int gc_digital_dpi_delay = 0;
-#endif
-
 #if TUBE_DPI_DISP_ENABLE
 	unsigned char gc_digital_dpi_flag = 0;
 	unsigned short int gc_digital_dpi_delay = 0;
@@ -41,8 +36,8 @@
 	#include "../module/AAA_dpi_batt_two.h"
 #endif
 
-#if (PROJECT_ID == PID_4027) || (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
-	unsigned char gl_cpi_change_flag;
+#if (PROJECT_ID == PID_Q15)
+	unsigned char gl_cpi_change_flag = 0;
 #endif
 
 #if SENSOR_FUN_ENABLE_AAA
@@ -100,10 +95,6 @@ _attribute_data_retention_user u8	sensor_type = 0xff;
 //_attribute_data_retention_user u8   mouse_cust_fct3065xy = 0;
 //_attribute_data_retention_user u8   dbg_sensor_cpi = 0;
 
-
-#if (PROJECT_ID == PID_LXL256)
-unsigned char gl_cpi_change_flag = 0;
-#endif
 
 #if LED_RGB_DPI_ACTION_ENABLE
     extern void battery_low_flag_clear(void);
@@ -2400,16 +2391,15 @@ void sensor_dpi_default(void)
 }
 
 
-#if (PROJECT_ID == PID_M710)
-   extern void led_dpi_insert( unsigned char times);
-#endif
-
 
 #if	LED_RGB_DPI_ENABLE
    extern void led_reg_dpi_display(void);
 #endif
 
-   extern void ext_mcu_dpi_time_reset(void);
+#if (PROJECT_ID == PID_Q15)
+   extern void dpi_rgb_start(void);
+#endif
+
 
 /**
 
@@ -2432,29 +2422,11 @@ void btn_dpi_set()
 	set_current_cpi_value_handle(); //save dpi_value to flash
 #endif
 
-//	analog_write(USED_DPI_DEEP_ANA_REG, dpi_value); //save dpi_value to analog register
-
     sensor_dpi_set(dpi_value); //set dpi_value to sensor
 
-#if (PROJECT_ID == PID_660) || (PROJECT_ID == PID_HM668)
-	gc_digital_dpi_flag = 1;
-	gc_digital_dpi_delay = 0;
-#endif
-
-#if (TUBE_DPI_DISP_ENABLE)
-	gc_digital_dpi_flag = 1;
-	gc_digital_dpi_delay = 0;
-#endif
-
-#if (PROJECT_ID == PID_4027) || (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
-	gl_cpi_change_flag = 1;
-	ext_mcu_dpi_time_reset();
-#endif
-
-#if (PROJECT_ID == PID_DMS157)
-	#if	LED_RGB_DPI_ENABLE
-		led_reg_dpi_display();
-	#endif
+#if (PROJECT_ID == PID_Q15)
+    gl_cpi_change_flag = 1;
+    dpi_rgb_start();
 #endif
 
 #if (LED_DPI_INDICATE_ENABLE)
@@ -2473,7 +2445,7 @@ void btn_dpi_set()
 	vbat_dpi_led_two_insert(VBAT_DPI_CHOOSE_DPI, (dpi_value + 1) );
 #elif (PROJECT_ID == PID_0120)
 	rgb_code_dpi_set( RGB_CODE_STATUS_DPI_START, RGB_CODE_ACT_SET);
-#elif (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
+#elif (PROJECT_ID == PID_Q15)
 	// do nothing
 #else
     dpi_led_show( dpi_value + 1 );

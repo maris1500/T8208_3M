@@ -3,7 +3,7 @@
 
 #include "AAA_app_config_Telink_QFN32.h"
 
-#if (LED_RGB_ENABLE)
+#if LED_RGB_ENABLE || DPI_RGB_SET_ENABLE
 
 typedef enum {
 	LED_RGB_PRO_IDEL = 0x00,
@@ -24,27 +24,31 @@ typedef enum {
 	LED_RGB_TASK_MAX,
 }LED_RGB_TASK_TYPE_EN;
 
-typedef enum {
-	LED_RGB_CYAN = 0x00,
+typedef enum
+{
+	LED_RGB_RED = 0x00,
 	LED_RGB_BLUE,
-	LED_RGB_PURPLE,
-	LED_RGB_RED,
-	LED_GRB_ORANGE,
 	LED_RGB_GREEN,
+	LED_GRB_ORANGE,
+	LED_RGB_CYAN,
+	LED_RGB_PURPLE,
+
+#if (PROJECT_ID == PID_Q15)
+	// nothing
+#else
 	LED_RGB_WHITE,
+#endif
+
 	LED_REB_COLOR_MAX,
 }LED_RGB_COLOR_EN;
 
-#define PWM_INIT_DEFAULT    0
-#define MIN_SCAL_CNT        0
-#define MAX_SCAL_CNT        990
-#define PWM_DEFAULT_DUTY    750
-#define PWM_MAX_SCALE       1000
-
-void led_rgb_num16_init(void);
 void led_rgb_pro(void);
 void led_rgb_stop(void);
 
+
+#if DPI_RGB_SET_ENABLE
+	void dpi_rgb_port_init(void);
+#endif
 
 #endif
 

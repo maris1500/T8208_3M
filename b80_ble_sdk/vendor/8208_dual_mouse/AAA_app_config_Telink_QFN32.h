@@ -2,8 +2,8 @@
 #define _TELINK_QFN32_AAA_H_
 
 
-#define PID_TESTA         0xFF
-#define PID_Q15           1 //3m
+#define PID_TESTA       0xFF
+#define PID_Q15         1 //3m
 
 
 #define PROJECT_ID        PID_Q15

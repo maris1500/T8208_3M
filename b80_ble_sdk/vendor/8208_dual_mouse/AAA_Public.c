@@ -2802,14 +2802,6 @@ void hw_init()
 	led_rgb_num16_init();
 #endif
 
-#if (LED_GRB_NUM05_ENABLE)
-	led_rgb_num05_init();
-#endif
-
-#if (LED_GRB_LOGO_ENABLE)
-	rgb_led_logo_init();
-#endif
-
 	sensor_postion_init();
 
 #if LED_CODE_ENABLE || LED_CODE_PWIR_DRIVE_ENABLE
@@ -2842,6 +2834,10 @@ void hw_init()
 
 #if (PROJECT_ID == PID_DMS157)
 	 rgb_led_pwm_init();
+#endif
+
+#if DPI_RGB_SET_ENABLE
+	dpi_rgb_port_init();
 #endif
 
 }
