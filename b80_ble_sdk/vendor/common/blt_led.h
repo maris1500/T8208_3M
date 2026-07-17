@@ -58,10 +58,6 @@ int device_led_setup(led_cfg_t led_cfg);
 
 static inline void device_led_process(void)
 {
-#if (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
-	return;
-#endif
-
 	if (DEVICE_LED_BUSY)
 	{
 		led_proc();

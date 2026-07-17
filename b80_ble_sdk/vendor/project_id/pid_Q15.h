@@ -29,7 +29,7 @@
 #define USB_MODE_ENABLE     0
 
 #define LED_G24_ENABLE      1
-#define LED_BT1_ENABLE      0
+#define LED_BT1_ENABLE      1
 #define LED_BT2_ENABLE      1
 
 #define LED_BAT_VOLTAGE_ENABLE      1
@@ -453,33 +453,6 @@
 
 
 #define MODULE_DIGITAL_TUBE_ENABLE	0
-
-#if MODULE_DIGITAL_TUBE_ENABLE
-
-	#define TUBE_LOOP_CYCLE	 1000
-	#define TUBE_ON_TIME_MAX 60
-	#define TUBE_SCAN_TIMES  7
-
-	#define TUBE_SCAN_NOMAL_5_ENABLE  1
-
-	#define TUBE_HIGH	1
-	#define TUBE_LOW	0
-
-	#define TUBE_NUM	7
-	#define CODE_NUM	10
-
-	#define TUBE_PIN_1	GPIO_PA2
-	#define TUBE_PIN_2	GPIO_PA4
-	#define TUBE_PIN_3	GPIO_PA5
-	#define TUBE_PIN_4	GPIO_PA6
-	#define TUBE_PIN_5	GPIO_PA7
-	#define TUBE_PIN_6	GPIO_PB2
-	#define TUBE_PIN_7	GPIO_PB4
-
-	#define TUBE_PIN_LIST	{TUBE_PIN_1, TUBE_PIN_2, TUBE_PIN_3, TUBE_PIN_4, TUBE_PIN_5, TUBE_PIN_6, TUBE_PIN_7}
-	#define TUBE_CODE_LIST	{0x3f,/*0*/  0x06,/*1*/  0x5b,/*2*/  0x4f,/*3*/  0x66,/*4*/  0x6d,/*5*/  0x7d,/*6*/  0x07,/*7*/  0x7f,/*8*/  0x6f/*9*/}
-
-#endif
 
 
 #define LED_RGB_BAT_DPI_ENABLE   0

@@ -28,15 +28,6 @@
 
 device_led_t device_led;
 
-
-#if (0)
-	extern void ws2812_red_all_on(void);
-	extern void ws2812_green_all_on(void);
-	extern void ws2812_cyan_all_on(void);
-	extern void ws2812_all_off(void);
-#endif
-
-
 void gpio_input_config(GPIO_PinTypeDef pin)
 {
     gpio_set_func(pin, AS_GPIO);
@@ -85,77 +76,6 @@ void device_led_on_off(u8 on)
 	#if LED_MODE_MIX_CTRL_ENABLE
 		gpio_write( device_led.gpio_led, on^device_led.polar );
 		gpio_set_output_en(device_led.gpio_led, on);
-	#elif LED_RGB_BAT_DPI_ENABLE
-		if ( RF_2M_2P4G_MODE == mcu_mode_get() )
-		{
-			LED_DPI_BAT_R_ACT( LED_RGB_DPI_BAT_ON );
-		}
-		else
-		{
-		#if (PROJECT_ID == PID_XT27)
-			LED_DPI_BAT_B_ACT( LED_RGB_DPI_BAT_ON );
-		#else
-			if ( BLE_DEVICE_ID_0 == ble_mode_device_id_get() )
-			{
-				LED_DPI_BAT_B_ACT( LED_RGB_DPI_BAT_ON );
-			}
-			else
-			{
-				LED_DPI_BAT_R_ACT( LED_RGB_DPI_BAT_ON );
-				LED_DPI_BAT_B_ACT( LED_RGB_DPI_BAT_ON );
-			}
-		#endif
-		}
-	#elif (PROJECT_ID == PID_NR300) || (PROJECT_ID == PID_535)
-		if ( RF_2M_2P4G_MODE == mcu_mode_get() )
-		{
-			gpio_write( device_led.gpio_led, LED_OFF );
-		#if (PROJECT_ID == PID_535)
-			gpio_write( PIN_BLE1_LED, LED_ON );
-			gpio_write( PIN_BLE2_LED, LED_ON );
-		#endif
-		}
-		else
-		{
-			if ( BLE_DEVICE_ID_0 == ble_mode_device_id_get() )
-			{
-				gpio_write( PIN_BLE1_LED, LED_OFF );
-			#if (PROJECT_ID == PID_535)
-				gpio_write( PIN_24G_LED, LED_ON );
-				gpio_write( PIN_BLE2_LED, LED_ON );
-			#endif
-			}
-			else
-			{
-			#if (PROJECT_ID == PID_535)
-				gpio_write( PIN_24G_LED,  LED_ON );
-				gpio_write( PIN_BLE1_LED, LED_ON );
-
-				gpio_write( PIN_BLE2_LED, LED_OFF );
-			#else
-				gpio_write( PIN_BLE1_LED, LED_OFF );
-				gpio_write( PIN_24G_LED, LED_OFF );
-			#endif
-			}
-		}
-	#elif (PROJECT_ID == PID_4027)
-		// do nothing
-	#elif (PROJECT_ID == PID_104)
-		if ( RF_2M_2P4G_MODE == mcu_mode_get() )
-		{
-			// ws2812_red_all_on();
-		}
-		else
-		{
-			if ( BLE_DEVICE_ID_0 == ble_mode_device_id_get() )
-			{
-				// ws2812_green_all_on();
-			}
-			else
-			{
-				// ws2812_cyan_all_on();
-			}
-		}
 	#elif (PROJECT_ID == PID_S600)
 		gpio_write( device_led.gpio_led, LED_OFF );
 	#else
@@ -169,29 +89,6 @@ void device_led_on_off(u8 on)
 	#elif LED_RGB_BAT_DPI_ENABLE
 		LED_DPI_BAT_R_ACT( LED_RGB_DPI_BAT_OFF );
 		LED_DPI_BAT_B_ACT( LED_RGB_DPI_BAT_OFF );
-	#elif (PROJECT_ID == PID_NR300)
-		if ( RF_2M_2P4G_MODE == mcu_mode_get() )
-		{
-			gpio_write( device_led.gpio_led, LED_ON );
-		}
-		else
-		{
-			if ( BLE_DEVICE_ID_0 == ble_mode_device_id_get() )
-			{
-				gpio_write( PIN_BLE1_LED, LED_ON );
-			}
-			else
-			{
-				gpio_write( device_led.gpio_led, LED_ON );
-				gpio_write( PIN_24G_LED, LED_ON );
-			}
-		}
-	#elif (PROJECT_ID == PID_535)
-		gpio_write( PIN_24G_LED,  LED_ON );
-		gpio_write( PIN_BLE1_LED, LED_ON );
-		gpio_write( PIN_BLE2_LED, LED_ON );
-	#elif (PROJECT_ID == PID_4027)
-		// do nothing
 	#elif (PROJECT_ID == PID_104)
 		// ws2812_all_off();
 	#elif (PROJECT_ID == PID_S600)
@@ -300,16 +197,6 @@ void led_proc(void)
 			}
 		}
 	}
-
-#if (PROJECT_ID == PID_104)
-	if ( 0 == device_led.repeatCount )
-	{
-		if ( LED_ADV_SUCC == led_adv_sta )
-		{
-			led_adv_sta = LED_ADV_OFF;
-		}
-	}
-#endif
 
 }
 

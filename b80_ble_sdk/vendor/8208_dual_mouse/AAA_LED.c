@@ -24,15 +24,6 @@
 #include "AAA_LED.h"
 #include "main.h"
 
-#if (MODULE_MCU_EXTERNAL_ENABLE)
-	#include "../module/AAA_mcu_ext.h"
-#endif
-
-
-#if Dongle_Lark_A1_Flash_Enable
-    extern unsigned char gc_lark_flash_pair;
-#endif
-
 #if LED_RGB_DPI_ACTION_ENABLE
 	extern unsigned char battery_low_flag_status(void);
 #endif
@@ -41,12 +32,6 @@
 	extern unsigned char led_color_logo_onoff_get(void);
 #endif
 
-#if (0)
-	extern void ws2812_red_all_on(void);
-	extern void ws2812_green_all_on(void);
-	extern void ws2812_cyan_all_on(void);
-	extern void ws2812_all_off(void);
-#endif
 
 typedef enum
 {
@@ -85,37 +70,6 @@ void led_connect_none_status_clear(void)
 		led_status_flag.led_all_on = 0;
 	}
 }
-
-#if (PROJECT_ID == PID_MS2360)
-void led_flick_times(unsigned char N_times, unsigned int Delyatime)
-{
-	unsigned char i = 0, k = 0;
-
-#if LED_BAT_VOLTAGE_ENABLE
-	gpio_higsesistance_config(PIN_BAT_DPI_LED);
-#endif
-
-	for ( i = 0; i < N_times; i++,k++ )
-	{
-	#if LED_BAT_VOLTAGE_ENABLE
-		if ( 0 == (k % 2) )
-		{
-			gpio_output_config_status(PIN_BAT_DPI_LED, LED_OFF);
-		}
-		else
-		{
-			gpio_higsesistance_config(PIN_BAT_DPI_LED);
-		}
-	#endif
-
-		sleep_ms(Delyatime);
-
-	#if (MODULE_32K_WATCHDOG_ENABLE)
-		wd_32k_clear(); //clear 32k watch dog
-	#endif
-	}
-}
-#endif
 
 void led_g24_conn_status_set(void)
 {
@@ -715,14 +669,6 @@ void vbat_led_proc()
 
 }
 
-#if (PROJECT_ID == PID_0120)
-	void led_adv_all_off(void)
-	{
-		gpio_write( PIN_24G_LED, LED_OFF );
-		gpio_write( PIN_BLE1_LED, LED_OFF );
-		gpio_write( PIN_BLE2_LED, LED_OFF );
-	}
-#endif
 
 #if BATT_LOWER_METHOD_22_ENABLE
 

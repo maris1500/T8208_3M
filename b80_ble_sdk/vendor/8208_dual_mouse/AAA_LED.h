@@ -62,11 +62,5 @@ void led_low_batt_insert(unsigned char flag);
 void led_battery_capacity_display(LED_TYPE_DIS_EN type);
 void bat_charging_led_indicate(LED_TYPE_DIS_EN type);
 
-
-#if (PROJECT_ID == PID_G3750)
-	void dpi_led_three_insert(unsigned char times);
-	void dpi_led_three_pro(void);
-#endif
-
 #endif /* AAA_LED_H_*/
 

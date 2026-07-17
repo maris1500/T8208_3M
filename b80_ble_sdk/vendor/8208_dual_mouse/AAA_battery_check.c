@@ -157,75 +157,8 @@ unsigned char battary_cacl_cap_new(unsigned short vol)
 		{
 			Baifen = 1;
 		}
-	#elif (PROJECT_ID == PID_2187) || (PROJECT_ID == PID_0120)  || (PROJECT_ID == PID_S600)
-		if ( vol >= 4100 )
-		{
-			Baifen = 100;
-		}
-		else if ( vol > 3100 )
-		{
-			if ( vol >= 3800 )
-			{
-				max_vol_mv = 4000; min_vol_mv = 3800;
-				max_perc   = 100;  min_perc   = 70;
-			}
-			else if ( vol >= 3600 )
-			{
-				max_vol_mv = 3800; min_vol_mv = 3600;
-				max_perc   = 70;   min_perc   = 40;
-			}
-			else if ( vol >= 3400 )
-			{
-				max_vol_mv = 3600; min_vol_mv = 3400;
-				max_perc   = 40;   min_perc   = 6;
-			}
-			else
-			{
-				max_vol_mv = 3400; min_vol_mv = 3100;
-				max_perc   = 5;   min_perc   = 1;
-			}
-			k_tem =  (max_vol_mv - min_vol_mv)  / (max_perc - min_perc) ;
-			Baifen = ( vol - min_vol_mv ) / k_tem + min_perc;
-		}
-		else
-		{
-			Baifen = 1;
-		}
-	#elif (PROJECT_ID == PID_MS2360) || (PROJECT_ID == PID_104)
-		if ( vol >= 4100 )
-		{
-			Baifen = 100;
-		}
-	    else if ( vol > 3200 )
-		{
-			if ( vol >= 3800 )
-			{
-				max_vol_mv = 4100; min_vol_mv = 3800;
-				max_perc   = 100;  min_perc   = 70;
-			}
-			else if ( vol >= 3600 )
-			{
-				max_vol_mv = 3800; min_vol_mv = 3600;
-				max_perc   = 70;   min_perc   = 35;
-			}
-			else if ( vol >= 3400 )
-			{
-				max_vol_mv = 3600; min_vol_mv = 3400;
-				max_perc   = 35;   min_perc   = 10;
-			}
-			else
-			{
-				max_vol_mv = 3400; min_vol_mv = 3200;
-				max_perc   = 10;   min_perc   = 1;
-			}
-			k_tem =  (max_vol_mv - min_vol_mv)  / (max_perc - min_perc) ;
-			Baifen = ( vol - min_vol_mv ) / k_tem + min_perc;
-	  }
-	  else
-	  {
-	    	Baifen = 1;
-	  }
-	#elif BATT_CACL_METHOD_ENABLE
+	#elif (PROJECT_ID == PID_Q15)
+
 		if ( vol >= 4100 )
 		{
 			Baifen = 100;
@@ -296,111 +229,8 @@ unsigned char battary_cacl_cap_new(unsigned short vol)
 	#endif
 #elif (BATT_CACL_1500mV_ENABLE)
 
-	#if  (PROJECT_ID == PID_MS631) || (PROJECT_ID == PID_MS358B)
-		if (vol >= 1450)
-		{
-			Baifen = 100;
-		}
-		else if ( vol > 900 )
-		{
-			if ( vol >= 1350 )
-			{
-				max_vol_mv = 1450;  min_vol_mv = 1350;
-				max_perc   = 100;   min_perc   = 55;
-			}
-			else if ( vol >= 1200 )
-			{
-				max_vol_mv = 1350; min_vol_mv = 1200;
-				max_perc   = 55;   min_perc   = 20;
-			}
-			else if ( vol >= 1100 )
-			{
-				max_vol_mv = 1200; min_vol_mv = 1100;
-				max_perc   = 20;   min_perc   = 10;
-			}
-			else
-			{
-				max_vol_mv = 1100; min_vol_mv = 900;
-				max_perc   = 10;    min_perc   = 2;
-			}
-			k_tem = (max_vol_mv - min_vol_mv) / (max_perc - min_perc) ;
-			Baifen = ( vol - min_vol_mv ) / k_tem + min_perc;
-		}
-		else
-		{
-			Baifen = 1;
-		}
-	#else
-		if (vol >= 1450)
-		{
-			Baifen = 100;
-		}
-		else if ( vol > 1000 )
-		{
-			if ( vol >= 1350 )
-			{
-				max_vol_mv = 1450;  min_vol_mv = 1350;
-				max_perc   = 100;   min_perc   = 55;
-			}
-			else if ( vol >= 1200 )
-			{
-				max_vol_mv = 1350; min_vol_mv = 1200;
-				max_perc   = 55;   min_perc   = 20;
-			}
-			else if ( vol >= 1100 )
-			{
-				max_vol_mv = 1200; min_vol_mv = 1100;
-				max_perc   = 20;   min_perc   = 10;
-			}
-			else
-			{
-				max_vol_mv = 1100; min_vol_mv = 1000;
-				max_perc   = 10;    min_perc   = 2;
-			}
-			k_tem = (max_vol_mv - min_vol_mv) / (max_perc - min_perc) ;
-			Baifen = ( vol - min_vol_mv ) / k_tem + min_perc;
-		}
-		else
-		{
-			Baifen = 1;
-		}
-	#endif
-
 #elif BATT_CACL_3000mV_ENABLE
-	if ( vol >= 2900 )
-	{
-		Baifen = 100;
-	}
-	else if ( vol >= 2100 )
-	{
-		if ( vol >= 2800 )
-		{
-			max_vol_mv = 3000; min_vol_mv = 2800;
-			max_perc   = 100;  min_perc   = 70;
-		}
-		else if ( vol >= 2600 )
-		{
-			max_vol_mv = 2800; min_vol_mv = 2600;
-			max_perc   = 70;   min_perc   = 35;
-		}
-		else if ( vol >= 2400 )
-		{
-			max_vol_mv = 2800; min_vol_mv = 2400;
-			max_perc   = 35;   min_perc   = 15;
-		}
-		else
-		{
-			max_vol_mv = 2400; min_vol_mv = 2100;
-			max_perc   = 15;   min_perc   = 2;
-		}
 
-		k_tem = (max_vol_mv - min_vol_mv) / (max_perc - min_perc) ;
-		Baifen = ( vol - min_vol_mv ) / k_tem + min_perc;
-	}
-	else
-	{
-		Baifen = 1;
-	}
 #endif
 
 	if ( Baifen >= 100 ) { Baifen = 100; }
@@ -458,7 +288,7 @@ void battery_voltage_compensation(unsigned short int vol)
 	extern void led_flick_times(unsigned char,  unsigned int);
 #endif
 
-#if (PROJECT_ID == PID_660) || (PROJECT_ID == PID_FX282)  || (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_DMS157) || VOLTAGE_TEMP_HANDLE_ENABLE
+#if VOLTAGE_TEMP_HANDLE_ENABLE
  	extern unsigned char gc_vol_cap_reg_temp;
 #endif
 
@@ -513,7 +343,7 @@ void user_battery_power_check()
 
 	static u16 batt_vol_curr = 0;
 
-#if (PROJECT_ID == PID_660) || (PROJECT_ID == PID_FX282) || (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_DMS157)  || VOLTAGE_TEMP_HANDLE_ENABLE
+#if VOLTAGE_TEMP_HANDLE_ENABLE
 	static unsigned char sc_reg_use_flag = 0;
 #endif
 
@@ -523,176 +353,10 @@ void user_battery_power_check()
 
 	battery_voltage_compensation(bat_mv.batt_vol);
 
-#if (PROJECT_ID == PID_601)
-	if ( fun_mode == RF_2M_2P4G_MODE )
-		bat_mv.batt_vol += 73;
-	else
-		bat_mv.batt_vol += 80;
-#endif
-
-#if (PROJECT_ID == PID_S600)
-	if ( fun_mode == RF_1M_BLE_MODE )
-		bat_mv.batt_vol += 285;
-#endif
-
-#if (PROJECT_ID == PID_BM2060)
-	bat_mv.batt_vol += 20;
-#endif
-
-#if (PROJECT_ID == PID_104)
-	bat_mv.batt_vol += 310;
-#endif
-
-#if (PROJECT_ID == PID_HM660)
-	if ( fun_mode == RF_2M_2P4G_MODE )
+#if (PROJECT_ID == PID_Q15)
+	if ( bat_mv.batt_vol >= 3700  )
 	{
-		bat_mv.batt_vol += 40;
-	}
-	else
-	{
-		bat_mv.batt_vol += 333;
-	}
-#endif
-
-#if (PROJECT_ID == PID_DMS157)
-	if ( fun_mode == RF_2M_2P4G_MODE )
-	{
-		bat_mv.batt_vol += 345;
-	}
-	else
-	{
-		bat_mv.batt_vol += 335;
-	}
-#endif
-
-#if (PROJECT_ID == PID_RM12)
-	if ( fun_mode == RF_2M_2P4G_MODE )
-	{
-		bat_mv.batt_vol += 331;
-	}
-	else
-	{
-		bat_mv.batt_vol += 315;
-	}
-#endif
-
-
-#if (PROJECT_ID == PID_2223)
-	bat_mv.batt_vol += 55;
-#endif
-
-#if (PROJECT_ID == PID_MS13)
-	if ( fun_mode == RF_2M_2P4G_MODE )
-	{
-		bat_mv.batt_vol += 30;
-	}
-	else
-	{
-		bat_mv.batt_vol += 320;
-	}
-#endif
-
-#if (PROJECT_ID == PID_DMS06)
-	 if ( fun_mode == RF_1M_BLE_MODE )
-	 {
-		 bat_mv.batt_vol = bat_mv.batt_vol + 315;
-	 }
-#endif
-
-#if (PROJECT_ID == PID_V106)
-	if ( fun_mode == RF_1M_BLE_MODE )
-	{
-		bat_mv.batt_vol += 255;
-	}
-	else
-	{
-		bat_mv.batt_vol -= 45;
-	}
-#endif
-
-#if (PROJECT_ID == PID_660)
-
-	#if MOUSE_660_HW_2_ENABLE
-		bat_mv.batt_vol += 325;
-	#else
-		if ( fun_mode == RF_1M_BLE_MODE )
-		{
-			 bat_mv.batt_vol += 280;
-		}
-		else
-		{
-			if ( bat_mv.batt_vol > 3500 )
-				bat_mv.batt_vol -= 42;
-		}
-	#endif
-
-#endif
-
-
-#if (PROJECT_ID == PID_HM668)
-	if (  (connect_ok) && (!flash_dev_info.code_led_sw) )
-	{
-		if ( idle_count <= BATT_DISPLAY_TUBE_ON_TIME_MAX )
-		{
-			bat_mv.batt_vol += 395;
-		}
-		else
-		{
-			bat_mv.batt_vol += 342;
-		}
-	}
-	else
-	{
-		bat_mv.batt_vol += 342;
-	}
-
-	if ( fun_mode == RF_2M_2P4G_MODE )
-	{
-		if ( gc_hm668_battery_try_times <= 2 )
-		{
-			bat_mv.batt_vol += 20;
-		}
-	}
-#endif
-
-
-#if (PROJECT_ID == PID_S008)
-	if ( fun_mode == RF_1M_BLE_MODE )
-	{
-		 bat_mv.batt_vol += 300;
-	}
-#endif
-
-#if (PROJECT_ID == PID_FX282)
-	if ( fun_mode == RF_2M_2P4G_MODE )
-	{
-		if ( bat_mv.batt_vol < 3365 )
-			bat_mv.batt_vol += 321;
-		else
-			bat_mv.batt_vol += 315;
-	}
-	else
-	{
-		bat_mv.batt_vol += 335;
-	}
-#endif
-
-#if (PROJECT_ID == PID_XT27)
-	bat_mv.batt_vol += 255;
-#endif
-
-#if (PROJECT_ID == PID_4027)
-	bat_mv.batt_vol += 325;
-#endif
-
-#if (PROJECT_ID == PID_E368_CHARGE)
-	if ( fun_mode == RF_2M_2P4G_MODE )
-	{
-		bat_mv.batt_vol += 43;
-	}
-	else
-	{
-		bat_mv.batt_vol += 345;
+		bat_mv.batt_vol -= 10;
 	}
 #endif
 
@@ -730,16 +394,11 @@ void user_battery_power_check()
 	}
 	else
 	{
-
 	#if(PROJECT_ID == PID_TB129)
 		batt_vol_curr = (batt_vol_curr*9 + bat_mv.batt_vol)/10;
 	#endif
 	}
 	
-#if (PROJECT_ID == PID_HM668)
-	batt_vol_curr = (batt_vol_curr*9 + bat_mv.batt_vol)/10;
-#endif
-
 #if BATT_VOLTAGE_SMOOTH_ENABLE
 	batt_vol_curr = (batt_vol_curr*9 + bat_mv.batt_vol)/10;
 #endif
@@ -757,8 +416,6 @@ void user_battery_power_check()
 
 	if (batt_vol_curr <= bat_mv.shutdown_vol) 
 	{
-		// printf("low bat enter deep\n");
-
 		#if (LED_BATT_CAP_LEVEL_ENABLE)
 			if ( !batt_charg_ing() )
 			{
@@ -768,28 +425,9 @@ void user_battery_power_check()
 			bat_flag.low_batt = 1;
 		#else
 
-			#if (PROJECT_ID == PID_MS2360)
-				led_flick_times(10, 100);
-			#endif
+			#if USB_5V_CHECK_ENABLE || CHARGE_ENABLE
 
-		#if USB_5V_CHECK_ENABLE || CHARGE_ENABLE
-
-			#if (PROJECT_ID == PID_660)
-
-				if ( battery_shut_check_charge() )
-				{
-					// do nothing
-				}
-				else
-				{
-					enter_deep_aaa(BATTERT_SHUTDOWN_ENTER_DEEPSLEEP_ANA_AAA);
-				}
-
-			#else
-
-				#if USB_5V_CHECK_ENABLE && CHARGE_ENABLE
-					if ( USB_IN() || CHARGE_IN() )
-				#elif USB_5V_CHECK_ENABLE
+				#if USB_5V_CHECK_ENABLE
 					if ( USB_IN() )
 				#elif USB_MODE_ENABLE
 					if ( USB_OUT() || CHARGE_IN() )
@@ -801,16 +439,12 @@ void user_battery_power_check()
 					}
 					else
 					{
-					//	enter_deep_aaa(BATTERT_SHUTDOWN_ENTER_DEEPSLEEP_ANA_AAA);
+						enter_deep_aaa(BATTERT_SHUTDOWN_ENTER_DEEPSLEEP_ANA_AAA);
 					}
 
+			#else
+				enter_deep_aaa(BATTERT_SHUTDOWN_ENTER_DEEPSLEEP_ANA_AAA);
 			#endif
-		
-		#else
-
-			enter_deep_aaa(BATTERT_SHUTDOWN_ENTER_DEEPSLEEP_ANA_AAA);
-
-		#endif
 
 		#endif
 
@@ -844,14 +478,9 @@ void user_battery_power_check()
 	
 	bat_flag.power_on = 0;
 
-#if LED_BATT_CAP_LEVEL_ENABLE
-	CHARGE_OPEN();
-	batt_charge_switch_set( BATT_CHARGE_OPEN );
-#endif
-
 	bat_mv.percent = battary_cacl_cap_new( batt_vol_curr );
 
-#if (PROJECT_ID == PID_660) || (PROJECT_ID == PID_FX282) || (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_DMS157) || VOLTAGE_TEMP_HANDLE_ENABLE
+#if VOLTAGE_TEMP_HANDLE_ENABLE
 
 	if ( 0 == sc_reg_use_flag )
 	{
@@ -893,26 +522,6 @@ void user_battery_power_check()
 #endif
 
 
-#if (PROJECT_ID == PID_HM668)
-	if ( gc_hm668_battery_try_times < 2 )
-	{
-		return;
-	}
-#endif
-
-#if (PROJECT_ID == PID_535)
-	extern void vbat_lower_22_led_show(void);
-
-	if ( connect_ok && bat_flag.low_batt )
-	{
-		if ( idle_count <= 10 )
-		{
-			vbat_lower_22_led_show();
-		}
-	}
-
-#endif
-
 #if LED_BAT_VOLTAGE_ENABLE
 	#if (PROJECT_ID == PID_M710)
 		// do nothing
@@ -929,19 +538,9 @@ void user_battery_power_check()
 
 				if( (connect_ok == 1) && (sl_test_vabat_count >= 2) )
 				{
-					#if LED_DPI_VBAT_DIFF_ENABLE
-						 sc_bat_dpi_flag = LED_DIFF_BATTERY_LOW;
-					#endif
 
 				#if (PROJECT_ID == PID_M388)
-				    if ( 0 == bat_flag.connect_bat_lower_flag )
-				    {
-				    	idle_count = 0;// do nothing
-				    }
-				#elif (PROJECT_ID == PID_HM668) || (PROJECT_ID == PID_DMS157) || (PROJECT_ID == PID_RM12)
-				    // do nothing
-				#elif (PROJECT_ID == PID_535)
-				   //
+					//
 				#elif (MODULE_MCU_EXTERNAL_ENABLE)
 					ext_mcu_lvd_logo.lvd_act = 1;
 					ext_mcu_lvd_logo.lvd_send_times = 0;
@@ -1057,72 +656,19 @@ void charge_plugin_check(void)
 #endif
 }
 
-/**
- * @brief 	Battery detection polling
- * @param	none
- * @return	none
- */
 void user_batt_check_proc()
 {
-#if (PROJECT_ID == PID_HM668)
-	unsigned int HM668_BATT_TIME_CHECK = 0;
-#endif
+	#define BATT_SAMPLING_TIME   10*1000*1000
 
-#if LED_BATT_CAP_LEVEL_ENABLE
-	#define BATT_SAMPLING_TIME   500000UL
-#elif (PROJECT_ID == PID_535)
-	#define BATT_SAMPLING_TIME   300000UL
-#else
-	#define BATT_SAMPLING_TIME   20*1000*1000
-#endif
-
-
-#if (LED_BATT_CAP_LEVEL_ENABLE)
-	if ( batt_charge_stop_read_cap() )
-	{
-		return;
-	}
-#endif
-
-#if (PROJECT_ID == PID_G3750) || (PROJECT_ID == PID_G3760) || (PROJECT_ID == PID_TB114)
-	 bat_flag.power_on = 0;
-#endif
-
-#if (PROJECT_ID == PID_HM668)
-
-	 if ( gc_hm668_battery_try_times <= 2 )
-	 {
-		 HM668_BATT_TIME_CHECK = 400*1000;
-	 }
-	 else
-	 {
-		 HM668_BATT_TIME_CHECK = 10*1000*1000;
-	 }
-
-	 if( bat_flag.power_on  || clock_time_exceed(bat_mv.batt_detc_tick, HM668_BATT_TIME_CHECK) ) //100000
-#else
 	if( bat_flag.power_on  || clock_time_exceed(bat_mv.batt_detc_tick, BATT_SAMPLING_TIME) ) //100000
-#endif
 	{
-		#if (PROJECT_ID == PID_2223)
-			user_batt_check_init();
-		#endif
-
 		bat_mv.batt_detc_tick = clock_time();
-
-		#if (PROJECT_ID == PID_HM668)
-			 if ( gc_hm668_battery_try_times <= 2 )
-			 {
-				 gc_hm668_battery_try_times++;
-			 }
-		#endif
 
 		#if (ADC_TO_GPIO_MODE_EN)
 			bat_flag.power_on = 0;
 			adc_to_mode_gpio_pin_init();
 			if( 0 == gpio_read(PIN_BTN_MODE) )
 			{
-				printf("---->vbat return \n");
 				 return;
 			}
 		#endif
