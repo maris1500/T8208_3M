@@ -258,31 +258,37 @@ unsigned short int web_key_dpi_function(void)
 	if ( web_key_nomal(KEY_DPI_INDEX) )
 	{
 		now_value |= gc_web_data.key[KEY_DPI_INDEX - 1].value ;
+		printf("d1 \n");
 	}
 	else if ( web_key_dpi(KEY_DPI_INDEX) )
 	{
 		now_value |= KEY_BTN_CPI;
 		web_key_special_tab[KEY_DPI_INDEX-1] = WEB_KEY_DPI;
+		printf("d2 \n");
 	}
 	else if ( web_key_office(KEY_DPI_INDEX) )
 	{
 		now_value |= KEY_WEB_OFFICE;
 		web_key_special_tab[KEY_DPI_INDEX-1] = WEB_KEY_OFFICE;
+		printf("d3 \n");
 	}
 	else if ( web_key_media(KEY_DPI_INDEX) )
 	{
 		now_value |= KEY_WEB_MEDIA;
 		web_key_special_tab[KEY_DPI_INDEX-1] = WEB_KEY_MEDIA;
+		printf("d4 \n");
 	}
 	else if ( web_key_fire(KEY_DPI_INDEX) )
 	{
 		now_value |= KEY_WEB_FIRE;
 		web_key_special_tab[KEY_DPI_INDEX-1] = WEB_KEY_FIRE;
+		printf("d5 \n");
 	}
 	else if ( web_key_macro(KEY_DPI_INDEX) )
 	{
 		now_value |= KEY_WEB_MACRO;
 		web_key_special_tab[KEY_DPI_INDEX-1] = WEB_KEY_MACRO;
+		printf("d6 \n");
 	}
 	else
 	{

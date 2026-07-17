@@ -78,6 +78,7 @@
 
 #define MOUSE_REPORT_250HZ_ENABLE     0
 #define MOUSE_REPORT_500HZ_ENABLE     1
+#define MOUSE_REPORT_1000HZ_ENABLE    0
 #define MOUSE_REPORT_20HZ_ENABLE      0
 
 #define SWITCH_MODE_ENABLE              0
@@ -333,10 +334,10 @@
 #endif
 
 
-#define DEBUG_MODE  1
+#define DEBUG_MODE  0
 
 #if DEBUG_MODE
-	#define PRINT_BAUD_RATE       10000    // 1M baud rate,should Not bigger than 1Mb/s
+	#define PRINT_BAUD_RATE       100000    // 1M baud rate,should Not bigger than 1Mb/s
 	#define DEBUG_INFO_TX_PIN     GPIO_PA3 // Software uart printing gpio
 #endif
 

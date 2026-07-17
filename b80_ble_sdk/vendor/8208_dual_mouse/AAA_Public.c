@@ -2279,7 +2279,7 @@ void btn_set_wakeup_level_suspend(u8 enable)
 	}
 
 
-	#if (0 == DEBUG_MODE)
+	#if 1 //(0 == DEBUG_MODE)
 		if ( 0 == gpio_read(PIN_BTN_MIDDLE) )
 		{
 			cpu_set_gpio_wakeup(PIN_BTN_MIDDLE,  1,  enable);

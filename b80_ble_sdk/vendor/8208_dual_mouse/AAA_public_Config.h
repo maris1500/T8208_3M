@@ -266,7 +266,6 @@ extern km_3_c_1_data_t * km_data_point(void);
 	}web_key_index_en;
 
 	typedef enum {
-
 		WEB_KEY_NOMAL = 0x10,
 		WEB_KEY_FIRE  = 0x30,
 		WEB_KEY_DPI   = 0x40,

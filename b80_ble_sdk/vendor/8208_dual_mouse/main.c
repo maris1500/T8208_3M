@@ -109,6 +109,8 @@ mouse_sta_t gc_mouse_sta;
 	_attribute_data_retention_user u8 report_rate = 2;
 #elif MOUSE_REPORT_20HZ_ENABLE
 	_attribute_data_retention_user u8 report_rate = 50;
+#elif MOUSE_REPORT_1000HZ_ENABLE
+	_attribute_data_retention_user u8 report_rate = 1;
 #else
 	_attribute_data_retention_user u8 report_rate = 8;	//2.4G reporting rate 8--125hz
 #endif
@@ -959,8 +961,6 @@ int main(void) //run in ramcode
 		  // suspend_wake_up_enable && (blc_ll_getCurrentState() == BLS_LINK_STATE_CONN
     	  // printf("m=%d,%d,%d,%d,%d \n", suspend_wake_up_enable, blc_ll_getCurrentState(), bls_ll_getConnectionInterval(), bls_ll_getConnectionLatency(), bls_ll_getConnectionTimeout());
        }
-
-     //  printf("REG02=%1x 07=%1x\n\n", I2C_PAN3204LL_ReadRegister(0x02), I2C_PAN3204LL_ReadRegister(0x07));
     }
 #endif
 

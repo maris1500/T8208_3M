@@ -952,8 +952,8 @@ void d24_main_loop()
 
 	if (device_status == STATE_NORMAL)
 	{
-	#if (PROJECT_ID == PID_601) || (PROJECT_ID == PID_660)
-		temp = report_rate*1000 - 75; //unit 1us
+	#if (PROJECT_ID == PID_Q15)
+		temp = report_rate*1000 - 200; //unit 1us
 	#else
 		temp = report_rate*1000;
 	#endif
