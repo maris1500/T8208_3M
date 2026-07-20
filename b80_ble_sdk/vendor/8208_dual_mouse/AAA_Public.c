@@ -2273,7 +2273,7 @@ _attribute_ram_code_ u16 btn_scan()
 	}
 	else
 	{
-		web_key_special_reset(KEY_LEFT_INDEX);
+		 web_key_special_reset(KEY_LEFT_INDEX);
 	}
 
 
@@ -2296,7 +2296,7 @@ _attribute_ram_code_ u16 btn_scan()
 	}
 	else
 	{
-		web_key_special_reset(KEY_RIGHT_INDEX);
+		  web_key_special_reset(KEY_RIGHT_INDEX);
 	}
 
 	button_status = button_get_status(PIN_BTN_MIDDLE); //check pin middle
@@ -2318,7 +2318,7 @@ _attribute_ram_code_ u16 btn_scan()
 	}
 	else
 	{
-		web_key_special_reset(KEY_MIDDLE_INDEX);
+		 web_key_special_reset(KEY_MIDDLE_INDEX);
 	}
 
 #if  KEY_PAIR_USED_POWERUP_ENABLE
@@ -2372,7 +2372,7 @@ _attribute_ram_code_ u16 btn_scan()
 	}
 	else
 	{
-		web_key_special_reset(KEY_K4_INDEX);
+		 web_key_special_reset(KEY_K4_INDEX);
 	}
 #endif
 
@@ -2387,7 +2387,7 @@ _attribute_ram_code_ u16 btn_scan()
 	}
 	else
 	{
-		web_key_special_reset(KEY_K5_INDEX);
+		 web_key_special_reset(KEY_K5_INDEX);
 	}
 #endif
 
@@ -3129,4 +3129,5 @@ void enter_deep_aaa(ANA_STATUS_AAA reason)
     cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0); //Enter deep sleep
 #endif
 }
+
 

@@ -735,6 +735,7 @@ int main(void) //run in ramcode
 			if ( USB_SWITCH_ON() )
 			{
 				fun_mode = RF_USB_MODE;
+				flash_dev_info.mode = RF_USB_MODE;
 				printf("USB MODE :RF_USB_MODE \n ");
 			}
 		#else
