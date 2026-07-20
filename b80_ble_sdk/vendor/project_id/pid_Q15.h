@@ -334,7 +334,7 @@
 #endif
 
 
-#define DEBUG_MODE  1
+#define DEBUG_MODE  0
 
 #if DEBUG_MODE
 	#define PRINT_BAUD_RATE       100000    // 1M baud rate,should Not bigger than 1Mb/s

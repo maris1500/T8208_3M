@@ -708,29 +708,39 @@ void dpi_rgb_display(void)
 		return;
 	}
 
+	if ( 3 == rgb_breath_flag )
+	{
+		if ( clock_time_exceed(rgb_breath_tick, 800*1000) )
+		{
+			rgb_breath_tick = clock_time();
+			rgb_breath_flag = 1;
+		}
+		return;
+	}
+
 	if ( clock_time_exceed(rgb_breath_tick, 10*1000) )
 	{
 		rgb_breath_tick = clock_time();
 
-		if ( rgb_breath_flag )
+		if ( 1 == rgb_breath_flag )
 		{
 			if (rgb_breath_duty < LED_MAX_1_DUTY)
-				rgb_breath_duty -= 1;
+				rgb_breath_duty -= 5;
 			else
-				rgb_breath_duty -= 25; // 20
+				rgb_breath_duty -= 35; // 20
 
 			if ( rgb_breath_duty <= LED_MIN_2_DUTY )
 			{
-				rgb_breath_flag = 0;
+				rgb_breath_flag = 2;
 				rgb_breath_duty = LED_MIN_2_DUTY;
 			}
 		}
 		else
 		{
-			rgb_breath_duty += 15;
+			rgb_breath_duty += 20;
 			if ( rgb_breath_duty >= PWM_MAX_SCALE )
 			{
-				rgb_breath_flag = 1;
+				rgb_breath_flag = 3;
 				rgb_breath_duty = PWM_MAX_SCALE;
 				rgb_breath_cycle++;
 			}
@@ -742,7 +752,7 @@ void dpi_rgb_display(void)
 	if ( rgb_breath_cycle >= LED_MAX_BREATH_CYCLE )
 	{
 		rgb_breath_duty = PWM_MAX_SCALE;
-		gl_cpi_change_flag = 1;
+		gl_cpi_change_flag = 0;
 		rgb_breath_flag = 1;
 		rgb_breath_cycle = 0;
 	}

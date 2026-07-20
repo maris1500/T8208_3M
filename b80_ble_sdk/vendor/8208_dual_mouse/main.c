@@ -898,7 +898,7 @@ int main(void) //run in ramcode
 	#endif
 
 	#if	DPI_RGB_SET_ENABLE
-		// dpi_rgb_display();
+		 dpi_rgb_display();
 	#endif
 
 #if (DEBUG_MODE)
