@@ -77,8 +77,8 @@
 #define DEVICE_NAME_2  "BOW5.0 BT2"
 
 #define MOUSE_REPORT_250HZ_ENABLE     0
-#define MOUSE_REPORT_500HZ_ENABLE     1
-#define MOUSE_REPORT_1000HZ_ENABLE    0
+#define MOUSE_REPORT_500HZ_ENABLE     0
+#define MOUSE_REPORT_1000HZ_ENABLE    1
 #define MOUSE_REPORT_20HZ_ENABLE      0
 
 #define SWITCH_MODE_ENABLE              0
@@ -334,7 +334,7 @@
 #endif
 
 
-#define DEBUG_MODE  1
+#define DEBUG_MODE  0
 
 #if DEBUG_MODE
 	#define PRINT_BAUD_RATE       100000    // 1M baud rate,should Not bigger than 1Mb/s
