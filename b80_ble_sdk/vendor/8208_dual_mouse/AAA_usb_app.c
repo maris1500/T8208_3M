@@ -1261,6 +1261,8 @@ void usb_main_loop(void)
 		connect_ok = 1;
 	#if MOUSE_REPORT_250HZ_ENABLE
 		temp = 4000;
+	#elif MOUSE_REPORT_1000HZ_ENABLE
+		temp = 1000;
 	#else
 		temp = 8000; //unit 1us
 	#endif
@@ -1285,8 +1287,9 @@ void usb_main_loop(void)
 
 	if (clock_time_exceed(tick_usb_loop, temp) )
 	{
-		tick_usb_loop += report_rate*CLOCK_16M_SYS_TIMER_CLK_1MS;//loop update
- 		//is_new_event = get_data_report_aaa();
+		// tick_usb_loop += report_rate*CLOCK_16M_SYS_TIMER_CLK_1MS;//loop update
+ 		// is_new_event = get_data_report_aaa();
+		tick_usb_loop = clock_time() | 1;
 		get_usb_data_report_aaa();
 	}
 

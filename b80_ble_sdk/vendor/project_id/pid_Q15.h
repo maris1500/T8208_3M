@@ -26,7 +26,7 @@
 
 #define G24_MODE_ENABLE     1
 #define BLE_MODE_ENABLE     1
-#define USB_MODE_ENABLE     0
+#define USB_MODE_ENABLE     1
 
 #define LED_G24_ENABLE      1
 #define LED_BT1_ENABLE      1
@@ -411,7 +411,7 @@
 #endif
 
 #define DPI_S210B_3065XY_DEFAULT_ENABLE  1
-#define DPI_3065XY_FOUR_LEVEL_ENABLE     1
+#define DPI_3065XY_FOUR_LEVEL_ENABLE     0
 
 #define LED_DPI_VBAT_DIFF_ENABLE   0
 

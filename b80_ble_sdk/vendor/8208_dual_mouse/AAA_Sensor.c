@@ -1398,6 +1398,7 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
 
 	//sensor ph5205 no overflow read
 
+#if 0
 	if ((sensor_type == SENSOR_PAW3212) || (sensor_type == SENSOR_OM18) || (sensor_type == SENSOR_KA8G2) || (sensor_type == SENSOR_PAW3805EK_CJV1) 
 		|| (sensor_type == SENSOR_PAW3104DB_TXDT) || (sensor_type == SENSOR_PAW3220DB_TJDL) || (sensor_type == SENSOR_SG8670) )
 	{
@@ -1408,12 +1409,15 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
 	{
 		no_overflow = 1;
 	}
+#endif
 
-	ms_data.x = 0;
-	ms_data.y = 0;
+	if ( sensor_type == SENSOR_3311 )
+	{
+		no_overflow = 1;
+	}
 
-#if 1
-	if (OPTSensor_resync(33)==0)
+#if 0
+	if ( OPTSensor_resync(33) == 0 )
 	{
 		return 0;
 	}
@@ -1422,7 +1426,7 @@ unsigned int OPTSensor_motion_report( u32 no_overflow )
 #if SENSOR_MOTION_ENABLE
     if (gpio_read(PIN_SIF_MOTION))
     { //if motion PIN is high level, means sensor have no data, return directly
-     //   return 0;
+        return 0;
     }
 #endif
 
