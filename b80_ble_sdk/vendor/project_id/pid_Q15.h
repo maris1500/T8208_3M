@@ -25,7 +25,7 @@
 #define DEVICE_TYPE_INDEX   DEVICE_MOUSE //1:mouse, 2:keyboard
 
 #define G24_MODE_ENABLE     1
-#define BLE_MODE_ENABLE     1
+#define BLE_MODE_ENABLE     0
 #define USB_MODE_ENABLE     1
 
 #define LED_G24_ENABLE      1
@@ -334,7 +334,7 @@
 #endif
 
 
-#define DEBUG_MODE  0
+#define DEBUG_MODE  1
 
 #if DEBUG_MODE
 	#define PRINT_BAUD_RATE       100000    // 1M baud rate,should Not bigger than 1Mb/s

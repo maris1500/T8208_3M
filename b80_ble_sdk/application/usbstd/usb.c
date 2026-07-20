@@ -1262,7 +1262,7 @@ void usb_handle_irq(void)
 	//usb_hid_report_fifo_proc();
 
 	if (reg_irq_src & FLD_IRQ_USB_RST_EN)
-	{	printf("\r\n reset1");
+	{	// avoid printf here: UART blocks and worsens USB reset storms at 1000Hz
 #if USB_DESCRIPTOR_MY_SELF
 		connect_ok = 0;
 		usb_g_config = 0;

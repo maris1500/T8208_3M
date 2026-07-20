@@ -786,8 +786,6 @@ extern u8 usb_data_eps_ready;
 
 int usb_mouse_hid_report_aaa(u8 report_id,unsigned char * p,u8 len)
 {
-	static u32 mouse_ep_busy_tick;
-
 	if (!connect_ok) {
 		return 0;
 	}
@@ -807,17 +805,10 @@ int usb_mouse_hid_report_aaa(u8 report_id,unsigned char * p,u8 len)
         return 1;
     }
 
-	if(usbhw_is_ep_busy(USB_EDP_MOUSE)){
-		if (!mouse_ep_busy_tick) {
-			mouse_ep_busy_tick = clock_time() | 1;
-		} else if (clock_time_exceed(mouse_ep_busy_tick, 50000)) {
-			reg_usb_ep_ctrl(USB_EDP_MOUSE) = 0;
-			mouse_ep_busy_tick = 0;
-		} else {
-			return 0;
-		}
-    } else {
-		mouse_ep_busy_tick = 0;
+	/* 1000Hz: never force-clear a busy IN EP — clearing mid-transfer causes
+	 * host Bus Reset / disconnect. Keep report in FIFO and retry next loop. */
+	if (usbhw_is_ep_busy(USB_EDP_MOUSE)) {
+		return 0;
 	}
 
 	if ((usb_mouse_report_proto == 0) && (report_id != 1)) {

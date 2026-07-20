@@ -613,25 +613,83 @@ extern u8 connect_ok;
 
 #endif
 
+static void usb_mouse_report_merge(mouse_data_t *dst, const mouse_data_t *src)
+{
+	s32 x = (s32)dst->x + (s32)src->x;
+	s32 y = (s32)dst->y + (s32)src->y;
+	s16 wheel = (s16)dst->wheel + (s16)src->wheel;
+
+	if (x > 32767) {
+		x = 32767;
+	} else if (x < -32768) {
+		x = -32768;
+	}
+	if (y > 32767) {
+		y = 32767;
+	} else if (y < -32768) {
+		y = -32768;
+	}
+	if (wheel > 127) {
+		wheel = 127;
+	} else if (wheel < -128) {
+		wheel = -128;
+	}
+
+	dst->x = (s16)x;
+	dst->y = (s16)y;
+	dst->btn = src->btn;
+	dst->wheel = (s8)wheel;
+	dst->wheel_level = src->wheel_level;
+}
+
 u8 push_usb_fifo_aaa(u8 type,u8 *buf,u8 len)
 {
-#if 1
-	/* get next buffer first address p */
-	USB_DATA_S *p = (USB_DATA_S*)usb_fifo_aaa.fifo[usb_fifo_aaa.wptr & (USB_FIFO_NUM-1)];
+	int fifo_use;
 
-	p->type = type; //save type
-	memcpy(p->buf, buf, len); //save buffer
-
-	usb_fifo_aaa.wptr++; //skip to next buffer
-
-	/* get used fifo's num */
-	int fifo_use = (usb_fifo_aaa.wptr - usb_fifo_aaa.rptr) & (USB_FIFO_NUM*2-1);
-
-	if (fifo_use > USB_FIFO_NUM)
-	{ //used fifo's num overflow
-		usb_fifo_aaa.rptr++; //overlap older data
+#if MOUSE_REPORT_1000HZ_ENABLE
+	/* Fast path: empty queue + EP free → send now, avoid FIFO buildup at 1kHz */
+	if ((type == MOUSE_DATA_TYPE)
+		&& (usb_fifo_aaa.wptr == usb_fifo_aaa.rptr)
+		&& connect_ok
+		&& usb_data_eps_ready
+		&& !usbhw_is_ep_busy(USB_EDP_MOUSE))
+	{
+		if (usb_mouse_hid_report_aaa(1, buf, len))
+		{
+			return 1;
+		}
 	}
 #endif
+
+	fifo_use = (usb_fifo_aaa.wptr - usb_fifo_aaa.rptr) & (USB_FIFO_NUM * 2 - 1);
+
+	/* FIFO full: coalesce mouse XY into last slot instead of dropping packets */
+	if (fifo_use >= USB_FIFO_NUM)
+	{
+		if (type == MOUSE_DATA_TYPE)
+		{
+			USB_DATA_S *last = (USB_DATA_S *)usb_fifo_aaa.fifo[(usb_fifo_aaa.wptr - 1) & (USB_FIFO_NUM - 1)];
+			if (last->type == MOUSE_DATA_TYPE)
+			{
+				usb_mouse_report_merge((mouse_data_t *)last->buf, (const mouse_data_t *)buf);
+				return 1;
+			}
+		}
+		usb_fifo_aaa.rptr++;
+	}
+
+	{
+		USB_DATA_S *p = (USB_DATA_S *)usb_fifo_aaa.fifo[usb_fifo_aaa.wptr & (USB_FIFO_NUM - 1)];
+		u8 copy_len = len;
+
+		if (copy_len > (USB_FIFO_MAX_LEN - 1))
+		{
+			copy_len = USB_FIFO_MAX_LEN - 1;
+		}
+		p->type = type;
+		memcpy(p->buf, buf, copy_len);
+		usb_fifo_aaa.wptr++;
+	}
 
 	return 1;
 }
@@ -1263,6 +1321,8 @@ void usb_main_loop(void)
 		temp = 4000;
 	#elif MOUSE_REPORT_1000HZ_ENABLE
 		temp = 1000;
+	#elif MOUSE_REPORT_500HZ_ENABLE
+		temp = 2000;
 	#else
 		temp = 8000; //unit 1us
 	#endif
@@ -1287,12 +1347,11 @@ void usb_main_loop(void)
 
 	if (clock_time_exceed(tick_usb_loop, temp) )
 	{
-		// tick_usb_loop += report_rate*CLOCK_16M_SYS_TIMER_CLK_1MS;//loop update
- 		// is_new_event = get_data_report_aaa();
 		tick_usb_loop = clock_time() | 1;
 		get_usb_data_report_aaa();
 	}
 
+#if 0
 	if ( connect_ok )
 	{
     	if ( led_batt_dpi_working_on() )
@@ -1301,13 +1360,12 @@ void usb_main_loop(void)
     		batt_check_time_reload();
     	}
 	}
+#endif
 
-//	if(is_new_event)//has new event
-//	{
-//		reset_idle_status();//reset idle params
-//	}
-//	idle_status_poll();//poll idle params
-
+#if MOUSE_REPORT_1000HZ_ENABLE
+	/* Drain host ACK / SOF before IN send — reduces EP-busy stalls at 1kHz */
+	usb_handle_irq();
+#endif
 	pull_usb_data();
 
 #if WEB_HID_ENABLE

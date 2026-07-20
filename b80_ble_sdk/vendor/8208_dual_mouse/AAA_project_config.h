@@ -232,7 +232,8 @@ typedef enum
 
 #if USB_MODE_ENABLE
 
-	#define USB_FIFO_NUM      4
+	/* 1000Hz needs deeper queue; must stay power-of-2 for mask math */
+	#define USB_FIFO_NUM      8
 	#undef  USB_FIFO_MAX_LEN
 	#define USB_FIFO_MAX_LEN  9
 
