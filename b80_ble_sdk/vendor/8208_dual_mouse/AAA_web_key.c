@@ -1093,10 +1093,14 @@ void g24_rev_web_data(void)
 	/* USB Feature 0x06 handshake: host SET then GET. Do not consume the
 	 * buffer here or GET Report 0x06 will stall and Web stays offline.
 	 * 2.4G has no GET-ACK path, so still process in main loop. */
+
+#if USB_MODE_ENABLE
 	if (RF_USB_MODE == mcu_mode_get()) {
 		return;
 	}
+#endif
 
+#if G24_MODE_ENABLE
 	if ( gc_web_rx_len >= 32 )
 	{
 		printf("webdat:");
@@ -1109,6 +1113,7 @@ void g24_rev_web_data(void)
 
 		web_data_process( gc_web_rx_data );
 	}
+#endif
 }
 
 void web_function_loop(void)

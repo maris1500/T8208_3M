@@ -1337,7 +1337,7 @@ void usb_main_loop(void)
 	#if MOUSE_REPORT_250HZ_ENABLE
 		temp = 4000;
 	#elif MOUSE_REPORT_1000HZ_ENABLE
-		temp = 1000;
+		temp = 900;
 	#elif MOUSE_REPORT_500HZ_ENABLE
 		temp = 2000;
 	#else
@@ -1345,7 +1345,7 @@ void usb_main_loop(void)
 	#endif
 	}
 
-	if ( clock_time_exceed(usb_mode_start_tick, 6*1000*1000) )
+	if ( (0 == connect_ok) && clock_time_exceed(usb_mode_start_tick, 6*1000*1000) )
 	{
 		usb_mode_start_tick = clock_time() | 1;
 
