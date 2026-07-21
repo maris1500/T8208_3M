@@ -697,7 +697,8 @@ void ui_loop_24g()
 				#if	WEB_HID_ENABLE
 					km_data_ex_reset();
 				#endif
-					 my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push mouse data to fifo
+					mouse_info_report();
+					my_fifo_push(&fifo_km, &ms_data.btn, sizeof(mouse_data_t));//push mouse data to fifo
 				}
 			}
 		}

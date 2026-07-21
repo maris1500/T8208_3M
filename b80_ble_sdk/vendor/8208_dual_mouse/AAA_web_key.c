@@ -392,7 +392,7 @@ void web_fire_usb_send(unsigned char direct )
 		gc_web_sta_list.release_type = KEY_RELEASE_NONE;
 	}
 
-}
+}
 
 unsigned char web_key_macro_max_index_get(unsigned char k)
 {
@@ -846,7 +846,7 @@ void web_macro_usb_send(char direct)
 		if ( KEY_MACRO_BOUNCE == web_key_macro_staus(i) )
 		{
 			web_key_macro_time_tab[i] = 0x00;
-		}
+		}
 			
 		if ( 0x00 == web_key_macro_count_tab[i] && 0x00 == web_key_macro_time_tab[i] )
 		{
@@ -860,7 +860,7 @@ void web_macro_usb_send(char direct)
 		}
 
 	}
-}
+}
 
 void web_key_function_process(void)
 {
@@ -1089,6 +1089,13 @@ void web_key_function_process(void)
 void g24_rev_web_data(void)
 {
 	unsigned char i = 0;
+
+	/* USB Feature 0x06 handshake: host SET then GET. Do not consume the
+	 * buffer here or GET Report 0x06 will stall and Web stays offline.
+	 * 2.4G has no GET-ACK path, so still process in main loop. */
+	if (RF_USB_MODE == mcu_mode_get()) {
+		return;
+	}
 
 	if ( gc_web_rx_len >= 32 )
 	{

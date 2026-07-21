@@ -158,7 +158,7 @@ static const u8 mouse_report_desc[] =
    0xC0,    // End Collection
 #endif
 
-#if 1
+#if !WEB_HID_ENABLE
 /*******************vendor define feature report ID 5************************/
 	0x06,  0x00,  0xff, 	// Usage Page (Vendor-defined),
 	0x09,  0x00,	// USAGE ()
@@ -168,11 +168,7 @@ static const u8 mouse_report_desc[] =
 	0x15,  0x00,	// Logical Minimum (0),
 	0x26,  0xff,  0x00,		// Logical Maximum (255),
 	0x75,  0x08,	// Report Size (8),
-#if WEB_HID_ENABLE
-	0x95,  0x1F,
-#else
 	0x95,  0x07,	// Report Count (7),
-#endif
 	0xB1,  0x02,   	// Feature (Data, Variable, Absolute)
 	0xc0,	// END_COLLECTION
 	/*******************vendor define input report ID 4************************/
@@ -184,12 +180,7 @@ static const u8 mouse_report_desc[] =
 	0x15,  0x00,	// Logical Minimum (0),
 	0x26,  0xff,  0x00,		// Logical Maximum (255),
 	0x75,  0x08,	// Report Size (8),
-#if WEB_HID_ENABLE
-	0x95,  0x1F,
-#else
 	0x95,  0x07,	// Report Count (7),
-#endif
-
 	0x81,  0x02,	// Input
 	0xc0,           // END_COLLECTION
 	/*******************vendor define feature report ID 6************************/
@@ -201,45 +192,10 @@ static const u8 mouse_report_desc[] =
 	0x15,  0x00,	// Logical Minimum (0),
 	0x26,  0xff,  0x00,	  // Logical Maximum (255),
 	0x75,  0x08,	      // Report Size (8),
-#if WEB_HID_ENABLE
-	0x95,  0x1F,
-#else
 	0x95,  0x07,	// Report Count (7),
-#endif
-
 	0xB1,  0x02,	// Feature
 	0xc0,	        // END_COLLECTION
-#else
-/*******************user define input************************/
-	0x05,0x01,	   //global,  USAGE_PAGE 1 (Generic Desktop)
-	0x09,0x00,	   //usage undefined
-	0xa1,0x01,	   //main collection
-	0x85,CUSTOM_OUTPUT_REPORT_ID,	   //global report ID 0x5
-	0x06,0x00,0xff,  //global usage page
-	0x09,0x01,	   //local,  usage ID 01  Consumer Control
-	0x15,0x81,	   //global min 81
-	0x25,0x7f,	   //global, max 7f
-	0x75,0x08,	   //global, report size 8
-	0x95,0x07,	   //report count  7
-	0xb1,0x02,	   //feature (data, var, abs)
-	0xc0,		  //main, end collection
-	
-	/*******************user define output************************/
-	#if 0
-		0x05,0x01,	   //global,  USAGE_PAGE 1 (Generic Desktop)
-		0x09,0x00,	   //usage undefined
-		0xa1,0x01,	   //main collection
-		0x85,CUSTOM_INPUT_REPORT_ID,	   //global report ID 0x5
-		0x06,0x01,0xff,  //global usage page
-		0x09,0x01,	   //local,  usage ID 01  Consumer Control
-		0x15,0x81,	   //global min 81
-		0x25,0x7f,	   //global, max 7f
-		0x75,0x08,	   //global, report size 8
-		0x95,0x07,	   //report count  7
-		0xb1,0x02,	   //feature (data, var, abs)
-		0xc0,		  //main, end collection
-	#endif
-#endif
+#endif /* !WEB_HID_ENABLE: Web ID4/5/6 live on Interface 1 */
 
 };
 
@@ -318,8 +274,9 @@ static const u8 spp_report_desc[] =
 #endif
 
 #if WEB_HID_ENABLE
-/* intf1: status Input Report ID 4 only (32B wire); Web EP0 stays on intf0 mouse desc */
+/* Interface 1: Web driver collection — Input 0x04 + Feature 0x05/0x06 together (protocol V1.7) */
 static const u8 vendor_status_in_report_desc[] = {
+	/* Input Report ID 0x04 — OSD / heartbeat */
 	0x06, 0x00, 0xff,
 	0x09, 0x00,
 	0xa1, 0x01,
@@ -330,6 +287,30 @@ static const u8 vendor_status_in_report_desc[] = {
 	0x75, 0x08,
 	0x95, HID_WEB_DATA_MAX_LEN,
 	0x81, 0x02,
+	0xc0,
+	/* Feature Report ID 0x05 — Get Device Info */
+	0x06, 0x00, 0xff,
+	0x09, 0x00,
+	0xa1, 0x01,
+	0x85, 0x05,
+	0x09, 0x00,
+	0x15, 0x00,
+	0x26, 0xff, 0x00,
+	0x75, 0x08,
+	0x95, HID_WEB_DATA_MAX_LEN,
+	0xB1, 0x02,
+	0xc0,
+	/* Feature Report ID 0x06 — CMD */
+	0x06, 0x00, 0xff,
+	0x09, 0x00,
+	0xa1, 0x01,
+	0x85, 0x06,
+	0x09, 0x01,
+	0x15, 0x00,
+	0x26, 0xff, 0x00,
+	0x75, 0x08,
+	0x95, HID_WEB_DATA_MAX_LEN,
+	0xB1, 0x02,
 	0xc0,
 };
 #endif

@@ -99,6 +99,107 @@ u8 g_rate = 0; //default 0 for all report
 
 #if WEB_HID_ENABLE
 	extern void usb_aut_report_time_reset(void);
+	extern void web_data_process(unsigned char *buf);
+	extern u8 sensor_type;
+	extern u8 dpi_value;
+	extern u8 report_rate;
+	extern unsigned char battery_voltage_percent(void);
+
+	/* Multi-packet GetReport payload (SETUP fills, DATA stages via usb_send_response) */
+	static u8 s_hid_get_report_buf[32];
+
+	static u8 web_proto_sensor_id(void)
+	{
+		(void)sensor_type;
+		return 0x11; /* PAW3311 per protocol V1.7 */
+	}
+
+	static u8 web_proto_rate_cur(void)
+	{
+	#if MOUSE_REPORT_1000HZ_ENABLE
+		return 0x01;
+	#elif MOUSE_REPORT_500HZ_ENABLE
+		return 0x02;
+	#elif MOUSE_REPORT_250HZ_ENABLE
+		return 0x04;
+	#else
+		(void)report_rate;
+		return 0x08; /* 125Hz */
+	#endif
+	}
+
+	static void usb_fill_osd_report_id04(u8 *buf)
+	{
+		u8 i;
+		for (i = 0; i < 32; i++) {
+			buf[i] = 0;
+		}
+		buf[0] = 0x04;
+		buf[1] = 0x01; /* USB wired online */
+		buf[2] = (dpi_value <= 7) ? dpi_value : 0;
+		if (gc_web_data.dpi.level_cur <= 7) {
+			buf[2] = gc_web_data.dpi.level_cur;
+		}
+		buf[3] = web_proto_rate_cur();
+		buf[4] = battery_voltage_percent();
+		buf[5] = 0x01; /* charging while USB connected */
+		buf[6] = 0x00;
+		buf[7] = 0x00;
+		buf[8] = 0x01; /* max 1K USB */
+		buf[9] = web_proto_sensor_id();
+	}
+
+	static void usb_prepare_web_get_report(void)
+	{
+		u8 i;
+		u16 req_len = control_request.Length;
+
+		for (i = 0; i < 32; i++) {
+			s_hid_get_report_buf[i] = 0;
+		}
+
+		if (control_request.Value == 0x0304 || control_request.Value == 0x0104) {
+			/* ID 0x04 OSD status (Feature or Input GetReport) */
+			usb_fill_osd_report_id04(s_hid_get_report_buf);
+			printf("Input_ID_04 \n");
+		} else if (control_request.Value == 0x0305) {
+			/* V1.7 Get Device Info */
+			s_hid_get_report_buf[0] = 0x05;
+			s_hid_get_report_buf[1] = 0x31;
+			s_hid_get_report_buf[2] = 0x30;
+			s_hid_get_report_buf[3] = 0x31;
+			s_hid_get_report_buf[4] = 0x30;
+			s_hid_get_report_buf[5] = 0x01; /* USB online */
+			s_hid_get_report_buf[6] = 0x01; /* USB max rate class: 1K */
+			s_hid_get_report_buf[7] = web_proto_sensor_id();
+			printf("Input_ID_05B \n");
+		} else if (control_request.Value == 0x0306) {
+			u8 ok = 0;
+			if (gc_web_rx_len >= 32) {
+				printf("Input_ID_06 \n");
+				web_data_process((unsigned char *)gc_web_rx_data);
+				gc_web_rx_len = 0;
+				ok = 1;
+			}
+			/* Always ACK Get CMD status — stall makes Web retry forever / offline */
+			s_hid_get_report_buf[0] = 0x06;
+			s_hid_get_report_buf[1] = ok;
+			printf("Input_ID_06 rsp=%d\n", ok);
+		} else {
+			g_response = 0;
+			g_response_len = 0;
+			return;
+		}
+
+		g_response = s_hid_get_report_buf;
+		g_response_len = 32;
+		if (req_len < g_response_len) {
+			g_response_len = req_len;
+		}
+	#if (MCU_CORE_B80)
+		usb_len_idx_s = g_response_len;
+	#endif
+	}
 #endif
 
 void usb_register_set_report(usb_set_hid_report_t src)
@@ -556,6 +657,11 @@ void usb_handle_out_class_intf_req(int data_request)
 					}
 
 				#if WEB_HID_ENABLE
+					/* New Feature 0x06 SET while previous cmd unused: restart buffer */
+					if ((gc_web_rx_len >= WEB_HID_LENGTH) && (host_cmd[0] == 0x06)) {
+						gc_web_rx_len = 0;
+					}
+
 					if ( gc_web_rx_len < WEB_HID_LENGTH )
 					{
 						for (i = 0; i < 8; i++) 
@@ -752,6 +858,10 @@ void usb_handle_in_class_intf_req()
 				}
 				else
 			#elif (USB_CUSTOM_HID_REPORT)
+			#if WEB_HID_ENABLE
+				/* Prepared in usb_prepare_web_get_report() + usb_send_response() */
+				break;
+			#else
 				if (control_request.Value == 0x0304) 
 				{
 					/* Input report ID 0x04: state-change upload packet.
@@ -775,10 +885,6 @@ void usb_handle_in_class_intf_req()
 						usbhw_write_ctrl_ep_data (custom_read_dat>>8);
 						usbhw_write_ctrl_ep_data (custom_read_dat>>16);
 						usbhw_write_ctrl_ep_data (custom_read_dat>>24);
-						//usbhw_write_ctrl_ep_data (0x10);
-						//usbhw_write_ctrl_ep_data (0x20);
-						//usbhw_write_ctrl_ep_data (0x40);
-						//usbhw_write_ctrl_ep_data (0x80);
 					}	
 					else 
 					{
@@ -787,10 +893,6 @@ void usb_handle_in_class_intf_req()
 						usbhw_write_ctrl_ep_data (0x55);
 						usbhw_write_ctrl_ep_data (0x91);
 						usbhw_write_ctrl_ep_data (01);  //For binding OK
-						//usbhw_write_ctrl_ep_data (0x00);
-						//usbhw_write_ctrl_ep_data (0x00);
-						//usbhw_write_ctrl_ep_data (0x08);
-						//usbhw_write_ctrl_ep_data (0x00);
 					}
 					usbhw_write_ctrl_ep_data (bin_crc[0]);
 					usbhw_write_ctrl_ep_data (bin_crc[1]);
@@ -821,6 +923,7 @@ void usb_handle_in_class_intf_req()
 					}
 				}
 				else
+			#endif /* !WEB_HID_ENABLE */
 			#endif
 				{	//  donot know what is this
 					//	usbhw_write_ctrl_ep_data(0x81);
@@ -1038,6 +1141,17 @@ void usb_handle_request(u8 data_request)
 	break;
 
 	case (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE):
+	#if WEB_HID_ENABLE
+		if (control_request.Request == HID_REQ_GetReport) {
+			if (USB_IRQ_SETUP_REQ == data_request) {
+				usb_prepare_web_get_report();
+			}
+			if (g_response && g_response_len) {
+				usb_send_response();
+			}
+			break;
+		}
+	#endif
 		usb_handle_in_class_intf_req();
 	break;
 

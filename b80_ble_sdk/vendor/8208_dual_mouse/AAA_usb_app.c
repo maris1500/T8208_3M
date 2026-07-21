@@ -930,6 +930,7 @@ u8 usb_data_eps_ready;
 static u32 gc_auto_report_tick = 0;
 
 extern unsigned char battery_voltage_percent(void);
+extern u8 dpi_value;
 
 void usb_aut_report_time_reset(void)
 {
@@ -954,10 +955,12 @@ int usb_status_input_in_send(void)
 
 	if ( !sc_first_rp_flag )
 	{
-		gc_auto_report_tick = clock_time() + USB_STATUS_IN_INTERVAL_US;
+		/* First OSD ASAP after enum so Web can go online; then every 5s */
+		if (!clock_time_exceed(gc_auto_report_tick, 200 * 1000)) {
+			return 0;
+		}
 	}
-	
-	if (!clock_time_exceed(gc_auto_report_tick, USB_STATUS_IN_INTERVAL_US)) {
+	else if (!clock_time_exceed(gc_auto_report_tick, USB_STATUS_IN_INTERVAL_US)) {
 		return 0;
 	}
 
@@ -967,19 +970,29 @@ int usb_status_input_in_send(void)
 
 	gc_auto_report_tick = clock_time() | 1;
 
-	buf[0] = REPORT_ID_GAMEPAD_INPUT_AAA;
+
 #if WEB_HID_ENABLE
-	buf[1] = 0x01;
-	buf[2] = gc_web_data.dpi.level_cur;
-	buf[3] = gc_web_data.dpi.level_max;
-	
+	buf[0] = REPORT_ID_GAMEPAD_INPUT_AAA;
+	buf[1] = 0x01; /* USB wired online */
+	buf[2] = (dpi_value <= 7) ? dpi_value : 0;
+	if (gc_web_data.dpi.level_cur <= 7) {
+		buf[2] = gc_web_data.dpi.level_cur;
+	}
+#if MOUSE_REPORT_1000HZ_ENABLE
+	buf[3] = 0x01;
+#elif MOUSE_REPORT_500HZ_ENABLE
+	buf[3] = 0x02;
+#elif MOUSE_REPORT_250HZ_ENABLE
+	buf[3] = 0x04;
+#else
+	buf[3] = 0x08;
+#endif
 	buf[4] = battery_voltage_percent();
 	buf[5] = 0x01;
-
-	buf[6] = gc_web_data.sta.light_mode;
+	buf[6] = 0x00;
 	buf[7] = 0x00;
-	buf[8] = gc_web_data.sta.rate_max_support;
-	buf[9] = 0x11;
+	buf[8] = 0x01; /* max 1K */
+	buf[9] = 0x11; /* PAW3311 */
 #else
 	buf[1] = seq++;
 	buf[2] = 0x00;
@@ -1022,6 +1035,10 @@ void usb_mouse_eps_reack(void)
 	reg_usb_ep_ctrl(USB_EDP_MOUSE) = 0;
 	reg_usb_ep_ctrl(USB_EDP_KEYBOARD_IN) = 0;
 	usbhw_data_ep_ack(USB_EDP_MOUSE);
+#if WEB_HID_ENABLE
+	/* Ready Web IN (EP4) without waiting for Feature handshake — mouse path unchanged */
+	reg_usb_ep_ctrl(USB_EDP_WEB_IN) = 0;
+#endif
 }
 
 void usb_data_eps_ready_on_config(void)
