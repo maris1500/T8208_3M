@@ -820,6 +820,8 @@ int main(void) //run in ramcode
 
 	adv_begin_tick = clock_time()|1; //start ADV count
 
+
+
 	while (1) {
 
 	#if (MODULE_WATCHDOG_ENABLE)
@@ -903,7 +905,7 @@ int main(void) //run in ramcode
 
 #if (DEBUG_MODE)
     static u32 main_tick = 0;
-    if ( clock_time_exceed(main_tick, 1000*1000) )
+    if ( clock_time_exceed(main_tick, 2000*1000) )
     {
        main_tick = clock_time();
 

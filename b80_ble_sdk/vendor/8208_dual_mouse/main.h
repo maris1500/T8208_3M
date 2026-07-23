@@ -56,6 +56,27 @@ extern mcu_pm_flag_t  mcu_sleep_status;
 	#define MACRO_NUM_MAX   40
 	#define WEB_DATA_LENGTH 32
 	
+	typedef union
+	{
+		unsigned int infor_dat;
+
+		struct infor_name
+		{
+			unsigned int g24_type:8;
+			unsigned int battery_cap:8;
+
+			unsigned int active:1;
+			unsigned int cpi_set:3;
+			unsigned int rate_report:2;
+			unsigned int rate_supp_max:2;
+			unsigned int light_status:3;
+			unsigned int sensor_type:3;
+
+			unsigned int chare_status:2;
+		}text;
+
+	}web_g24_infor_un;
+
 	typedef struct {
 		unsigned short int rev_start:1;
 		unsigned short int rev_timeout:8;

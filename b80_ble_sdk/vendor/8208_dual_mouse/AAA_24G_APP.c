@@ -221,20 +221,67 @@ void km_data_ex_reset(void)
 
 void mouse_info_report(void)
 {
-	unsigned char value = 0x00;
+	web_g24_infor_un g24_data;
 
-	p_km_data->km_dat[EX_G24_TYPE_IN] = EX_G24_INFOR;
+	g24_data.text.g24_type    = EX_G24_INFOR;
+	g24_data.text.battery_cap = battery_voltage_percent();
 
-	p_km_data->km_dat[EX_G24_PAR1_IN] = battery_voltage_percent();
+	g24_data.text.active  = connect_ok;
+	g24_data.text.cpi_set = dpi_value;
 
-	value |= (connect_ok << G24_MOVE_CONN);
-	value |= (dpi_value  << G24_MOVE_DPI);
-	value |= (report_rate << G24_MOVE_RATE);
-	value |= (battery_status_back() << G24_MOVE_CHARGE);
-	p_km_data->km_dat[EX_G24_PAR2_IN] = value;
+#if (PROJECT_ID == PID_Q15)
+	 g24_data.text.light_status = 0;
+#endif
 
-	value = 0x00;
+	switch (report_rate)
+	{
+		case 1: g24_data.text.rate_report = 0; break;
+		case 2: g24_data.text.rate_report = 1; break;
+		case 4: g24_data.text.rate_report = 2; break;
+		case 8: g24_data.text.rate_report = 3; break;
 
+		default: g24_data.text.rate_report = 0; break;
+	}
+	g24_data.text.rate_supp_max = 1;
+	g24_data.text.chare_status = battery_status_back();
+
+	switch (sensor_type)
+	{
+		case SENSOR_3311: g24_data.text.sensor_type = 0; break;
+		case SENSOR_3325: g24_data.text.sensor_type = 1; break;
+		case SENSOR_3335: g24_data.text.sensor_type = 2; break;
+		case SENSOR_3395: g24_data.text.sensor_type = 3; break;
+
+		default: g24_data.text.sensor_type = 0; break;
+	}
+
+	p_km_data->km_dat[EX_G24_PAR3_IN] = (u8)( (g24_data.infor_dat & 0xFF000000) >> 24 );
+	p_km_data->km_dat[EX_G24_PAR2_IN] = (u8)( (g24_data.infor_dat & 0x00FF0000) >> 16 );
+	p_km_data->km_dat[EX_G24_PAR1_IN] = (u8)( (g24_data.infor_dat & 0x0000FF00) >> 8 );
+	p_km_data->km_dat[EX_G24_TYPE_IN] = (u8)( (g24_data.infor_dat & 0x000000FF) >> 0 );
+
+	#if 0
+		printf("g24_if:%4x, %1x %1x %1x %1x \n",
+				g24_data.infor_dat,
+				p_km_data->km_dat[EX_G24_TYPE_IN],
+				p_km_data->km_dat[EX_G24_PAR1_IN],
+				p_km_data->km_dat[EX_G24_PAR2_IN],
+				p_km_data->km_dat[EX_G24_PAR3_IN]);
+	#endif
+
+
+	#if 0
+		printf("M24:%1x %1x %1x %1x %1x %1x %1x %1x %1x \n",
+				g24_data.text.g24_type,
+				g24_data.text.battery_cap,
+				g24_data.text.active,
+				g24_data.text.chare_status,
+				g24_data.text.cpi_set,
+				g24_data.text.rate_report,
+				g24_data.text.rate_supp_max,
+				g24_data.text.sensor_type,
+				g24_data.text.light_status);
+	#endif
 }
 
 #endif
